@@ -1,0 +1,38 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: ywhc-xr
+  datasource:
+    url: jdbc:mysql://localhost:3306/ywhc-xr?verifyServerCertificate=false&allowPublicKeyRetrieval=true&useSSL=false&requireSSL=false&serverTimezone=Asia/Shanghai&rewriteBatchedStatements=true
+    username: 'root'
+    password: '12345678'
+  data:
+    redis:
+      database: 0
+      host: localhost
+      password: ''
+      port: 6379
+
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true
+
+logging:
+  file:
+    path: logs/
+  level:
+    eco.ywhc: TRACE
+
+vendor:
+  file-storage:
+    local:
+      enabled: true
+      base-path: "/data"
+      base-url: 'http://127.0.0.1:8080/'
+  lark:
+    app-id: ""
+    app-secret: ""

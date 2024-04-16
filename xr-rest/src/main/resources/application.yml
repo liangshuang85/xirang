@@ -1,0 +1,108 @@
+server:
+  forward-headers-strategy: native
+  servlet:
+    context-path: /
+  tomcat:
+    remoteip:
+      protocol-header: X-Forwarded-Proto
+
+spring:
+  profiles:
+    include: flyway
+  application:
+    name: ywhc-xr
+  cache:
+    cache-names: "${spring.application.name}"
+    redis:
+      key-prefix: "${spring.application.name}:caches:"
+      time-to-live: 300s
+  data:
+    redis:
+      database: 0
+      host: 127.0.0.1
+      password: ''
+      port: 6379
+  datasource:
+    hikari:
+      maximum-pool-size: 40
+      minimum-idle: 20
+  main:
+    banner-mode: 'off'
+  messages:
+    basename: "messages.messages"
+  servlet:
+    multipart:
+      max-file-size: 500MB
+      max-request-size: 510MB
+  session:
+    redis:
+      namespace: "${spring.application.name}"
+    timeout: 1d
+
+logging:
+  file:
+    path: ${java.io.tmpdir}${file.separator}${spring.application.name}${file.separator}logs
+  level:
+    eco.ywhc: INFO
+  logback:
+    rollingpolicy:
+      max-file-size: 500MB
+      max-history: 3650
+  pattern:
+    console: "%clr(%d{yyyy-MM-dd'T'HH:mm:ss.SSS}){faint} %clr(%-5p) %clr(${PID:}){magenta} 
+    %clr([%t]){blue} %clr(%-48.48(%logger{39}%clr(#L%line){yellow})){cyan} 
+    %clr([%X{Slf4jMDCFilter.UUID:-REQUEST-ID-NOT-NEEDED}]){green} %clr(:){faint} %m%n"
+    file: "%d{yyyy-MM-dd'T'HH:mm:ss.SSS} %p ${PID:} [%t] %.48(%logger{39}#L%line) 
+    [%X{Slf4jMDCFilter.UUID:-REQUEST-ID-NOT-NEEDED}] : %m%n"
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  info:
+    git:
+      mode: full
+
+springdoc:
+  api-docs:
+    enabled: false
+    path: /api-docs
+  default-flat-param-object: false
+  paths-to-match:
+    - '${vendor.api-prefix}/**'
+    - '/oauth2/**'
+  swagger-ui:
+    enabled: false
+    path: /swagger-ui.html
+    operationsSorter: method
+
+mybatis-plus:
+  global-config:
+    banner: false
+    db-config:
+      insert-strategy: ALWAYS
+      update-strategy: ALWAYS
+  mapper-locations: classpath:mapper/*.xml
+
+sugar:
+  api-base-package: eco.ywhc.xr.rest.controller
+
+vendor:
+  api-prefix: '/rest'
+  id-generator:
+    worker-id: ${random.int[1,31]}
+    datacenter-id: ${random.int[1,31]}
+  file-storage:
+    local:
+      enabled: false
+      base-path: ''
+      base-url: ''
+    s3:
+      enabled: false
+      access-key: ''
+      secret-key: ''
+      endpoint: ''
+      bucket: public
+      folder: '/'
+      region: cn-north-1

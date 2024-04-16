@@ -1,0 +1,6 @@
+spring:
+  flyway:
+    enabled: true
+    ignore-migration-patterns: '*:Ignored'
+    table: 's_flyway_schema_history'
+    locations: 'classpath:{vendor}/migration,classpath:{vendor}/callback'
