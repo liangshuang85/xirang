@@ -150,21 +150,21 @@ public class FrameworkAgreementServiceImpl implements FrameworkAgreementService 
         int affected = frameworkAgreementMapper.updateById(frameworkAgreement);
 
         if (req.getFrameworkAgreementProject() != null) {
-            frameworkAgreementProjectMapper.logicDeleteEntityById(frameworkAgreementManager.getProjectByFrameworkAgreementId(id));
+            frameworkAgreementProjectMapper.logicDeleteEntityById(frameworkAgreementManager.getProjectByFrameworkAgreementId(id).getId());
             FrameworkAgreementProject frameworkAgreementProject = frameworkAgreementProjectConverter.fromRequest(req.getFrameworkAgreementProject());
             frameworkAgreementProject.setFrameworkAgreementId(frameworkAgreement.getId());
             frameworkAgreementProjectMapper.insert(frameworkAgreementProject);
         }
 
         if (req.getFrameworkAgreementChannelEntry() != null) {
-            frameworkAgreementChannelEntryMapper.logicDeleteEntityById(frameworkAgreementManager.getChannelEntryByFrameworkAgreementId(id));
+            frameworkAgreementChannelEntryMapper.logicDeleteEntityById(frameworkAgreementManager.getChannelEntryByFrameworkAgreementId(id).getId());
             FrameworkAgreementChannelEntry frameworkAgreementChannelEntry = frameworkAgreementChannelEntryConverter.fromRequest(req.getFrameworkAgreementChannelEntry());
             frameworkAgreementChannelEntry.setFrameworkAgreementId(frameworkAgreement.getId());
             frameworkAgreementChannelEntryMapper.insert(frameworkAgreementChannelEntry);
         }
 
         if (req.getFrameworkAgreementProjectFunding() != null) {
-            frameworkAgreementProjectFundingMapper.logicDeleteEntityById(frameworkAgreementManager.getProjectFundingByFrameworkAgreementId(id));
+            frameworkAgreementProjectFundingMapper.logicDeleteEntityById(frameworkAgreementManager.getProjectFundingByFrameworkAgreementId(id).getId());
             FrameworkAgreementProjectFunding frameworkAgreementProjectFunding = frameworkAgreementProjectFundingConverter.fromRequest(req.getFrameworkAgreementProjectFunding());
             frameworkAgreementProjectFunding.setFrameworkAgreementId(frameworkAgreement.getId());
             frameworkAgreementProjectFundingMapper.insert(frameworkAgreementProjectFunding);
@@ -174,9 +174,9 @@ public class FrameworkAgreementServiceImpl implements FrameworkAgreementService 
 
     @Override
     public int logicDeleteOne(@NonNull Long id) {
-        frameworkAgreementProjectMapper.logicDeleteEntityById(frameworkAgreementManager.getProjectByFrameworkAgreementId(id));
-        frameworkAgreementProjectFundingMapper.logicDeleteEntityById(frameworkAgreementManager.getProjectFundingByFrameworkAgreementId(id));
-        frameworkAgreementChannelEntryMapper.logicDeleteEntityById(frameworkAgreementManager.getChannelEntryByFrameworkAgreementId(id));
+        frameworkAgreementProjectMapper.logicDeleteEntityById(frameworkAgreementManager.getProjectByFrameworkAgreementId(id).getId());
+        frameworkAgreementProjectFundingMapper.logicDeleteEntityById(frameworkAgreementManager.getProjectFundingByFrameworkAgreementId(id).getId());
+        frameworkAgreementChannelEntryMapper.logicDeleteEntityById(frameworkAgreementManager.getChannelEntryByFrameworkAgreementId(id).getId());
         return frameworkAgreementMapper.logicDeleteEntityById(id);
     }
 
