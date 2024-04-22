@@ -1,8 +1,13 @@
 package eco.ywhc.xr.common.model.dto.res;
 
 import eco.ywhc.xr.common.constant.ProjectType;
+import eco.ywhc.xr.common.constant.TaskType;
+import eco.ywhc.xr.common.model.entity.Task;
 import lombok.Data;
 import org.sugar.crud.model.BaseRestResponse;
+
+import java.util.List;
+import java.util.Map;
 
 /**
  * 项目Res
@@ -49,5 +54,10 @@ public class ProjectRes implements BaseRestResponse {
      * 项目信息Res
      */
     private ProjectInformationRes projectInformation;
+
+    /**
+     * 框架协议关联的任务
+     */
+    Map<TaskType, List<TaskRes>> taskResMaps;
 
 }

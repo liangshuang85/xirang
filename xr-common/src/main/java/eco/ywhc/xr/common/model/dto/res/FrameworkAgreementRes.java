@@ -1,10 +1,15 @@
 package eco.ywhc.xr.common.model.dto.res;
 
 import eco.ywhc.xr.common.constant.FrameworkAgreementType;
+import eco.ywhc.xr.common.constant.TaskType;
+import eco.ywhc.xr.common.model.entity.Task;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import org.sugar.crud.model.BaseRestResponse;
+
+import java.util.List;
+import java.util.Map;
 
 /**
  * 框架协议项目Res
@@ -63,5 +68,10 @@ public class FrameworkAgreementRes implements BaseRestResponse {
      * 框架协议项目项目收资信息Res
      */
     FrameworkAgreementProjectFundingRes frameworkAgreementProjectFunding;
+
+    /**
+     * 框架协议关联的任务
+     */
+    Map<TaskType, List<TaskRes>> taskResMaps;
 
 }

@@ -2,27 +2,37 @@ package eco.ywhc.xr.core.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import eco.ywhc.xr.common.constant.ProjectType;
+import eco.ywhc.xr.common.constant.TaskType;
 import eco.ywhc.xr.common.converter.ProjectConverter;
 import eco.ywhc.xr.common.converter.ProjectInformationConverter;
+import eco.ywhc.xr.common.event.ProjectCreatedEvent;
 import eco.ywhc.xr.common.model.dto.req.ProjectReq;
 import eco.ywhc.xr.common.model.dto.res.ProjectInformationRes;
 import eco.ywhc.xr.common.model.dto.res.ProjectRes;
+import eco.ywhc.xr.common.model.dto.res.TaskRes;
 import eco.ywhc.xr.common.model.entity.Project;
 import eco.ywhc.xr.common.model.entity.ProjectInformation;
+import eco.ywhc.xr.common.model.entity.Task;
 import eco.ywhc.xr.common.model.query.ProjectQuery;
 import eco.ywhc.xr.core.manager.ProjectManager;
+import eco.ywhc.xr.core.manager.TaskManager;
 import eco.ywhc.xr.core.mapper.ProjectInformationMapper;
 import eco.ywhc.xr.core.mapper.ProjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import org.sugar.crud.model.PageableModelSet;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import static eco.ywhc.xr.core.service.ProjectServiceImpl.CodeGenerator.generateCode;
 
@@ -31,11 +41,15 @@ import static eco.ywhc.xr.core.service.ProjectServiceImpl.CodeGenerator.generate
 @RequiredArgsConstructor
 public class ProjectServiceImpl implements ProjectService {
 
+    private final ApplicationEventPublisher applicationEventPublisher;
+
     private final ProjectMapper projectMapper;
 
     private final ProjectInformationMapper projectInformationMapper;
 
     private final ProjectManager projectManager;
+
+    private final TaskManager taskManager;
 
     private final ProjectConverter projectConverter;
 
@@ -64,6 +78,9 @@ public class ProjectServiceImpl implements ProjectService {
         ProjectInformation projectInformation = projectInformationConverter.fromRequest(req.getProjectInformation());
         projectInformation.setProjectId(project.getId());
         projectInformationMapper.insert(projectInformation);
+
+        applicationEventPublisher.publishEvent(ProjectCreatedEvent.of(project));
+
         return project.getId();
     }
 
@@ -100,6 +117,19 @@ public class ProjectServiceImpl implements ProjectService {
         ProjectInformation projectInformation = projectManager.getProjectInformationByProjectId(id);
         ProjectInformationRes projectInformationRes = projectInformationConverter.toResponse(projectInformation);
         projectRes.setProjectInformation(projectInformationRes);
+
+        List<Task> tasks = taskManager.listTasksByRefId(id);
+        List<TaskRes> taskResList = new ArrayList<>();
+        // 遍历任务列表，更新每个任务的状态
+        for (Task task : tasks) {
+            if (task.getTaskGuid() == null) {
+                continue;
+            }
+            TaskRes larkTask = taskManager.getLarkTask(task);
+            taskResList.add(larkTask);
+        }
+        Map<TaskType, List<TaskRes>> tasksResMaps = taskResList.stream().collect(Collectors.groupingBy(TaskRes::getType));
+        projectRes.setTaskResMaps(tasksResMaps);
         return projectRes;
     }
 
@@ -121,6 +151,7 @@ public class ProjectServiceImpl implements ProjectService {
     @Override
     public int logicDeleteOne(@NonNull Long id) {
         projectInformationMapper.logicDeleteEntityById(projectManager.getProjectInformationByProjectId(id).getId());
+        taskManager.logicDeleteEntityById(id);
         return projectMapper.logicDeleteEntityById(id);
     }
 

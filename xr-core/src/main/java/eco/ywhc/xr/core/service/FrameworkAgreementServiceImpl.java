@@ -1,22 +1,20 @@
 package eco.ywhc.xr.core.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.lark.oapi.Client;
 import eco.ywhc.xr.common.constant.FrameworkAgreementType;
+import eco.ywhc.xr.common.constant.TaskType;
 import eco.ywhc.xr.common.converter.FrameworkAgreementChannelEntryConverter;
 import eco.ywhc.xr.common.converter.FrameworkAgreementConverter;
 import eco.ywhc.xr.common.converter.FrameworkAgreementProjectConverter;
 import eco.ywhc.xr.common.converter.FrameworkAgreementProjectFundingConverter;
+import eco.ywhc.xr.common.event.FrameworkAgreementCreatedEvent;
 import eco.ywhc.xr.common.model.dto.req.FrameworkAgreementReq;
-import eco.ywhc.xr.common.model.dto.res.FrameworkAgreementChannelEntryRes;
-import eco.ywhc.xr.common.model.dto.res.FrameworkAgreementProjectFundingRes;
-import eco.ywhc.xr.common.model.dto.res.FrameworkAgreementProjectRes;
-import eco.ywhc.xr.common.model.dto.res.FrameworkAgreementRes;
-import eco.ywhc.xr.common.model.entity.FrameworkAgreement;
-import eco.ywhc.xr.common.model.entity.FrameworkAgreementChannelEntry;
-import eco.ywhc.xr.common.model.entity.FrameworkAgreementProject;
-import eco.ywhc.xr.common.model.entity.FrameworkAgreementProjectFunding;
+import eco.ywhc.xr.common.model.dto.res.*;
+import eco.ywhc.xr.common.model.entity.*;
 import eco.ywhc.xr.common.model.query.FrameworkAgreementQuery;
 import eco.ywhc.xr.core.manager.FrameworkAgreementManager;
+import eco.ywhc.xr.core.manager.TaskManager;
 import eco.ywhc.xr.core.mapper.FrameworkAgreementChannelEntryMapper;
 import eco.ywhc.xr.core.mapper.FrameworkAgreementMapper;
 import eco.ywhc.xr.core.mapper.FrameworkAgreementProjectFundingMapper;
@@ -25,12 +23,17 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import org.sugar.crud.model.PageableModelSet;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import static eco.ywhc.xr.core.service.FrameworkAgreementServiceImpl.CodeGenerator.generateCode;
 
@@ -38,6 +41,10 @@ import static eco.ywhc.xr.core.service.FrameworkAgreementServiceImpl.CodeGenerat
 @Slf4j
 @RequiredArgsConstructor
 public class FrameworkAgreementServiceImpl implements FrameworkAgreementService {
+
+    private final Client client;
+
+    private final ApplicationEventPublisher applicationEventPublisher;
 
     private final FrameworkAgreementMapper frameworkAgreementMapper;
 
@@ -56,6 +63,8 @@ public class FrameworkAgreementServiceImpl implements FrameworkAgreementService 
     private final FrameworkAgreementProjectConverter frameworkAgreementProjectConverter;
 
     private final FrameworkAgreementManager frameworkAgreementManager;
+
+    private final TaskManager taskManager;
 
     public static class CodeGenerator {
 
@@ -88,6 +97,9 @@ public class FrameworkAgreementServiceImpl implements FrameworkAgreementService 
         FrameworkAgreementProject frameworkAgreementProject = frameworkAgreementProjectConverter.fromRequest(req.getFrameworkAgreementProject());
         frameworkAgreementProject.setFrameworkAgreementId(frameworkAgreement.getId());
         frameworkAgreementProjectMapper.insert(frameworkAgreementProject);
+
+        applicationEventPublisher.publishEvent(FrameworkAgreementCreatedEvent.of(frameworkAgreement));
+
         return frameworkAgreement.getId();
     }
 
@@ -140,6 +152,24 @@ public class FrameworkAgreementServiceImpl implements FrameworkAgreementService 
         FrameworkAgreementChannelEntry channelEntry = frameworkAgreementManager.getChannelEntryByFrameworkAgreementId(frameworkAgreement.getId());
         FrameworkAgreementChannelEntryRes channelEntryRes = frameworkAgreementChannelEntryConverter.toResponse(channelEntry);
         res.setFrameworkAgreementChannelEntry(channelEntryRes);
+
+        List<Task> tasks = taskManager.listTasksByRefId(id);
+        List<TaskRes> taskResList = new ArrayList<>();
+        // 遍历任务列表，更新每个任务的状态
+        for (Task task : tasks) {
+            if (task.getTaskGuid() == null) {
+                continue;
+            }
+            try {
+                TaskRes larkTask = taskManager.getLarkTask(task);
+                taskResList.add(larkTask);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+        Map<TaskType, List<TaskRes>> tasksResMaps = taskResList.stream().collect(Collectors.groupingBy(TaskRes::getType));
+        res.setTaskResMaps(tasksResMaps);
+
         return res;
     }
 
@@ -169,6 +199,7 @@ public class FrameworkAgreementServiceImpl implements FrameworkAgreementService 
             frameworkAgreementProjectFunding.setFrameworkAgreementId(frameworkAgreement.getId());
             frameworkAgreementProjectFundingMapper.insert(frameworkAgreementProjectFunding);
         }
+
         return affected;
     }
 
@@ -177,6 +208,7 @@ public class FrameworkAgreementServiceImpl implements FrameworkAgreementService 
         frameworkAgreementProjectMapper.logicDeleteEntityById(frameworkAgreementManager.getProjectByFrameworkAgreementId(id).getId());
         frameworkAgreementProjectFundingMapper.logicDeleteEntityById(frameworkAgreementManager.getProjectFundingByFrameworkAgreementId(id).getId());
         frameworkAgreementChannelEntryMapper.logicDeleteEntityById(frameworkAgreementManager.getChannelEntryByFrameworkAgreementId(id).getId());
+        taskManager.logicDeleteEntityById(id);
         return frameworkAgreementMapper.logicDeleteEntityById(id);
     }
 
