@@ -1,3 +1,5 @@
+import org.springframework.boot.gradle.tasks.bundling.BootJar
+
 plugins {
     alias(libs.plugins.gradle.git.properties.plugin)
     alias(libs.plugins.lombok.plugin)
@@ -46,4 +48,8 @@ springBoot {
 gitProperties {
     keys = listOf("git.branch", "git.build.version", "git.commit.id", "git.commit.id.abbrev", "git.commit.time", "git.dirty", "git.tags")
     failOnNoGitDirectory = false
+}
+
+tasks.withType<BootJar> {
+    launchScript()
 }
