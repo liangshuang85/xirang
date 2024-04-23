@@ -22,7 +22,10 @@ public interface TaskManager {
      */
     void logicDeleteEntityById(long refId);
 
-    TaskRes getLarkTask(Task task)  ;
+    /**
+     * 获取飞书任务
+     */
+    TaskRes getLarkTask(Task task);
 
     Task findEntityById(@NonNull Long id);
 

@@ -17,6 +17,11 @@ public class TaskRes implements BaseRestResponse {
     private Long id;
 
     /**
+     * 部门名称
+     */
+    private String departmentName;
+
+    /**
      * 任务的完成时刻时间戳
      */
     private String completedAt;

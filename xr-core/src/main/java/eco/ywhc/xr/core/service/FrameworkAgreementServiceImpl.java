@@ -3,10 +3,7 @@ package eco.ywhc.xr.core.service;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import eco.ywhc.xr.common.constant.FrameworkAgreementType;
 import eco.ywhc.xr.common.constant.TaskType;
-import eco.ywhc.xr.common.converter.FrameworkAgreementChannelEntryConverter;
-import eco.ywhc.xr.common.converter.FrameworkAgreementConverter;
-import eco.ywhc.xr.common.converter.FrameworkAgreementProjectConverter;
-import eco.ywhc.xr.common.converter.FrameworkAgreementProjectFundingConverter;
+import eco.ywhc.xr.common.converter.*;
 import eco.ywhc.xr.common.event.FrameworkAgreementCreatedEvent;
 import eco.ywhc.xr.common.model.dto.req.FrameworkAgreementReq;
 import eco.ywhc.xr.common.model.dto.res.*;
@@ -61,6 +58,8 @@ public class FrameworkAgreementServiceImpl implements FrameworkAgreementService 
     private final FrameworkAgreementProjectFundingConverter frameworkAgreementProjectFundingConverter;
 
     private final FrameworkAgreementProjectConverter frameworkAgreementProjectConverter;
+
+    private final TaskConverter taskConverter;
 
     private final FrameworkAgreementManager frameworkAgreementManager;
 
@@ -174,6 +173,8 @@ public class FrameworkAgreementServiceImpl implements FrameworkAgreementService 
         // 遍历任务列表，更新每个任务的状态
         for (Task task : tasks) {
             if (task.getTaskGuid() == null) {
+                TaskRes taskRes = taskConverter.toResponse(task);
+                taskResList.add(taskRes);
                 continue;
             }
             try {

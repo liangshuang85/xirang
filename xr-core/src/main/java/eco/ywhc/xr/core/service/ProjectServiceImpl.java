@@ -5,6 +5,7 @@ import eco.ywhc.xr.common.constant.ProjectType;
 import eco.ywhc.xr.common.constant.TaskType;
 import eco.ywhc.xr.common.converter.ProjectConverter;
 import eco.ywhc.xr.common.converter.ProjectInformationConverter;
+import eco.ywhc.xr.common.converter.TaskConverter;
 import eco.ywhc.xr.common.event.ProjectCreatedEvent;
 import eco.ywhc.xr.common.model.dto.req.ProjectReq;
 import eco.ywhc.xr.common.model.dto.res.AssigneeRes;
@@ -59,6 +60,8 @@ public class ProjectServiceImpl implements ProjectService {
     private final ProjectConverter projectConverter;
 
     private final ProjectInformationConverter projectInformationConverter;
+
+    private final TaskConverter taskConverter;
 
     public static class CodeGenerator {
 
@@ -135,6 +138,8 @@ public class ProjectServiceImpl implements ProjectService {
         // 遍历任务列表，更新每个任务的状态
         for (Task task : tasks) {
             if (task.getTaskGuid() == null) {
+                TaskRes taskRes = taskConverter.toResponse(task);
+                taskResList.add(taskRes);
                 continue;
             }
             TaskRes larkTask = taskManager.getLarkTask(task);
