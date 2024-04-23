@@ -1,9 +1,13 @@
 package eco.ywhc.xr.common.constant;
 
 /**
- * 任务模板关联类型
+ * 审批模板关联类型
  */
-public enum TaskTemplateRefType {
+public enum ApprovalTemplateRefType {
+    /**
+     * 线索
+     */
+    CLUE,
     /**
      * 框架协议
      */
