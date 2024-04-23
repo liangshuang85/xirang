@@ -27,14 +27,12 @@ import org.springframework.stereotype.Service;
 import org.sugar.commons.exception.InternalErrorException;
 import org.sugar.crud.model.PageableModelSet;
 
-import java.time.LocalDate;
+import java.time.Year;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
-
-import static eco.ywhc.xr.core.service.FrameworkAgreementServiceImpl.CodeGenerator.generateCode;
 
 @Service
 @Slf4j
@@ -67,23 +65,23 @@ public class FrameworkAgreementServiceImpl implements FrameworkAgreementService 
 
     private final LarkEmployeeManager larkEmployeeManager;
 
-    public static class CodeGenerator {
-
-        private static int number = 1;
-
-        public static String generateCode() {
-            int year = LocalDate.now().getYear();
-            String code = "KJ" + year + String.format("%03d", number);
-            number++;
-            return code;
+    public String generateUniqueId() {
+        QueryWrapper<FrameworkAgreement> qw = new QueryWrapper<>();
+        qw.select("id", "code").orderByDesc("id").last("LIMIT 1");
+        var frameworkAgreement = frameworkAgreementMapper.selectOne(qw);
+        int num = 1;
+        if (frameworkAgreement != null) {
+            String numString = frameworkAgreement.getCode().substring(6);
+            num = Integer.parseInt(numString) + 1;
         }
-
+        String formattedNum = String.format("%03d", num);
+        return "KJ" + Year.now() + formattedNum;
     }
 
     @Override
     public Long createOne(@NonNull FrameworkAgreementReq req) {
         FrameworkAgreement frameworkAgreement = frameworkAgreementConverter.fromRequest(req);
-        frameworkAgreement.setCode(generateCode());
+        frameworkAgreement.setCode(generateUniqueId());
         frameworkAgreement.setStatus(FrameworkAgreementType.PRE_PROJECT);
         frameworkAgreementMapper.insert(frameworkAgreement);
 

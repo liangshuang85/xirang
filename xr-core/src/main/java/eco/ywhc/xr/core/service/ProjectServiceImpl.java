@@ -31,14 +31,12 @@ import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import org.sugar.crud.model.PageableModelSet;
 
-import java.time.LocalDate;
+import java.time.Year;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
-
-import static eco.ywhc.xr.core.service.ProjectServiceImpl.CodeGenerator.generateCode;
 
 @Service
 @Slf4j
@@ -63,23 +61,23 @@ public class ProjectServiceImpl implements ProjectService {
 
     private final TaskConverter taskConverter;
 
-    public static class CodeGenerator {
-
-        private static int number = 1;
-
-        public static String generateCode() {
-            int year = LocalDate.now().getYear();
-            String code = "XM" + year + String.format("%03d", number);
-            number++;
-            return code;
+    public String generateUniqueId() {
+        QueryWrapper<Project> qw = new QueryWrapper<>();
+        qw.select("id", "code").orderByDesc("id").last("LIMIT 1");
+        var project = projectMapper.selectOne(qw);
+        int num = 1;
+        if (project != null) {
+            String numString = project.getCode().substring(6);
+            num = Integer.parseInt(numString) + 1;
         }
-
+        String formattedNum = String.format("%03d", num);
+        return "XM" + Year.now() + formattedNum;
     }
 
     @Override
     public Long createOne(@NonNull ProjectReq req) {
         Project project = projectConverter.fromRequest(req);
-        project.setCode(generateCode());
+        project.setCode(generateUniqueId());
         project.setStatus(ProjectType.PENDING_PROJECT_MEETING);
         projectMapper.insert(project);
 
