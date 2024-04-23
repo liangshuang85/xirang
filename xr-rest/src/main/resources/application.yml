@@ -15,7 +15,6 @@ spring:
     cache-names: "${spring.application.name}"
     redis:
       key-prefix: "${spring.application.name}:caches:"
-      time-to-live: 300s
   data:
     redis:
       database: 0
