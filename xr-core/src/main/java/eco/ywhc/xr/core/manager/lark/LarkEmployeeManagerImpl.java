@@ -10,6 +10,7 @@ import com.lark.oapi.service.ehr.v1.enums.ListEmployeeUserIdTypeEnum;
 import com.lark.oapi.service.ehr.v1.enums.ListEmployeeViewEnum;
 import com.lark.oapi.service.ehr.v1.model.ListEmployeeReq;
 import com.lark.oapi.service.ehr.v1.model.ListEmployeeRespBody;
+import eco.ywhc.xr.common.model.lark.LarkAvatarInfo;
 import eco.ywhc.xr.common.model.lark.LarkEmployee;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
@@ -80,7 +81,7 @@ public class LarkEmployeeManagerImpl implements LarkEmployeeManager {
                     .mobile(user.getMobile())
                     .departmentIds(user.getDepartmentIds())
                     .employeeNo(user.getEmployeeNo())
-                    .avatarInfo(LarkEmployee.LarkAvatarInfo.of(user.getAvatar().getAvatar72(), user.getAvatar().getAvatar240(), user.getAvatar().getAvatar640(), user.getAvatar().getAvatarOrigin()))
+                    .avatarInfo(LarkAvatarInfo.of(user.getAvatar().getAvatar72(), user.getAvatar().getAvatar240(), user.getAvatar().getAvatar640(), user.getAvatar().getAvatarOrigin()))
                     .build();
         } catch (Exception e) {
             log.error("获取用户信息失败：{}", e.getMessage());

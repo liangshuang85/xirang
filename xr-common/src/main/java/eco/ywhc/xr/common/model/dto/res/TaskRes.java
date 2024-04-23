@@ -41,4 +41,9 @@ public class TaskRes implements BaseRestResponse {
      */
     private TaskType type;
 
+    /**
+     * 负责人信息
+     */
+    private AssigneeRes assignee;
+
 }

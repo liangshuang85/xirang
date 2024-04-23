@@ -7,15 +7,18 @@ import eco.ywhc.xr.common.converter.ProjectConverter;
 import eco.ywhc.xr.common.converter.ProjectInformationConverter;
 import eco.ywhc.xr.common.event.ProjectCreatedEvent;
 import eco.ywhc.xr.common.model.dto.req.ProjectReq;
+import eco.ywhc.xr.common.model.dto.res.AssigneeRes;
 import eco.ywhc.xr.common.model.dto.res.ProjectInformationRes;
 import eco.ywhc.xr.common.model.dto.res.ProjectRes;
 import eco.ywhc.xr.common.model.dto.res.TaskRes;
 import eco.ywhc.xr.common.model.entity.Project;
 import eco.ywhc.xr.common.model.entity.ProjectInformation;
 import eco.ywhc.xr.common.model.entity.Task;
+import eco.ywhc.xr.common.model.lark.LarkEmployee;
 import eco.ywhc.xr.common.model.query.ProjectQuery;
 import eco.ywhc.xr.core.manager.ProjectManager;
 import eco.ywhc.xr.core.manager.TaskManager;
+import eco.ywhc.xr.core.manager.lark.LarkEmployeeManager;
 import eco.ywhc.xr.core.mapper.ProjectInformationMapper;
 import eco.ywhc.xr.core.mapper.ProjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -48,6 +51,8 @@ public class ProjectServiceImpl implements ProjectService {
     private final ProjectInformationMapper projectInformationMapper;
 
     private final ProjectManager projectManager;
+
+    private final LarkEmployeeManager larkEmployeeManager;
 
     private final TaskManager taskManager;
 
@@ -99,9 +104,16 @@ public class ProjectServiceImpl implements ProjectService {
 
         var results = rows.convert(i -> {
             ProjectRes res = projectConverter.toResponse(i);
-
+            LarkEmployee larkEmployee = larkEmployeeManager.retrieveLarkEmployee(i.getAssigneeId());
             ProjectInformation project = projectManager.getProjectInformationByProjectId(i.getId());
             ProjectInformationRes projectRes = projectInformationConverter.toResponse(project);
+
+            AssigneeRes projectAssignee = AssigneeRes.builder()
+                    .assigneeId(i.getAssigneeId())
+                    .assigneeName(larkEmployee.getName())
+                    .avatarInfo(larkEmployee.getAvatarInfo())
+                    .build();
+            res.setAssignee(projectAssignee);
             res.setProjectInformation(projectRes);
 
             return res;
@@ -126,10 +138,17 @@ public class ProjectServiceImpl implements ProjectService {
                 continue;
             }
             TaskRes larkTask = taskManager.getLarkTask(task);
+            LarkEmployee larkEmployee = larkEmployeeManager.retrieveLarkEmployee(task.getAssigneeId());
+            AssigneeRes taskAssignee = AssigneeRes.builder()
+                    .assigneeId(task.getAssigneeId())
+                    .assigneeName(larkEmployee.getName())
+                    .avatarInfo(larkEmployee.getAvatarInfo())
+                    .build();
+            larkTask.setAssignee(taskAssignee);
             taskResList.add(larkTask);
         }
         Map<TaskType, List<TaskRes>> tasksResMaps = taskResList.stream().collect(Collectors.groupingBy(TaskRes::getType));
-        projectRes.setTaskResMaps(tasksResMaps);
+        projectRes.setTaskMaps(tasksResMaps);
         return projectRes;
     }
 

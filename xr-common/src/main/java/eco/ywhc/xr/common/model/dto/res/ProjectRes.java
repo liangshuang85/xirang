@@ -2,7 +2,6 @@ package eco.ywhc.xr.common.model.dto.res;
 
 import eco.ywhc.xr.common.constant.ProjectType;
 import eco.ywhc.xr.common.constant.TaskType;
-import eco.ywhc.xr.common.model.entity.Task;
 import lombok.Data;
 import org.sugar.crud.model.BaseRestResponse;
 
@@ -46,11 +45,6 @@ public class ProjectRes implements BaseRestResponse {
     private Long frameworkAgreementId;
 
     /**
-     * 负责人的飞书OpenID
-     */
-    private String assigneeId;
-
-    /**
      * 项目信息Res
      */
     private ProjectInformationRes projectInformation;
@@ -58,6 +52,11 @@ public class ProjectRes implements BaseRestResponse {
     /**
      * 框架协议关联的任务
      */
-    Map<TaskType, List<TaskRes>> taskResMaps;
+    Map<TaskType, List<TaskRes>> taskMaps;
+
+    /**
+     * 负责人信息
+     */
+    private AssigneeRes assignee;
 
 }

@@ -1,7 +1,6 @@
 package eco.ywhc.xr.core.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.lark.oapi.Client;
 import eco.ywhc.xr.common.constant.FrameworkAgreementType;
 import eco.ywhc.xr.common.constant.TaskType;
 import eco.ywhc.xr.common.converter.FrameworkAgreementChannelEntryConverter;
@@ -12,9 +11,11 @@ import eco.ywhc.xr.common.event.FrameworkAgreementCreatedEvent;
 import eco.ywhc.xr.common.model.dto.req.FrameworkAgreementReq;
 import eco.ywhc.xr.common.model.dto.res.*;
 import eco.ywhc.xr.common.model.entity.*;
+import eco.ywhc.xr.common.model.lark.LarkEmployee;
 import eco.ywhc.xr.common.model.query.FrameworkAgreementQuery;
 import eco.ywhc.xr.core.manager.FrameworkAgreementManager;
 import eco.ywhc.xr.core.manager.TaskManager;
+import eco.ywhc.xr.core.manager.lark.LarkEmployeeManager;
 import eco.ywhc.xr.core.mapper.FrameworkAgreementChannelEntryMapper;
 import eco.ywhc.xr.core.mapper.FrameworkAgreementMapper;
 import eco.ywhc.xr.core.mapper.FrameworkAgreementProjectFundingMapper;
@@ -26,6 +27,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
+import org.sugar.commons.exception.InternalErrorException;
 import org.sugar.crud.model.PageableModelSet;
 
 import java.time.LocalDate;
@@ -41,8 +43,6 @@ import static eco.ywhc.xr.core.service.FrameworkAgreementServiceImpl.CodeGenerat
 @Slf4j
 @RequiredArgsConstructor
 public class FrameworkAgreementServiceImpl implements FrameworkAgreementService {
-
-    private final Client client;
 
     private final ApplicationEventPublisher applicationEventPublisher;
 
@@ -65,6 +65,8 @@ public class FrameworkAgreementServiceImpl implements FrameworkAgreementService 
     private final FrameworkAgreementManager frameworkAgreementManager;
 
     private final TaskManager taskManager;
+
+    private final LarkEmployeeManager larkEmployeeManager;
 
     public static class CodeGenerator {
 
@@ -118,6 +120,13 @@ public class FrameworkAgreementServiceImpl implements FrameworkAgreementService 
 
         var results = rows.convert(i -> {
             FrameworkAgreementRes res = frameworkAgreementConverter.toResponse(i);
+            LarkEmployee larkEmployee = larkEmployeeManager.retrieveLarkEmployee(i.getAssigneeId());
+            AssigneeRes assignee = AssigneeRes.builder()
+                    .assigneeId(i.getAssigneeId())
+                    .assigneeName(larkEmployee.getName())
+                    .avatarInfo(larkEmployee.getAvatarInfo())
+                    .build();
+            res.setAssignee(assignee);
 
             FrameworkAgreementProject project = frameworkAgreementManager.getProjectByFrameworkAgreementId(i.getId());
             FrameworkAgreementProjectRes projectRes = frameworkAgreementProjectConverter.toResponse(project);
@@ -139,7 +148,14 @@ public class FrameworkAgreementServiceImpl implements FrameworkAgreementService 
     @Override
     public FrameworkAgreementRes findOne(@NonNull Long id) {
         FrameworkAgreement frameworkAgreement = frameworkAgreementManager.mustFoundEntityById(id);
+        LarkEmployee larkEmployee = larkEmployeeManager.retrieveLarkEmployee(frameworkAgreement.getAssigneeId());
         FrameworkAgreementRes res = frameworkAgreementConverter.toResponse(frameworkAgreement);
+        AssigneeRes assignee = AssigneeRes.builder()
+                .assigneeId(frameworkAgreement.getAssigneeId())
+                .assigneeName(larkEmployee.getName())
+                .avatarInfo(larkEmployee.getAvatarInfo())
+                .build();
+        res.setAssignee(assignee);
 
         FrameworkAgreementProject project = frameworkAgreementManager.getProjectByFrameworkAgreementId(frameworkAgreement.getId());
         FrameworkAgreementProjectRes projectRes = frameworkAgreementProjectConverter.toResponse(project);
@@ -162,9 +178,16 @@ public class FrameworkAgreementServiceImpl implements FrameworkAgreementService 
             }
             try {
                 TaskRes larkTask = taskManager.getLarkTask(task);
+                LarkEmployee taskLarkEmployee = larkEmployeeManager.retrieveLarkEmployee(task.getAssigneeId());
+                AssigneeRes taskAssignee = AssigneeRes.builder()
+                        .assigneeId(task.getAssigneeId())
+                        .assigneeName(taskLarkEmployee.getName())
+                        .avatarInfo(taskLarkEmployee.getAvatarInfo())
+                        .build();
+                larkTask.setAssignee(taskAssignee);
                 taskResList.add(larkTask);
             } catch (Exception e) {
-                throw new RuntimeException(e);
+                throw new InternalErrorException("查询飞书任务失败");
             }
         }
         Map<TaskType, List<TaskRes>> tasksResMaps = taskResList.stream().collect(Collectors.groupingBy(TaskRes::getType));

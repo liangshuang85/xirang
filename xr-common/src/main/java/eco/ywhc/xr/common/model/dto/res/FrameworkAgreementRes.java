@@ -2,7 +2,6 @@ package eco.ywhc.xr.common.model.dto.res;
 
 import eco.ywhc.xr.common.constant.FrameworkAgreementType;
 import eco.ywhc.xr.common.constant.TaskType;
-import eco.ywhc.xr.common.model.entity.Task;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -50,9 +49,9 @@ public class FrameworkAgreementRes implements BaseRestResponse {
     private Long clueId;
 
     /**
-     * 负责人的飞书OpenID
+     * 负责人信息
      */
-    private String assigneeId;
+    private AssigneeRes assignee;
 
     /**
      * 框架协议项目项目信息Res
