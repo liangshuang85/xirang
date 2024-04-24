@@ -29,7 +29,7 @@ public class ClueManagerImpl implements ClueManager {
     @Override
     public String generateUniqueId() {
         QueryWrapper<Clue> qw = new QueryWrapper<>();
-        qw.select("id", "code").orderByDesc("id").last("LIMIT 1");
+        qw.select("id", "clue_code").orderByDesc("id").last("LIMIT 1");
         var clue = clueMapper.selectOne(qw);
         int num = 1;
         if (clue != null) {
