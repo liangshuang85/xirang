@@ -16,8 +16,12 @@ import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.autoconfigure.cache.CacheProperties;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
+
+import java.util.Set;
 
 @Component
 @RequiredArgsConstructor
@@ -28,6 +32,10 @@ public class LarkEmployeeManagerImpl implements LarkEmployeeManager {
     private static final Logger log = LoggerFactory.getLogger(LarkEmployeeManagerImpl.class);
 
     private final Client larkClient;
+
+    private final CacheProperties cacheProperties;
+
+    private final StringRedisTemplate redisTemplate;
 
     /**
      * 获取员工花名册信息
@@ -87,6 +95,24 @@ public class LarkEmployeeManagerImpl implements LarkEmployeeManager {
             log.error("获取用户信息失败：{}", e.getMessage());
             return null;
         }
+    }
+
+    @Override
+    public void appendLarkEmployeeUserId(String... userId) {
+        redisTemplate.opsForSet().add(getLarkAllEmployeesKey(), userId);
+    }
+
+    @Override
+    public Set<String> getAllLarkEmployeeUserIds() {
+        return redisTemplate.opsForSet().members(getLarkAllEmployeesKey());
+    }
+
+    private String getLarkAllEmployeesKey() {
+        String keyPrefix = cacheProperties.getRedis().getKeyPrefix();
+        if (StringUtils.isBlank(keyPrefix)) {
+            keyPrefix = "";
+        }
+        return keyPrefix + "larkAllEmployees";
     }
 
 }

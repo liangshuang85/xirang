@@ -1,5 +1,6 @@
 package eco.ywhc.xr.core.schedule;
 
+import com.lark.oapi.service.ehr.v1.model.Employee;
 import com.lark.oapi.service.ehr.v1.model.ListEmployeeRespBody;
 import eco.ywhc.xr.core.manager.lark.LarkEmployeeManager;
 import lombok.RequiredArgsConstructor;
@@ -7,6 +8,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.stereotype.Component;
+
+import java.util.Arrays;
 
 @Component
 @Slf4j
@@ -29,6 +32,8 @@ public class ScheduledTasks {
             }
             var employees = listEmployeeRespBody.getItems();
             if (employees.length > 0) {
+                String[] employeeUserIds = Arrays.stream(employees).map(Employee::getUserId).toArray(String[]::new);
+                larkEmployeeManager.appendLarkEmployeeUserId(employeeUserIds);
                 taskScheduler.submit(new Thread(() -> {
                     for (var employee : employees) {
                         larkEmployeeManager.retrieveLarkEmployee(employee.getUserId());
