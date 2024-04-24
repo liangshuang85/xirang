@@ -10,6 +10,7 @@ import eco.ywhc.xr.common.model.dto.res.*;
 import eco.ywhc.xr.common.model.entity.*;
 import eco.ywhc.xr.common.model.lark.LarkEmployee;
 import eco.ywhc.xr.common.model.query.FrameworkAgreementQuery;
+import eco.ywhc.xr.core.manager.AdministrativeDivisionManager;
 import eco.ywhc.xr.core.manager.FrameworkAgreementManager;
 import eco.ywhc.xr.core.manager.TaskManager;
 import eco.ywhc.xr.core.manager.lark.LarkEmployeeManager;
@@ -28,10 +29,7 @@ import org.sugar.commons.exception.InternalErrorException;
 import org.sugar.crud.model.PageableModelSet;
 
 import java.time.Year;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -56,6 +54,8 @@ public class FrameworkAgreementServiceImpl implements FrameworkAgreementService 
     private final FrameworkAgreementProjectFundingConverter frameworkAgreementProjectFundingConverter;
 
     private final FrameworkAgreementProjectConverter frameworkAgreementProjectConverter;
+
+    private final AdministrativeDivisionManager administrativeDivisionManager;
 
     private final TaskConverter taskConverter;
 
@@ -115,8 +115,13 @@ public class FrameworkAgreementServiceImpl implements FrameworkAgreementService 
             return PageableModelSet.from(query.paging());
         }
 
+        Set<Long> adcodes = rows.getRecords().stream().map(FrameworkAgreement::getAdcode).collect(Collectors.toSet());
+        Map<Long, AdministrativeDivisionRes> administrativeDivisionMap = administrativeDivisionManager.findAllAsMapByAdcodesSurely(adcodes);
+
         var results = rows.convert(i -> {
             FrameworkAgreementRes res = frameworkAgreementConverter.toResponse(i);
+            res.setAdministrativeDivision(administrativeDivisionMap.get(i.getAdcode()));
+
             LarkEmployee larkEmployee = larkEmployeeManager.retrieveLarkEmployee(i.getAssigneeId());
             AssigneeRes assignee = AssigneeRes.builder()
                     .assigneeId(i.getAssigneeId())
@@ -145,8 +150,12 @@ public class FrameworkAgreementServiceImpl implements FrameworkAgreementService 
     @Override
     public FrameworkAgreementRes findOne(@NonNull Long id) {
         FrameworkAgreement frameworkAgreement = frameworkAgreementManager.mustFoundEntityById(id);
-        LarkEmployee larkEmployee = larkEmployeeManager.retrieveLarkEmployee(frameworkAgreement.getAssigneeId());
         FrameworkAgreementRes res = frameworkAgreementConverter.toResponse(frameworkAgreement);
+
+        AdministrativeDivisionRes administrativeDivision = administrativeDivisionManager.findByAdcodeSurely(frameworkAgreement.getAdcode());
+        res.setAdministrativeDivision(administrativeDivision);
+
+        LarkEmployee larkEmployee = larkEmployeeManager.retrieveLarkEmployee(frameworkAgreement.getAssigneeId());
         AssigneeRes assignee = AssigneeRes.builder()
                 .assigneeId(frameworkAgreement.getAssigneeId())
                 .assigneeName(larkEmployee.getName())

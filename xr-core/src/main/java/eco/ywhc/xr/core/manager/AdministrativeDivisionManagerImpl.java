@@ -19,6 +19,7 @@ import org.sugar.commons.exception.ResourceNotFoundException;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -31,6 +32,11 @@ public class AdministrativeDivisionManagerImpl implements AdministrativeDivision
     private final AdministrativeDivisionConverter administrativeDivisionConverter;
 
     private final AdministrativeDivisionMapper administrativeDivisionMapper;
+
+    @Override
+    public List<AdministrativeDivision> findAllEntitiesByAdcodes(Collection<Long> adcodes) {
+        return administrativeDivisionMapper.findAllByIds(adcodes);
+    }
 
     @Override
     public List<AdministrativeDivision> findAllEntities() {
@@ -90,6 +96,25 @@ public class AdministrativeDivisionManagerImpl implements AdministrativeDivision
             throw new ResourceNotFoundException("该行政区不存在");
         }
         return administrativeDivisionConverter.toResponse(entity);
+    }
+
+    @Override
+    public AdministrativeDivisionRes findByAdcodeSurely(long adcode) {
+        AdministrativeDivision entity = administrativeDivisionMapper.findEntityById(adcode);
+        return administrativeDivisionConverter.toResponse(entity);
+    }
+
+    @Override
+    public List<AdministrativeDivisionRes> findAllByAdcodesSurely(Collection<Long> adcodes) {
+        return findAllEntitiesByAdcodes(adcodes).stream()
+                .map(administrativeDivisionConverter::toResponse)
+                .toList();
+    }
+
+    @Override
+    public Map<Long, AdministrativeDivisionRes> findAllAsMapByAdcodesSurely(Collection<Long> adcodes) {
+        return findAllByAdcodesSurely(adcodes).stream()
+                .collect(Collectors.toMap(AdministrativeDivisionRes::getAdcode, Function.identity()));
     }
 
     private CompletableFuture<List<AdministrativeDivision>> findAllEntitiesAsync() {

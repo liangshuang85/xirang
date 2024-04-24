@@ -5,13 +5,20 @@ import eco.ywhc.xr.common.model.entity.AdministrativeDivision;
 import eco.ywhc.xr.common.model.query.AdministrativeDivisionQuery;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 行政区划管理
  */
 @Transactional(rollbackFor = {Exception.class})
 public interface AdministrativeDivisionManager {
+
+    /**
+     * 获取所有行政区
+     */
+    List<AdministrativeDivision> findAllEntitiesByAdcodes(Collection<Long> adcodes);
 
     /**
      * 获取所有行政区
@@ -34,5 +41,27 @@ public interface AdministrativeDivisionManager {
      * @param adcode 行政区划代码
      */
     AdministrativeDivisionRes findByAdcode(long adcode);
+
+    /**
+     * 获取指定行政区。需要确保{@link  AdministrativeDivisionRes#adcode 行政区划代码}对应的行政区肯定存在
+     *
+     * @param adcode 行政区划代码
+     */
+    AdministrativeDivisionRes findByAdcodeSurely(long adcode);
+
+    /**
+     * 获取指定行政区。需要确保{@link  AdministrativeDivisionRes#adcode 行政区划代码}对应的行政区肯定存在
+     *
+     * @param adcodes 行政区划代码列表
+     */
+    List<AdministrativeDivisionRes> findAllByAdcodesSurely(Collection<Long> adcodes);
+
+    /**
+     * 获取指定行政区。需要确保{@link  AdministrativeDivisionRes#adcode 行政区划代码}对应的行政区肯定存在
+     *
+     * @param adcodes 行政区划代码列表
+     * @return Key为行政区划代码，Value为对应行政区
+     */
+    Map<Long, AdministrativeDivisionRes> findAllAsMapByAdcodesSurely(Collection<Long> adcodes);
 
 }

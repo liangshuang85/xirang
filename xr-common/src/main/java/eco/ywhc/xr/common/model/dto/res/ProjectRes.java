@@ -35,9 +35,9 @@ public class ProjectRes implements BaseRestResponse {
     private ProjectType status;
 
     /**
-     * 行政区划代码
+     * 行政区
      */
-    private Long adcode;
+    private AdministrativeDivisionRes administrativeDivision;
 
     /**
      * 框架协议ID

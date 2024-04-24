@@ -20,6 +20,9 @@ import org.sugar.commons.exception.InvalidInputException;
 import org.sugar.crud.model.PageableModelSet;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -33,6 +36,8 @@ public class ClueServiceImpl implements ClueService {
     private final ClueManager clueManager;
 
     private final ClueMapper clueMapper;
+
+    private final AdministrativeDivisionManager administrativeDivisionManager;
 
     private final ApprovalManager approvalManager;
 
@@ -65,15 +70,30 @@ public class ClueServiceImpl implements ClueService {
                 .eq(StringUtils.isNotBlank(query.getAssigneeId()), Clue::getAssigneeId, query.getAssigneeId())
                 .eq(query.getAdcode() != null, Clue::getAdcode, query.getAdcode())
                 .eq(query.getStatus() != null, Clue::getStatus, query.getStatus());
-        var rows = clueMapper.selectPage(query.paging(), qw)
-                .convert(clueConverter::toResponse);
-        return PageableModelSet.from(rows);
+        var rows = clueMapper.selectPage(query.paging(), qw);
+        if (rows.getRecords().isEmpty()) {
+            return PageableModelSet.from(query.paging());
+        }
+
+        Set<Long> adcodes = rows.getRecords().stream().map(Clue::getAdcode).collect(Collectors.toSet());
+        Map<Long, AdministrativeDivisionRes> administrativeDivisionMap = administrativeDivisionManager.findAllAsMapByAdcodesSurely(adcodes);
+
+        var result = rows.convert(i -> {
+            ClueRes res = clueConverter.toResponse(i);
+            res.setAdministrativeDivision(administrativeDivisionMap.get(i.getAdcode()));
+            return res;
+        });
+
+        return PageableModelSet.from(result);
     }
 
     @Override
     public ClueRes findOne(@NonNull Long id) {
         Clue clue = clueManager.mustFoundEntityById(id);
         ClueRes res = clueConverter.toResponse(clue);
+
+        AdministrativeDivisionRes administrativeDivision = administrativeDivisionManager.findByAdcodeSurely(clue.getAdcode());
+        res.setAdministrativeDivision(administrativeDivision);
 
         FundingRes funding = fundingManager.findByClueId(id);
         res.setClueFunding(funding);

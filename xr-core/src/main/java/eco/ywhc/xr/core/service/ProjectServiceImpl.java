@@ -8,15 +8,13 @@ import eco.ywhc.xr.common.converter.ProjectInformationConverter;
 import eco.ywhc.xr.common.converter.TaskConverter;
 import eco.ywhc.xr.common.event.ProjectCreatedEvent;
 import eco.ywhc.xr.common.model.dto.req.ProjectReq;
-import eco.ywhc.xr.common.model.dto.res.AssigneeRes;
-import eco.ywhc.xr.common.model.dto.res.ProjectInformationRes;
-import eco.ywhc.xr.common.model.dto.res.ProjectRes;
-import eco.ywhc.xr.common.model.dto.res.TaskRes;
+import eco.ywhc.xr.common.model.dto.res.*;
 import eco.ywhc.xr.common.model.entity.Project;
 import eco.ywhc.xr.common.model.entity.ProjectInformation;
 import eco.ywhc.xr.common.model.entity.Task;
 import eco.ywhc.xr.common.model.lark.LarkEmployee;
 import eco.ywhc.xr.common.model.query.ProjectQuery;
+import eco.ywhc.xr.core.manager.AdministrativeDivisionManager;
 import eco.ywhc.xr.core.manager.ProjectManager;
 import eco.ywhc.xr.core.manager.TaskManager;
 import eco.ywhc.xr.core.manager.lark.LarkEmployeeManager;
@@ -32,10 +30,7 @@ import org.springframework.stereotype.Service;
 import org.sugar.crud.model.PageableModelSet;
 
 import java.time.Year;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -52,6 +47,8 @@ public class ProjectServiceImpl implements ProjectService {
     private final ProjectManager projectManager;
 
     private final LarkEmployeeManager larkEmployeeManager;
+
+    private final AdministrativeDivisionManager administrativeDivisionManager;
 
     private final TaskManager taskManager;
 
@@ -103,8 +100,12 @@ public class ProjectServiceImpl implements ProjectService {
             return PageableModelSet.from(query.paging());
         }
 
+        Set<Long> adcodes = rows.getRecords().stream().map(Project::getAdcode).collect(Collectors.toSet());
+        Map<Long, AdministrativeDivisionRes> administrativeDivisionMap = administrativeDivisionManager.findAllAsMapByAdcodesSurely(adcodes);
+
         var results = rows.convert(i -> {
             ProjectRes res = projectConverter.toResponse(i);
+            res.setAdministrativeDivision(administrativeDivisionMap.get(i.getAdcode()));
             LarkEmployee larkEmployee = larkEmployeeManager.retrieveLarkEmployee(i.getAssigneeId());
             ProjectInformation project = projectManager.getProjectInformationByProjectId(i.getId());
             ProjectInformationRes projectRes = projectInformationConverter.toResponse(project);
@@ -126,6 +127,9 @@ public class ProjectServiceImpl implements ProjectService {
     public ProjectRes findOne(@NonNull Long id) {
         Project project = projectManager.mustFoundEntityById(id);
         ProjectRes projectRes = projectConverter.toResponse(project);
+
+        AdministrativeDivisionRes administrativeDivision = administrativeDivisionManager.findByAdcodeSurely(project.getAdcode());
+        projectRes.setAdministrativeDivision(administrativeDivision);
 
         ProjectInformation projectInformation = projectManager.getProjectInformationByProjectId(id);
         ProjectInformationRes projectInformationRes = projectInformationConverter.toResponse(projectInformation);

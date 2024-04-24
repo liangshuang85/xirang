@@ -39,9 +39,9 @@ public class FrameworkAgreementRes implements BaseRestResponse {
     private FrameworkAgreementType status;
 
     /**
-     * 所属行政区划代码
+     * 行政区
      */
-    private Long adcode;
+    private AdministrativeDivisionRes administrativeDivision;
 
     /**
      * 线索ID
