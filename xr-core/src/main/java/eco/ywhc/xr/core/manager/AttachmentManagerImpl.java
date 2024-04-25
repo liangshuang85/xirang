@@ -116,7 +116,7 @@ public class AttachmentManagerImpl implements AttachmentManager {
 
     @Override
     public Map<Long, AttachmentResponse> findOneToOneByOwnerIds(Collection<Long> ownerIds) {
-        var data = findOneToManyByOwnerIds(ownerIds);
+        Map<Long, List<AttachmentResponse>> data = findOneToManyByOwnerIds(ownerIds);
         return data.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().get(0)));
     }
 
@@ -130,14 +130,17 @@ public class AttachmentManagerImpl implements AttachmentManager {
     }
 
     @Override
-    public List<AttachmentResponse> findManyByOwnerId(long ownerId, @NonNull FileOwnerType ownerType) {
+    public List<AttachmentResponse> findManyByOwnerId(long ownerId, @Nullable FileOwnerType ownerType) {
         QueryWrapper<Attachment> qw = new QueryWrapper<>();
-        qw.lambda().eq(Attachment::getDeleted, 0).eq(Attachment::getOwnerId, ownerId).orderByDesc(Attachment::getId);
+        qw.lambda().eq(Attachment::getDeleted, 0)
+                .eq(Attachment::getOwnerId, ownerId)
+                .eq(ownerType != null, Attachment::getOwnerType, ownerType)
+                .orderByDesc(Attachment::getId);
         return attachmentMapper.selectList(qw).stream().map(attachmentConverter::toResponse).toList();
     }
 
     @Override
-    public AttachmentResponse findOneByOwnerId(@NonNull long ownerId, @NonNull FileOwnerType ownerType) {
+    public AttachmentResponse findOneByOwnerId(@NonNull long ownerId, @Nullable FileOwnerType ownerType) {
         List<AttachmentResponse> attachments = findManyByOwnerId(ownerId, ownerType);
         if (CollectionUtils.isEmpty(attachments)) {
             return null;

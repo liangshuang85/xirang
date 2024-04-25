@@ -4,7 +4,6 @@ import eco.ywhc.xr.common.constant.FileOwnerType;
 import eco.ywhc.xr.common.model.UploadedFile;
 import eco.ywhc.xr.common.model.dto.res.AttachmentResponse;
 import eco.ywhc.xr.common.model.entity.Attachment;
-import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -96,9 +95,9 @@ public interface AttachmentManager {
      * 指定属主ID查找其附件列表
      *
      * @param ownerId   属主ID
-     * @param ownerType 文件属主类型
+     * @param ownerType 文件属主类型，ownerType为{@code null}时则返回全部文件属主类型的附件
      */
-    List<AttachmentResponse> findManyByOwnerId(long ownerId, @NonNull FileOwnerType ownerType);
+    List<AttachmentResponse> findManyByOwnerId(long ownerId, @Nullable FileOwnerType ownerType);
 
     /**
      * 指定属主ID查找其唯一附件
@@ -106,7 +105,7 @@ public interface AttachmentManager {
      * @param ownerId   属主ID
      * @param ownerType 文件属主类型
      */
-    AttachmentResponse findOneByOwnerId(long ownerId, @NonNull FileOwnerType ownerType);
+    AttachmentResponse findOneByOwnerId(long ownerId, @Nullable FileOwnerType ownerType);
 
     /**
      * 通过Checksum查找附件
