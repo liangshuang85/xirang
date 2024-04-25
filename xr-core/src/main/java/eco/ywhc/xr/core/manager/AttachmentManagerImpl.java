@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.lang.NonNull;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 import org.sugar.commons.exception.InternalErrorException;
 import org.sugar.commons.exception.ResourceNotFoundException;
@@ -42,7 +43,7 @@ public class AttachmentManagerImpl implements AttachmentManager {
     }
 
     @Override
-    public void update(long id, FileOwnerType ownerType, long ownerId) {
+    public void update(long id, @Nullable FileOwnerType ownerType, long ownerId) {
         Attachment attachment = findEntityById(id);
         if (attachment == null || attachment.getId() == null) {
             throw new InternalErrorException("更新附件失败");
@@ -53,11 +54,27 @@ public class AttachmentManagerImpl implements AttachmentManager {
     }
 
     @Override
-    public void update(Collection<Long> ids, FileOwnerType ownerType, long ownerId) {
+    public void update(Collection<Long> ids, @Nullable FileOwnerType ownerType, long ownerId) {
         if (CollectionUtils.isEmpty(ids)) {
             return;
         }
         ids.forEach(attachmentId -> update(attachmentId, ownerType, ownerId));
+    }
+
+    @Override
+    public void compareAndUpdate(long ownerId, Collection<Long> newIds, FileOwnerType ownerType) {
+        // 当前附件ID列表
+        List<Long> currentIds = findAllEntitiesByOwnerId(ownerId).stream().map(Attachment::getId).toList();
+        // 待删除附件ID列表
+        Collection<Long> pendingDeleteIds = CollectionUtils.removeAll(currentIds, newIds);
+        if (CollectionUtils.isNotEmpty(pendingDeleteIds)) {
+            deleteByIds(pendingDeleteIds);
+        }
+        // 待关联附件ID列表
+        Collection<Long> pendingUpdateIds = CollectionUtils.removeAll(newIds, currentIds);
+        if (CollectionUtils.isNotEmpty(pendingUpdateIds)) {
+            update(pendingUpdateIds, ownerType, ownerId);
+        }
     }
 
     @Override
@@ -101,6 +118,15 @@ public class AttachmentManagerImpl implements AttachmentManager {
     public Map<Long, AttachmentResponse> findOneToOneByOwnerIds(Collection<Long> ownerIds) {
         var data = findOneToManyByOwnerIds(ownerIds);
         return data.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().get(0)));
+    }
+
+    @Override
+    public List<Attachment> findAllEntitiesByOwnerId(long ownerId) {
+        QueryWrapper<Attachment> qw = new QueryWrapper<>();
+        qw.lambda().eq(Attachment::getDeleted, 0)
+                .eq(Attachment::getOwnerId, ownerId)
+                .orderByDesc(Attachment::getId);
+        return attachmentMapper.selectList(qw);
     }
 
     @Override

@@ -5,6 +5,7 @@ import eco.ywhc.xr.common.model.UploadedFile;
 import eco.ywhc.xr.common.model.dto.res.AttachmentResponse;
 import eco.ywhc.xr.common.model.entity.Attachment;
 import org.springframework.lang.NonNull;
+import org.springframework.lang.Nullable;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collection;
@@ -30,12 +31,24 @@ public interface AttachmentManager {
     /**
      * 更新附件的属主类型和属主ID
      */
-    void update(long id, FileOwnerType ownerType, long ownerId);
+    void update(long id, @Nullable FileOwnerType ownerType, long ownerId);
 
     /**
      * 更新列表中附件的属主类型和属主ID
      */
-    void update(Collection<Long> ids, FileOwnerType ownerType, long ownerId);
+    void update(Collection<Long> ids, @Nullable FileOwnerType ownerType, long ownerId);
+
+    /**
+     * 比较并更新属主的所有附件
+     * <p>
+     * 此方法会比较指定属主的附件，增加当前没有的附件，删除不再需要的附件
+     * </p>
+     *
+     * @param ownerId   属主ID
+     * @param newIds    属主新的完整附件ID列表
+     * @param ownerType 文件属主类型
+     */
+    void compareAndUpdate(long ownerId, Collection<Long> newIds, FileOwnerType ownerType);
 
     /**
      * 指定ID查找附件
@@ -71,6 +84,13 @@ public interface AttachmentManager {
      * @param ownerIds 属主ID列表
      */
     Map<Long, AttachmentResponse> findOneToOneByOwnerIds(Collection<Long> ownerIds);
+
+    /**
+     * 查找指定属主ID的全部附件列表
+     *
+     * @param ownerId 属主ID
+     */
+    List<Attachment> findAllEntitiesByOwnerId(long ownerId);
 
     /**
      * 指定属主ID查找其附件列表
