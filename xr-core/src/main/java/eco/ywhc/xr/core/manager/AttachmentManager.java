@@ -28,6 +28,16 @@ public interface AttachmentManager {
     int updateOne(Attachment attachment);
 
     /**
+     * 更新附件的属主类型和属主ID
+     */
+    void update(long id, FileOwnerType ownerType, long ownerId);
+
+    /**
+     * 更新列表中附件的属主类型和属主ID
+     */
+    void update(Collection<Long> ids, FileOwnerType ownerType, long ownerId);
+
+    /**
      * 指定ID查找附件
      *
      * @param id 附件ID
