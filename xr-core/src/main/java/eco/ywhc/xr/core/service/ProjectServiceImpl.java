@@ -135,6 +135,14 @@ public class ProjectServiceImpl implements ProjectService {
         ProjectInformationRes projectInformationRes = projectInformationConverter.toResponse(projectInformation);
         projectRes.setProjectInformation(projectInformationRes);
 
+        LarkEmployee projectLarkEmployee = larkEmployeeManager.retrieveLarkEmployee(project.getAssigneeId());
+        AssigneeRes assignee = AssigneeRes.builder()
+                .assigneeId(project.getAssigneeId())
+                .assigneeName(projectLarkEmployee.getName())
+                .avatarInfo(projectLarkEmployee.getAvatarInfo())
+                .build();
+        projectRes.setAssignee(assignee);
+
         List<Task> tasks = taskManager.listTasksByRefId(id);
         List<TaskRes> taskResList = new ArrayList<>();
         // 遍历任务列表，更新每个任务的状态
