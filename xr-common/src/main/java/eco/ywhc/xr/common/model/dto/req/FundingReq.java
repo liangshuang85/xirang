@@ -7,6 +7,9 @@ import jakarta.validation.constraints.Size;
 import lombok.Data;
 import org.sugar.crud.model.BaseRestRequest;
 
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * 项目收资信息Req
  */
@@ -101,5 +104,10 @@ public class FundingReq implements BaseRestRequest {
     @NotNull
     private Double commercialHeatingArea;
 
+    /**
+     * 主要用电企业情况附件ID
+     */
+    @NotNull
+    private Set<Long> majorElectricityConsumerAttachmentIds = new HashSet<>();
 
 }

@@ -1,9 +1,13 @@
 package eco.ywhc.xr.common.model.dto.req;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 import org.sugar.crud.model.BaseRestRequest;
+
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * 线索渠道录入Req
@@ -59,5 +63,17 @@ public class ChannelEntryReq implements BaseRestRequest {
     @NotBlank
     @Size(max = 20)
     private String counterpartPosition;
+
+    /**
+     * 项目基本情况统计表附件ID
+     */
+    @NotNull
+    private Set<Long> projectInfoAttachmentIds = new HashSet<>();
+
+    /**
+     * 项目收资表附件ID
+     */
+    @NotNull
+    private Set<Long> projectFundingAttachmentIds = new HashSet<>();
 
 }

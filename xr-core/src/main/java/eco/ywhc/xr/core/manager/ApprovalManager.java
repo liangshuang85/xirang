@@ -15,10 +15,25 @@ import java.util.List;
 @Transactional(rollbackFor = {Exception.class})
 public interface ApprovalManager {
 
+    /**
+     * 根据线索Id查找审批
+     *
+     * @param clueId 线索Id
+     */
     List<Approval> findAllEntitiesByClueId(long clueId);
 
+    /**
+     * 根据线索Id返回审批Res
+     *
+     * @param clueId 线索Id
+     */
     List<ApprovalRes> findAllByClueId(long clueId);
 
+    /**
+     * 根据线索Id删除审批
+     *
+     * @param clueId 线索id
+     */
     void logicDeleteAllEntitiesByClueId(long clueId);
 
 }

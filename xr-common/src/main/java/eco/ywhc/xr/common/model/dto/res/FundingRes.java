@@ -2,6 +2,9 @@ package eco.ywhc.xr.common.model.dto.res;
 
 import lombok.Data;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * 项目收资信息Res
  */
@@ -82,5 +85,10 @@ public class FundingRes {
      * 工商业供暖面积
      */
     private Double commercialHeatingArea;
+
+    /**
+     * 主要用电企业情况附件
+     */
+    private List<AttachmentResponse> majorElectricityConsumerAttachments = new ArrayList<>();
 
 }

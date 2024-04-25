@@ -15,12 +15,32 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(rollbackFor = {Exception.class})
 public interface ChannelEntryManager {
 
+    /**
+     * 创建新的渠道
+     *
+     * @param clueId 线索Id
+     */
     long createOne(@NonNull ChannelEntryReq req, long clueId);
 
+    /**
+     * 根据线索Id查找渠道
+     *
+     * @param clueId 线索Id
+     */
     ChannelEntry findEntityByClueId(long clueId);
 
+    /**
+     * 根据线索Id查找渠道并转换成Res
+     *
+     * @param clueId 线索Id
+     */
     ChannelEntryRes findByClueId(long clueId);
 
+    /**
+     * 将线索Id对应的渠道删除
+     *
+     * @param clueId 线索Id
+     */
     void logicDeleteEntityByClueId(long clueId);
 
 }

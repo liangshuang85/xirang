@@ -24,9 +24,9 @@ public interface VisitManager {
     Long createOne(@NonNull VisitReq req);
 
     /**
-     * 创建多个排放记录
+     * 创建多个访问记录
      */
-    int createMany(Collection<VisitReq> visits, long clueId);
+    int createMany(Collection<VisitReq> visitReqs, long clueId);
 
     /**
      * 根据线索id查询拜访记录

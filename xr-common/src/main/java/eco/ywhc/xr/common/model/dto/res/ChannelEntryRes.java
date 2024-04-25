@@ -2,6 +2,9 @@ package eco.ywhc.xr.common.model.dto.res;
 
 import lombok.Data;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * 线索渠道录入Res
  */
@@ -47,5 +50,15 @@ public class ChannelEntryRes {
      * 对接人姓名
      */
     private String counterpartPosition;
+
+    /**
+     * 项目基本情况统计表附件
+     */
+    private List<AttachmentResponse> projectInfoAttachments = new ArrayList<>();
+
+    /**
+     * 项目收资表附件
+     */
+    private List<AttachmentResponse> projectFundingAttachments = new ArrayList<>();
 
 }

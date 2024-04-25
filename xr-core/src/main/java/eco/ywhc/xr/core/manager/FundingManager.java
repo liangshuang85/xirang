@@ -15,12 +15,32 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(rollbackFor = {Exception.class})
 public interface FundingManager {
 
+    /**
+     * 创建项目资助
+     *
+     * @param clueId 线索Id
+     */
     long createOne(@NonNull FundingReq req, long clueId);
 
+    /**
+     * 根据线索Id查询项目资助
+     *
+     * @param clueId 线索Id
+     */
     Funding findEntityByClueId(long clueId);
 
+    /**
+     * 根据线索Id查询项目资助Req
+     *
+     * @param clueId 线索id
+     */
     FundingRes findByClueId(long clueId);
 
+    /**
+     * 根据线索Id删除项目资助
+     *
+     * @param clueId 线索Id
+     */
     void logicDeleteEntityByClueId(long clueId);
 
 }
