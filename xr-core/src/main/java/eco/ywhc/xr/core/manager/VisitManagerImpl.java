@@ -85,11 +85,11 @@ public class VisitManagerImpl implements VisitManager {
         return visits.stream()
                 .map(visit -> {
                     VisitRes res = visitConverter.toResponse(visit);
-                    List<AttachmentResponse> invitationLetterAttachments = attachmentMap.get(visit.getId())
+                    List<AttachmentResponse> invitationLetterAttachments = attachmentMap.getOrDefault(visit.getId(), Collections.emptyList())
                             .stream().filter(i -> i.getOwnerType() == FileOwnerType.INVITATION_LETTER)
                             .toList();
                     res.setInvitationLetterAttachments(invitationLetterAttachments);
-                    List<AttachmentResponse> visitRecordAttachments = attachmentMap.get(visit.getId())
+                    List<AttachmentResponse> visitRecordAttachments = attachmentMap.getOrDefault(visit.getId(), Collections.emptyList())
                             .stream().filter(i -> i.getOwnerType() == FileOwnerType.VISIT_RECORD)
                             .toList();
                     res.setVisitRecordAttachments(visitRecordAttachments);
