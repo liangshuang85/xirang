@@ -31,6 +31,20 @@ public interface AdministrativeDivisionManager {
     List<AdministrativeDivisionRes> findAll();
 
     /**
+     * 获取所有行政区
+     *
+     * @return Key为 {@link AdministrativeDivision#adcode 行政区划代码}，Value为 {@link AdministrativeDivision 行政区}
+     */
+    Map<Long, AdministrativeDivision> findAllEntitiesAsMap();
+
+    /**
+     * 获取所有行政区
+     *
+     * @return Key为 {@link AdministrativeDivision#adcode 行政区划代码}，Value为 {@link AdministrativeDivisionRes 行政区}
+     */
+    Map<Long, AdministrativeDivisionRes> findAllAsMap();
+
+    /**
      * 获取所有符合条件的行政区
      */
     List<AdministrativeDivisionRes> findMany(AdministrativeDivisionQuery query);
@@ -63,5 +77,13 @@ public interface AdministrativeDivisionManager {
      * @return Key为行政区划代码，Value为对应行政区
      */
     Map<Long, AdministrativeDivisionRes> findAllAsMapByAdcodesSurely(Collection<Long> adcodes);
+
+    /**
+     * 分析指定行政区，返回其上级全部行政区
+     *
+     * @param adcode 行政区划代码
+     * @return Key为上级行政区的 {@link AdministrativeDivision#level 级别}，Value为 {@link AdministrativeDivision 行政区}
+     */
+    Map<Short, AdministrativeDivision> analyzeByAdcode(long adcode);
 
 }

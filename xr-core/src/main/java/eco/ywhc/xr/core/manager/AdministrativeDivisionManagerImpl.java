@@ -7,6 +7,7 @@ import eco.ywhc.xr.common.model.dto.res.AdministrativeDivisionRes;
 import eco.ywhc.xr.common.model.entity.AdministrativeDivision;
 import eco.ywhc.xr.common.model.query.AdministrativeDivisionQuery;
 import eco.ywhc.xr.core.mapper.AdministrativeDivisionMapper;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -18,6 +19,7 @@ import org.sugar.commons.exception.ResourceNotFoundException;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -27,11 +29,29 @@ import java.util.stream.Collectors;
 @Slf4j
 public class AdministrativeDivisionManagerImpl implements AdministrativeDivisionManager {
 
+    private static final ConcurrentHashMap<Long, AdministrativeDivision> ADMINISTRATIVE_DIVISION_MAP1 = new ConcurrentHashMap<>();
+
+    private static final ConcurrentHashMap<Long, AdministrativeDivisionRes> ADMINISTRATIVE_DIVISION_MAP2 = new ConcurrentHashMap<>();
+
     private final CacheManager cacheManager;
 
     private final AdministrativeDivisionConverter administrativeDivisionConverter;
 
     private final AdministrativeDivisionMapper administrativeDivisionMapper;
+
+    @PostConstruct
+    private void initialize() {
+        if (ADMINISTRATIVE_DIVISION_MAP1.isEmpty()) {
+            findAllEntities().forEach(i -> {
+                ADMINISTRATIVE_DIVISION_MAP1.put(i.getAdcode(), i);
+            });
+        }
+        if (ADMINISTRATIVE_DIVISION_MAP2.isEmpty()) {
+            findAll().forEach(i -> {
+                ADMINISTRATIVE_DIVISION_MAP2.put(i.getAdcode(), i);
+            });
+        }
+    }
 
     @Override
     public List<AdministrativeDivision> findAllEntitiesByAdcodes(Collection<Long> adcodes) {
@@ -57,6 +77,16 @@ public class AdministrativeDivisionManagerImpl implements AdministrativeDivision
         return findAllEntities().stream()
                 .map(administrativeDivisionConverter::toResponse)
                 .toList();
+    }
+
+    @Override
+    public Map<Long, AdministrativeDivision> findAllEntitiesAsMap() {
+        return ADMINISTRATIVE_DIVISION_MAP1;
+    }
+
+    @Override
+    public Map<Long, AdministrativeDivisionRes> findAllAsMap() {
+        return ADMINISTRATIVE_DIVISION_MAP2;
     }
 
     @Override
@@ -115,6 +145,25 @@ public class AdministrativeDivisionManagerImpl implements AdministrativeDivision
     public Map<Long, AdministrativeDivisionRes> findAllAsMapByAdcodesSurely(Collection<Long> adcodes) {
         return findAllByAdcodesSurely(adcodes).stream()
                 .collect(Collectors.toMap(AdministrativeDivisionRes::getAdcode, Function.identity()));
+    }
+
+    @Override
+    public Map<Short, AdministrativeDivision> analyzeByAdcode(long adcode) {
+        AdministrativeDivision administrativeDivision = ADMINISTRATIVE_DIVISION_MAP1.get(adcode);
+        if (administrativeDivision == null) {
+            return Collections.emptyMap();
+        }
+        Map<Short, AdministrativeDivision> result = new HashMap<>();
+        short level = administrativeDivision.getLevel();
+        do {
+            result.put(level, administrativeDivision);
+            administrativeDivision = ADMINISTRATIVE_DIVISION_MAP1.get(administrativeDivision.getParent());
+            if (administrativeDivision == null) {
+                break;
+            }
+            level = administrativeDivision.getLevel();
+        } while (level >= 0);
+        return result;
     }
 
     private CompletableFuture<List<AdministrativeDivision>> findAllEntitiesAsync() {
