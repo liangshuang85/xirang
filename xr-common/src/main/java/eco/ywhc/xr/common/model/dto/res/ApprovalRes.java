@@ -2,8 +2,12 @@ package eco.ywhc.xr.common.model.dto.res;
 
 
 import eco.ywhc.xr.common.constant.ApprovalStatusType;
+import eco.ywhc.xr.common.constant.ApprovalType;
 import lombok.Data;
 import org.sugar.crud.model.BaseRestResponse;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 审批信息Res
@@ -12,28 +16,38 @@ import org.sugar.crud.model.BaseRestResponse;
 public class ApprovalRes implements BaseRestResponse {
 
     /**
-     * 审批信息ID
+     * 审批ID
      */
     private Long id;
 
     /**
-     * 部门名称
+     * 审批名称
      */
-    private String departmentName;
+    private String approvalName;
 
     /**
-     * 负责人的飞书OpenID
+     * 审批类型
      */
-    private String assigneeId;
+    private ApprovalType type;
 
     /**
-     * 审批单编号或引用
+     * 审批实例 Code
      */
-    private String approvalDocument;
+    private String approvalInstanceId;
 
     /**
      * 审批状态
      */
     private ApprovalStatusType approvalStatus;
+
+    /**
+     * 待审批人
+     */
+    private List<AssigneeRes> assignees = new ArrayList<>();
+
+    /**
+     * 部门名称
+     */
+    private String departmentName;
 
 }

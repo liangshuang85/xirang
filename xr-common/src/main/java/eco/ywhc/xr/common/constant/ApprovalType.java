@@ -17,4 +17,14 @@ public enum ApprovalType {
      * 框架协议审批
      */
     FRAMEWORK_AGREEMENT_APPROVAL,
+
+    /**
+     * 投资协议审批
+     */
+    INVESTMENT_AGREEMENT_APPROVAL,
+
+    /**
+     * 投资协议签订审批
+     */
+    INVESTMENT_AGREEMENT_SIGN_APPROVAL,
 }

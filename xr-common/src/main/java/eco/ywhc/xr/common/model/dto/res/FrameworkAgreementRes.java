@@ -1,5 +1,6 @@
 package eco.ywhc.xr.common.model.dto.res;
 
+import eco.ywhc.xr.common.constant.ApprovalType;
 import eco.ywhc.xr.common.constant.FrameworkAgreementType;
 import eco.ywhc.xr.common.constant.TaskType;
 import lombok.Getter;
@@ -71,6 +72,11 @@ public class FrameworkAgreementRes implements BaseRestResponse {
     /**
      * 框架协议关联的任务
      */
-    Map<TaskType, List<TaskRes>> taskResMaps;
+    Map<TaskType, List<TaskRes>> taskMap;
+
+    /**
+     * 框架协议关联的审批
+     */
+    Map<ApprovalType, List<ApprovalRes>> approvalMap;
 
 }

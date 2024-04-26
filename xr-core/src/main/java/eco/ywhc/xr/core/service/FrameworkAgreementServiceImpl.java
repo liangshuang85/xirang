@@ -1,6 +1,7 @@
 package eco.ywhc.xr.core.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import eco.ywhc.xr.common.constant.ApprovalType;
 import eco.ywhc.xr.common.constant.FrameworkAgreementType;
 import eco.ywhc.xr.common.constant.TaskType;
 import eco.ywhc.xr.common.converter.*;
@@ -11,6 +12,7 @@ import eco.ywhc.xr.common.model.entity.*;
 import eco.ywhc.xr.common.model.lark.LarkEmployee;
 import eco.ywhc.xr.common.model.query.FrameworkAgreementQuery;
 import eco.ywhc.xr.core.manager.AdministrativeDivisionManager;
+import eco.ywhc.xr.core.manager.ApprovalManager;
 import eco.ywhc.xr.core.manager.FrameworkAgreementManager;
 import eco.ywhc.xr.core.manager.TaskManager;
 import eco.ywhc.xr.core.manager.lark.LarkEmployeeManager;
@@ -64,6 +66,10 @@ public class FrameworkAgreementServiceImpl implements FrameworkAgreementService 
     private final TaskManager taskManager;
 
     private final LarkEmployeeManager larkEmployeeManager;
+
+    private final ApprovalConverter approvalConverter;
+
+    private final ApprovalManager approvalManager;
 
     public String generateUniqueId() {
         QueryWrapper<FrameworkAgreement> qw = new QueryWrapper<>();
@@ -198,8 +204,19 @@ public class FrameworkAgreementServiceImpl implements FrameworkAgreementService 
                 throw new InternalErrorException("查询飞书任务失败");
             }
         }
-        Map<TaskType, List<TaskRes>> tasksResMaps = taskResList.stream().collect(Collectors.groupingBy(TaskRes::getType));
-        res.setTaskResMaps(tasksResMaps);
+        Map<TaskType, List<TaskRes>> taskMap = taskResList.stream().collect(Collectors.groupingBy(TaskRes::getType));
+        res.setTaskMap(taskMap);
+
+        Map<ApprovalType, List<ApprovalRes>> approvalResMaps = approvalManager.listApprovalsByRefId(id).stream()
+                .map(i -> {
+                    ApprovalRes approvalRes = approvalConverter.toResponse(i);
+                    if(approvalRes.getApprovalInstanceId()!=null){
+                        approvalManager.updateApproval(approvalRes);
+                    }
+                    return approvalRes;
+                })
+                .collect(Collectors.groupingBy(ApprovalRes::getType));
+        res.setApprovalMap(approvalResMaps);
 
         return res;
     }

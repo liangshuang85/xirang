@@ -1,5 +1,6 @@
 package eco.ywhc.xr.common.model.dto.res;
 
+import eco.ywhc.xr.common.constant.ApprovalType;
 import eco.ywhc.xr.common.constant.ProjectType;
 import eco.ywhc.xr.common.constant.TaskType;
 import lombok.Data;
@@ -52,11 +53,16 @@ public class ProjectRes implements BaseRestResponse {
     /**
      * 框架协议关联的任务
      */
-    Map<TaskType, List<TaskRes>> taskMaps;
+    Map<TaskType, List<TaskRes>> taskMap;
 
     /**
      * 负责人信息
      */
     private AssigneeRes assignee;
+
+    /**
+     * 框架协议关联的审批
+     */
+    Map<ApprovalType, List<ApprovalRes>> approvalMap;
 
 }

@@ -4,13 +4,13 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import eco.ywhc.xr.common.constant.ApprovalStatusType;
+import eco.ywhc.xr.common.constant.ApprovalTemplateRefType;
+import eco.ywhc.xr.common.constant.ApprovalType;
 import lombok.Getter;
 import lombok.Setter;
 import org.sugar.crud.entity.IdentifiableEntity;
 
 import java.io.Serial;
-import java.time.LocalDateTime;
-import java.util.Set;
 
 /**
  * 审批记录
@@ -32,19 +32,24 @@ public class Approval extends BaseEntity implements IdentifiableEntity<Long> {
     private Long refId;
 
     /**
-     * 部门名称
+     * 关联对象类型
      */
-    private String departmentName;
+    private ApprovalTemplateRefType refType;
 
     /**
-     * 负责人的飞书OpenID列表
+     * 审批定义Code
      */
-    private Set<String> assigneeIds;
+    private String approvalCode;
 
     /**
-     * 审批单编号或引用
+     * 审批类型
      */
-    private String approvalDocument;
+    private ApprovalType type;
+
+    /**
+     * 审批实例Code
+     */
+    private String approvalInstanceId;
 
     /**
      * 审批状态
@@ -52,8 +57,8 @@ public class Approval extends BaseEntity implements IdentifiableEntity<Long> {
     private ApprovalStatusType approvalStatus;
 
     /**
-     * 审批时间
+     * 部门名称
      */
-    private LocalDateTime creationDate;
+    private String departmentName;
 
 }

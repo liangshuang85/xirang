@@ -1,8 +1,10 @@
 package eco.ywhc.xr.core.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import eco.ywhc.xr.common.constant.ApprovalType;
 import eco.ywhc.xr.common.constant.ProjectType;
 import eco.ywhc.xr.common.constant.TaskType;
+import eco.ywhc.xr.common.converter.ApprovalConverter;
 import eco.ywhc.xr.common.converter.ProjectConverter;
 import eco.ywhc.xr.common.converter.ProjectInformationConverter;
 import eco.ywhc.xr.common.converter.TaskConverter;
@@ -15,9 +17,11 @@ import eco.ywhc.xr.common.model.entity.Task;
 import eco.ywhc.xr.common.model.lark.LarkEmployee;
 import eco.ywhc.xr.common.model.query.ProjectQuery;
 import eco.ywhc.xr.core.manager.AdministrativeDivisionManager;
+import eco.ywhc.xr.core.manager.ApprovalManager;
 import eco.ywhc.xr.core.manager.ProjectManager;
 import eco.ywhc.xr.core.manager.TaskManager;
 import eco.ywhc.xr.core.manager.lark.LarkEmployeeManager;
+import eco.ywhc.xr.core.mapper.ApprovalMapper;
 import eco.ywhc.xr.core.mapper.ProjectInformationMapper;
 import eco.ywhc.xr.core.mapper.ProjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -57,6 +61,12 @@ public class ProjectServiceImpl implements ProjectService {
     private final ProjectInformationConverter projectInformationConverter;
 
     private final TaskConverter taskConverter;
+
+    private final ApprovalConverter approvalConverter;
+
+    private final ApprovalManager approvalManager;
+
+    private final ApprovalMapper approvalMapper;
 
     public String generateUniqueId() {
         QueryWrapper<Project> qw = new QueryWrapper<>();
@@ -162,8 +172,20 @@ public class ProjectServiceImpl implements ProjectService {
             larkTask.setAssignee(taskAssignee);
             taskResList.add(larkTask);
         }
-        Map<TaskType, List<TaskRes>> tasksResMaps = taskResList.stream().collect(Collectors.groupingBy(TaskRes::getType));
-        projectRes.setTaskMaps(tasksResMaps);
+        Map<TaskType, List<TaskRes>> taskMap = taskResList.stream().collect(Collectors.groupingBy(TaskRes::getType));
+        projectRes.setTaskMap(taskMap);
+
+        Map<ApprovalType, List<ApprovalRes>> approvalResMaps = approvalManager.listApprovalsByRefId(id).stream()
+                .map(approval -> {
+                    ApprovalRes approvalRes = approvalConverter.toResponse(approval);
+                    if (approvalRes.getApprovalInstanceId() != null) {
+                        approvalManager.updateApproval(approvalRes);
+                    }
+                    return approvalRes;
+                })
+                .collect(Collectors.groupingBy(ApprovalRes::getType));
+        projectRes.setApprovalMap(approvalResMaps);
+
         return projectRes;
     }
 

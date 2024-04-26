@@ -1,10 +1,8 @@
 package eco.ywhc.xr.common.model.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler;
 import eco.ywhc.xr.common.constant.ApprovalTemplateRefType;
 import eco.ywhc.xr.common.constant.ApprovalType;
 import lombok.Getter;
@@ -13,7 +11,6 @@ import lombok.ToString;
 import org.sugar.crud.entity.IdentifiableEntity;
 
 import java.io.Serial;
-import java.util.Set;
 
 /**
  * 审批模板
@@ -31,18 +28,17 @@ public class ApprovalTemplate extends BaseEntity implements IdentifiableEntity<L
     private Long id;
 
     /**
-     * 部门名称
+     * 审批定义ID
+     */
+    private String approvalCode;
+
+    /**
+     * 审批模板部门
      */
     private String department;
 
     /**
-     * 负责人的飞书OpenID列表
-     */
-    @TableField(typeHandler = JacksonTypeHandler.class)
-    private Set<String> assigneeIds;
-
-    /**
-     * 审批类型
+     * 审批模板类型
      */
     private ApprovalType type;
 

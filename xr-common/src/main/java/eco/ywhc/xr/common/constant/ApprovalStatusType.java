@@ -5,9 +5,9 @@ import eco.ywhc.xr.common.annotation.DictionaryEntryConstant;
 @DictionaryEntryConstant
 public enum ApprovalStatusType {
     /**
-     * 未审批
+     * 未审批/审批中/待审批
      */
-    NOT_APPROVED,
+    PENDING,
     /**
      * 审批通过
      */
@@ -17,7 +17,15 @@ public enum ApprovalStatusType {
      */
     REJECTED,
     /**
-     * 未发起审批
+     * 撤回
      */
-    NOT_INIT_APPROVAL
+    CANCELED,
+    /**
+     * 删除
+     */
+    DELETED,
+    /**
+     * 未发起审批/待发起审批
+     */
+    PENDING_START,
 }
