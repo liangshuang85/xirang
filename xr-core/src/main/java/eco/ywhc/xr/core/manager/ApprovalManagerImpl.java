@@ -93,7 +93,7 @@ public class ApprovalManagerImpl implements ApprovalManager {
     }
 
     @Override
-    public List<Approval> listApprovalsByRefId(long id) {
+    public List<ApprovalRes> listApprovalsByRefId(long id) {
         QueryWrapper<Approval> qw = new QueryWrapper<>();
         qw.lambda().eq(Approval::getDeleted, 0)
                 .eq(Approval::getRefId, id);
@@ -106,6 +106,7 @@ public class ApprovalManagerImpl implements ApprovalManager {
                 ))
                 .values()
                 .stream()
+                .map(approvalConverter::toResponse)
                 .toList();
     }
 

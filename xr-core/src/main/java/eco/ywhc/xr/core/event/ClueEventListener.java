@@ -1,5 +1,6 @@
 package eco.ywhc.xr.core.event;
 
+import eco.ywhc.xr.common.constant.ApprovalStatusType;
 import eco.ywhc.xr.common.constant.ApprovalTemplateRefType;
 import eco.ywhc.xr.common.constant.ApprovalType;
 import eco.ywhc.xr.common.converter.ApprovalConverter;
@@ -44,6 +45,8 @@ public class ClueEventListener {
                 .map(i -> {
                     Approval approval = approvalConverter.fromApprovalTemplate(i);
                     approval.setDepartmentName(i.getDepartment());
+                    approval.setRefId(id);
+                    approval.setApprovalStatus(ApprovalStatusType.PENDING_START);
                     return approval;
                 })
                 .toList();

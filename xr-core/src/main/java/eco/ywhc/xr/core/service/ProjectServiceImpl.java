@@ -4,7 +4,6 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import eco.ywhc.xr.common.constant.ApprovalType;
 import eco.ywhc.xr.common.constant.ProjectType;
 import eco.ywhc.xr.common.constant.TaskType;
-import eco.ywhc.xr.common.converter.ApprovalConverter;
 import eco.ywhc.xr.common.converter.ProjectConverter;
 import eco.ywhc.xr.common.converter.ProjectInformationConverter;
 import eco.ywhc.xr.common.converter.TaskConverter;
@@ -21,7 +20,6 @@ import eco.ywhc.xr.core.manager.ApprovalManager;
 import eco.ywhc.xr.core.manager.ProjectManager;
 import eco.ywhc.xr.core.manager.TaskManager;
 import eco.ywhc.xr.core.manager.lark.LarkEmployeeManager;
-import eco.ywhc.xr.core.mapper.ApprovalMapper;
 import eco.ywhc.xr.core.mapper.ProjectInformationMapper;
 import eco.ywhc.xr.core.mapper.ProjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -62,11 +60,8 @@ public class ProjectServiceImpl implements ProjectService {
 
     private final TaskConverter taskConverter;
 
-    private final ApprovalConverter approvalConverter;
-
     private final ApprovalManager approvalManager;
 
-    private final ApprovalMapper approvalMapper;
 
     public String generateUniqueId() {
         QueryWrapper<Project> qw = new QueryWrapper<>();
@@ -176,12 +171,10 @@ public class ProjectServiceImpl implements ProjectService {
         projectRes.setTaskMap(taskMap);
 
         Map<ApprovalType, List<ApprovalRes>> approvalResMaps = approvalManager.listApprovalsByRefId(id).stream()
-                .map(approval -> {
-                    ApprovalRes approvalRes = approvalConverter.toResponse(approval);
-                    if (approvalRes.getApprovalInstanceId() != null) {
-                        approvalManager.updateApproval(approvalRes);
+                .peek(i -> {
+                    if (i.getApprovalInstanceId() != null) {
+                        approvalManager.updateApproval(i);
                     }
-                    return approvalRes;
                 })
                 .collect(Collectors.groupingBy(ApprovalRes::getType));
         projectRes.setApprovalMap(approvalResMaps);

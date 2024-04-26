@@ -1,5 +1,6 @@
 package eco.ywhc.xr.common.model.dto.res;
 
+import eco.ywhc.xr.common.constant.ApprovalType;
 import eco.ywhc.xr.common.constant.ClueLevel;
 import eco.ywhc.xr.common.constant.ClueStatusType;
 import lombok.Data;
@@ -7,6 +8,7 @@ import org.sugar.crud.model.BaseRestResponse;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 基础线索信息Res
@@ -42,7 +44,7 @@ public class ClueRes implements BaseRestResponse {
     /**
      * 负责人
      */
-    private String assigneeId;
+    private AssigneeRes assignee;
 
     /**
      * 线索渠道录入Res
@@ -60,8 +62,8 @@ public class ClueRes implements BaseRestResponse {
     private List<VisitRes> clueVisits = new ArrayList<>();
 
     /**
-     * 审批信息Res
+     * 线索关联的审批
      */
-    private List<ApprovalRes> clueApprovals = new ArrayList<>();
+    Map<ApprovalType, List<ApprovalRes>> approvalMap;
 
 }

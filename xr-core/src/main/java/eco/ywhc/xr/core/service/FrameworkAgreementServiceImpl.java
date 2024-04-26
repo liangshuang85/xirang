@@ -67,8 +67,6 @@ public class FrameworkAgreementServiceImpl implements FrameworkAgreementService 
 
     private final LarkEmployeeManager larkEmployeeManager;
 
-    private final ApprovalConverter approvalConverter;
-
     private final ApprovalManager approvalManager;
 
     public String generateUniqueId() {
@@ -208,12 +206,10 @@ public class FrameworkAgreementServiceImpl implements FrameworkAgreementService 
         res.setTaskMap(taskMap);
 
         Map<ApprovalType, List<ApprovalRes>> approvalResMaps = approvalManager.listApprovalsByRefId(id).stream()
-                .map(i -> {
-                    ApprovalRes approvalRes = approvalConverter.toResponse(i);
-                    if(approvalRes.getApprovalInstanceId()!=null){
-                        approvalManager.updateApproval(approvalRes);
+                .peek(i -> {
+                    if (i.getApprovalInstanceId() != null) {
+                        approvalManager.updateApproval(i);
                     }
-                    return approvalRes;
                 })
                 .collect(Collectors.groupingBy(ApprovalRes::getType));
         res.setApprovalMap(approvalResMaps);

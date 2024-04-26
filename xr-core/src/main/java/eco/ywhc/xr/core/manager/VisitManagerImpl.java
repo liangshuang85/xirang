@@ -56,6 +56,7 @@ public class VisitManagerImpl implements VisitManager {
             }
 
             Visit visit = visitConverter.fromRequest(visitReq);
+            visit.setClueId(clueId);
             visitMapper.insert(visit);
             Long id = visit.getId();
 

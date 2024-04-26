@@ -1,13 +1,17 @@
 package eco.ywhc.xr.core.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import eco.ywhc.xr.common.constant.ApprovalType;
+import eco.ywhc.xr.common.converter.ApprovalConverter;
 import eco.ywhc.xr.common.converter.ClueConverter;
 import eco.ywhc.xr.common.event.ClueCreatedEvent;
 import eco.ywhc.xr.common.model.dto.req.ClueReq;
 import eco.ywhc.xr.common.model.dto.res.*;
 import eco.ywhc.xr.common.model.entity.Clue;
+import eco.ywhc.xr.common.model.lark.LarkEmployee;
 import eco.ywhc.xr.common.model.query.ClueQuery;
 import eco.ywhc.xr.core.manager.*;
+import eco.ywhc.xr.core.manager.lark.LarkEmployeeManager;
 import eco.ywhc.xr.core.mapper.ClueMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -46,6 +50,8 @@ public class ClueServiceImpl implements ClueService {
     private final FundingManager fundingManager;
 
     private final VisitManager visitManager;
+
+    private final LarkEmployeeManager larkEmployeeManager;
 
     @Override
     public Long createOne(@NonNull ClueReq req) {
@@ -96,6 +102,14 @@ public class ClueServiceImpl implements ClueService {
         AdministrativeDivisionRes administrativeDivision = administrativeDivisionManager.findByAdcodeSurely(clue.getAdcode());
         res.setAdministrativeDivision(administrativeDivision);
 
+        LarkEmployee larkEmployee = larkEmployeeManager.retrieveLarkEmployee(clue.getAssigneeId());
+        AssigneeRes assignee = AssigneeRes.builder()
+                .assigneeId(clue.getAssigneeId())
+                .assigneeName(larkEmployee.getName())
+                .avatarInfo(larkEmployee.getAvatarInfo())
+                .build();
+        res.setAssignee(assignee);
+
         FundingRes funding = fundingManager.findByClueId(id);
         res.setClueFunding(funding);
 
@@ -105,8 +119,14 @@ public class ClueServiceImpl implements ClueService {
         List<VisitRes> visits = visitManager.findAllByClueId(id);
         res.setClueVisits(visits);
 
-        List<ApprovalRes> approvals = approvalManager.findAllByClueId(id);
-        res.setClueApprovals(approvals);
+        Map<ApprovalType, List<ApprovalRes>> approvalMap = approvalManager.listApprovalsByRefId(id).stream()
+                .peek(i -> {
+                    if (i.getApprovalInstanceId() != null) {
+                        approvalManager.updateApproval(i);
+                    }
+                })
+                .collect(Collectors.groupingBy(ApprovalRes::getType));
+        res.setApprovalMap(approvalMap);
 
         return res;
     }

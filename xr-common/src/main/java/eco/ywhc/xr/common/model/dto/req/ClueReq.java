@@ -27,6 +27,12 @@ public class ClueReq implements BaseRestRequest {
     private Long adcode;
 
     /**
+     * 线索负责人
+     */
+    @NotNull
+    private String assigneeId;
+
+    /**
      * 线索状态
      */
     @NotNull

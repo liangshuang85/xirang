@@ -58,7 +58,7 @@ public interface ApprovalManager {
      *
      * @param id 关联ID
      */
-    List<Approval> listApprovalsByRefId(long id);
+    List<ApprovalRes> listApprovalsByRefId(long id);
 
     /**
      * 从飞书接口更新审批状态
