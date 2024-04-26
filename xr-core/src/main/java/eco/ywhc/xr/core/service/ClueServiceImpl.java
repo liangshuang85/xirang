@@ -2,7 +2,6 @@ package eco.ywhc.xr.core.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import eco.ywhc.xr.common.constant.ApprovalType;
-import eco.ywhc.xr.common.converter.ApprovalConverter;
 import eco.ywhc.xr.common.converter.ClueConverter;
 import eco.ywhc.xr.common.event.ClueCreatedEvent;
 import eco.ywhc.xr.common.model.dto.req.ClueReq;
@@ -116,7 +115,7 @@ public class ClueServiceImpl implements ClueService {
         ChannelEntryRes channelEntry = channelEntryManager.findByClueId(id);
         res.setClueChannelEntry(channelEntry);
 
-        List<VisitRes> visits = visitManager.findAllByClueId(id);
+        List<VisitRes> visits = visitManager.findAllByRefId(id);
         res.setClueVisits(visits);
 
         Map<ApprovalType, List<ApprovalRes>> approvalMap = approvalManager.listApprovalsByRefId(id).stream()
@@ -157,7 +156,7 @@ public class ClueServiceImpl implements ClueService {
 
         channelEntryManager.logicDeleteEntityByClueId(id);
         fundingManager.logicDeleteEntityByClueId(id);
-        visitManager.logicDeleteAllEntitiesByClueId(id);
+        visitManager.logicDeleteAllEntitiesByRefId(id);
         approvalManager.logicDeleteAllEntitiesByClueId(id);
 
         return affected;

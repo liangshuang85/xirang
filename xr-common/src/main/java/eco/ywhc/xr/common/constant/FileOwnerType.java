@@ -28,6 +28,51 @@ public enum FileOwnerType {
     /**
      * 主要用电企业情况
      */
-    MAJOR_ELECTRICITY_CONSUMERS
+    MAJOR_ELECTRICITY_CONSUMERS,
+
+    /**
+     * 项目建议书
+     */
+    PROJECT_PROPOSAL,
+
+    /**
+     * 项目建议书批复
+     */
+    PROJECT_PROPOSAL_APPROVAL,
+
+    /**
+     * 会议决议
+     */
+    MEETING_RESOLUTION,
+
+    /**
+     * 会议纪要
+     */
+    MEETING_MINUTES,
+
+    /**
+     * 框架协议
+     */
+    FRAMEWORK_AGREEMENT,
+
+    /**
+     * 框架协议签署
+     */
+    FRAMEWORK_AGREEMENT_SIGNING,
+
+    /**
+     * 投资协议
+     */
+    INVESTMENT_AGREEMENT,
+
+    /**
+     * 投资协议签订
+     */
+    INVESTMENT_AGREEMENT_SIGNING,
+
+    /**
+     * 企业投资备案
+     */
+    ENTERPRISE_INVESTMENT_RECORD,
 
 }

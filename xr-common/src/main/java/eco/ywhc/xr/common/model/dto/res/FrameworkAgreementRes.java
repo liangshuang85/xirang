@@ -79,4 +79,39 @@ public class FrameworkAgreementRes implements BaseRestResponse {
      */
     Map<ApprovalType, List<ApprovalRes>> approvalMap;
 
+    /**
+     * 拜访信息Res
+     */
+    private List<VisitRes> frameworkVisits;
+
+    /**
+     * 项目建议书附件信息
+     */
+    private List<AttachmentResponse> projectProposalAttachments;
+
+    /**
+     * 项目建议书批复附件信息
+     */
+    private List<AttachmentResponse> projectProposalApprovalAttachments;
+
+    /**
+     * 会议决议附件信息
+     */
+    private List<AttachmentResponse> meetingResolutionAttachments;
+
+    /**
+     * 会议纪要附件信息
+     */
+    private List<AttachmentResponse> meetingMinutesAttachments;
+
+    /**
+     * 框架协议附件信息
+     */
+    private List<AttachmentResponse> frameworkAgreementAttachments;
+
+    /**
+     * 框架协议签署附件信息
+     */
+    private List<AttachmentResponse> frameworkAgreementSigningAttachments;
+
 }

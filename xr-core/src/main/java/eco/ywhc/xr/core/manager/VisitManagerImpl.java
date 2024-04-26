@@ -41,7 +41,7 @@ public class VisitManagerImpl implements VisitManager {
     }
 
     @Override
-    public int createMany(Collection<VisitReq> visitReqs, long clueId) {
+    public int createMany(Collection<VisitReq> visitReqs, long refId) {
         for (VisitReq visitReq : visitReqs) {
             Set<Long> invitationLetterAttachmentIds = visitReq.getInvitationLetterAttachmentIds();
             if (CollectionUtils.isNotEmpty(invitationLetterAttachmentIds) &&
@@ -56,7 +56,7 @@ public class VisitManagerImpl implements VisitManager {
             }
 
             Visit visit = visitConverter.fromRequest(visitReq);
-            visit.setClueId(clueId);
+            visit.setRefId(refId);
             visitMapper.insert(visit);
             Long id = visit.getId();
 
@@ -68,16 +68,16 @@ public class VisitManagerImpl implements VisitManager {
     }
 
     @Override
-    public List<Visit> findAllEntitiesByClueId(long clueId) {
+    public List<Visit> findAllEntitiesByRefId(long refId) {
         QueryWrapper<Visit> qw = new QueryWrapper<>();
         qw.lambda().eq(Visit::getDeleted, false)
-                .eq(Visit::getClueId, clueId);
+                .eq(Visit::getRefId, refId);
         return visitMapper.selectList(qw);
     }
 
     @Override
-    public List<VisitRes> findAllByClueId(long clueId) {
-        List<Visit> visits = findAllEntitiesByClueId(clueId);
+    public List<VisitRes> findAllByRefId(long refId) {
+        List<Visit> visits = findAllEntitiesByRefId(refId);
         if (CollectionUtils.isEmpty(visits)) {
             return Collections.emptyList();
         }
@@ -100,10 +100,10 @@ public class VisitManagerImpl implements VisitManager {
     }
 
     @Override
-    public void logicDeleteAllEntitiesByClueId(long clueId) {
+    public void logicDeleteAllEntitiesByRefId(long refId) {
         UpdateWrapper<Visit> uw = new UpdateWrapper<>();
         uw.lambda().eq(Visit::getDeleted, false)
-                .eq(Visit::getClueId, clueId)
+                .eq(Visit::getRefId, refId)
                 .set(Visit::getDeleted, true);
         visitMapper.update(null, uw);
     }

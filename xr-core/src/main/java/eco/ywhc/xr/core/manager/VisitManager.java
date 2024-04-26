@@ -26,22 +26,22 @@ public interface VisitManager {
     /**
      * 创建多个访问记录
      */
-    int createMany(Collection<VisitReq> visitReqs, long clueId);
+    int createMany(Collection<VisitReq> visitReqs, long refId);
 
     /**
-     * 根据线索id查询拜访记录
+     * 根据关联对象ID查询拜访记录
      */
-    List<Visit> findAllEntitiesByClueId(long clueId);
+    List<Visit> findAllEntitiesByRefId(long refId);
 
     /**
-     * 根据线索id查询拜访记录
+     * 根据关联对象ID查询拜访记录
      */
-    List<VisitRes> findAllByClueId(long clueId);
+    List<VisitRes> findAllByRefId(long refId);
 
     /**
-     * 根据线索id删除拜访记录
+     * 根据关联对象ID删除拜访记录
      */
-    void logicDeleteAllEntitiesByClueId(long clueId);
+    void logicDeleteAllEntitiesByRefId(long refId);
 
     /**
      * 删除访问记录

@@ -27,7 +27,7 @@ public class Visit extends BaseEntity implements IdentifiableEntity<Long> {
     /**
      * 线索id
      */
-    private Long clueId;
+    private Long refId;
 
     /**
      * 是否为正式拜访

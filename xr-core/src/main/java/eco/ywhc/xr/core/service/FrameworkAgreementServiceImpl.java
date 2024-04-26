@@ -2,6 +2,7 @@ package eco.ywhc.xr.core.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import eco.ywhc.xr.common.constant.ApprovalType;
+import eco.ywhc.xr.common.constant.FileOwnerType;
 import eco.ywhc.xr.common.constant.FrameworkAgreementType;
 import eco.ywhc.xr.common.constant.TaskType;
 import eco.ywhc.xr.common.converter.*;
@@ -11,10 +12,7 @@ import eco.ywhc.xr.common.model.dto.res.*;
 import eco.ywhc.xr.common.model.entity.*;
 import eco.ywhc.xr.common.model.lark.LarkEmployee;
 import eco.ywhc.xr.common.model.query.FrameworkAgreementQuery;
-import eco.ywhc.xr.core.manager.AdministrativeDivisionManager;
-import eco.ywhc.xr.core.manager.ApprovalManager;
-import eco.ywhc.xr.core.manager.FrameworkAgreementManager;
-import eco.ywhc.xr.core.manager.TaskManager;
+import eco.ywhc.xr.core.manager.*;
 import eco.ywhc.xr.core.manager.lark.LarkEmployeeManager;
 import eco.ywhc.xr.core.mapper.FrameworkAgreementChannelEntryMapper;
 import eco.ywhc.xr.core.mapper.FrameworkAgreementMapper;
@@ -69,6 +67,10 @@ public class FrameworkAgreementServiceImpl implements FrameworkAgreementService 
 
     private final ApprovalManager approvalManager;
 
+    private final VisitManager visitManager;
+
+    private final AttachmentManager attachmentManager;
+
     public String generateUniqueId() {
         QueryWrapper<FrameworkAgreement> qw = new QueryWrapper<>();
         qw.select("id", "code").orderByDesc("id").last("LIMIT 1");
@@ -88,18 +90,23 @@ public class FrameworkAgreementServiceImpl implements FrameworkAgreementService 
         frameworkAgreement.setCode(generateUniqueId());
         frameworkAgreement.setStatus(FrameworkAgreementType.PRE_PROJECT);
         frameworkAgreementMapper.insert(frameworkAgreement);
+        frameworkAgreementManager.linkAttachments(req, frameworkAgreement.getId());
 
         FrameworkAgreementChannelEntry frameworkAgreementChannelEntry = frameworkAgreementChannelEntryConverter.fromRequest(req.getFrameworkAgreementChannelEntry());
         frameworkAgreementChannelEntry.setFrameworkAgreementId(frameworkAgreement.getId());
         frameworkAgreementChannelEntryMapper.insert(frameworkAgreementChannelEntry);
+        frameworkAgreementManager.linkAttachments(req.getFrameworkAgreementChannelEntry(), frameworkAgreementChannelEntry.getId());
 
         FrameworkAgreementProjectFunding frameworkAgreementProjectFunding = frameworkAgreementProjectFundingConverter.fromRequest(req.getFrameworkAgreementProjectFunding());
         frameworkAgreementProjectFunding.setFrameworkAgreementId(frameworkAgreement.getId());
         frameworkAgreementProjectFundingMapper.insert(frameworkAgreementProjectFunding);
+        frameworkAgreementManager.linkAttachments(req.getFrameworkAgreementProjectFunding(), frameworkAgreementProjectFunding.getId());
 
         FrameworkAgreementProject frameworkAgreementProject = frameworkAgreementProjectConverter.fromRequest(req.getFrameworkAgreementProject());
         frameworkAgreementProject.setFrameworkAgreementId(frameworkAgreement.getId());
         frameworkAgreementProjectMapper.insert(frameworkAgreementProject);
+
+        visitManager.createMany(req.getFrameworkVisits(), frameworkAgreement.getId());
 
         applicationEventPublisher.publishEvent(FrameworkAgreementCreatedEvent.of(frameworkAgreement));
 
@@ -134,17 +141,14 @@ public class FrameworkAgreementServiceImpl implements FrameworkAgreementService 
                     .build();
             res.setAssignee(assignee);
 
-            FrameworkAgreementProject project = frameworkAgreementManager.getProjectByFrameworkAgreementId(i.getId());
-            FrameworkAgreementProjectRes projectRes = frameworkAgreementProjectConverter.toResponse(project);
-            res.setFrameworkAgreementProject(projectRes);
+            FrameworkAgreementProjectRes project = frameworkAgreementManager.getProjectByFrameworkAgreementId(i.getId());
+            res.setFrameworkAgreementProject(project);
 
-            FrameworkAgreementProjectFunding funding = frameworkAgreementManager.getProjectFundingByFrameworkAgreementId(i.getId());
-            FrameworkAgreementProjectFundingRes fundingRes = frameworkAgreementProjectFundingConverter.toResponse(funding);
-            res.setFrameworkAgreementProjectFunding(fundingRes);
+            FrameworkAgreementProjectFundingRes funding = frameworkAgreementManager.getProjectFundingByFrameworkAgreementId(i.getId());
+            res.setFrameworkAgreementProjectFunding(funding);
 
-            FrameworkAgreementChannelEntry channelEntry = frameworkAgreementManager.getChannelEntryByFrameworkAgreementId(i.getId());
-            FrameworkAgreementChannelEntryRes channelEntryRes = frameworkAgreementChannelEntryConverter.toResponse(channelEntry);
-            res.setFrameworkAgreementChannelEntry(channelEntryRes);
+            FrameworkAgreementChannelEntryRes channelEntry = frameworkAgreementManager.getChannelEntryByFrameworkAgreementId(i.getId());
+            res.setFrameworkAgreementChannelEntry(channelEntry);
 
             return res;
         });
@@ -155,6 +159,19 @@ public class FrameworkAgreementServiceImpl implements FrameworkAgreementService 
     public FrameworkAgreementRes findOne(@NonNull Long id) {
         FrameworkAgreement frameworkAgreement = frameworkAgreementManager.mustFoundEntityById(id);
         FrameworkAgreementRes res = frameworkAgreementConverter.toResponse(frameworkAgreement);
+        //查询框架协议关联的附件
+        List<AttachmentResponse> projectProposalAttachments = attachmentManager.findManyByOwnerId(id, FileOwnerType.PROJECT_PROPOSAL);
+        List<AttachmentResponse> projectProposalApprovalAttachments = attachmentManager.findManyByOwnerId(id, FileOwnerType.PROJECT_PROPOSAL_APPROVAL);
+        List<AttachmentResponse> meetingResolutionAttachments = attachmentManager.findManyByOwnerId(id, FileOwnerType.MEETING_RESOLUTION);
+        List<AttachmentResponse> meetingMinutesAttachments = attachmentManager.findManyByOwnerId(id, FileOwnerType.MEETING_MINUTES);
+        List<AttachmentResponse> frameworkAgreementAttachments = attachmentManager.findManyByOwnerId(id, FileOwnerType.FRAMEWORK_AGREEMENT);
+        List<AttachmentResponse> frameworkAgreementSigningAttachments = attachmentManager.findManyByOwnerId(id, FileOwnerType.FRAMEWORK_AGREEMENT_SIGNING);
+        res.setProjectProposalAttachments(projectProposalAttachments);
+        res.setProjectProposalApprovalAttachments(projectProposalApprovalAttachments);
+        res.setMeetingResolutionAttachments(meetingResolutionAttachments);
+        res.setMeetingMinutesAttachments(meetingMinutesAttachments);
+        res.setFrameworkAgreementAttachments(frameworkAgreementAttachments);
+        res.setFrameworkAgreementSigningAttachments(frameworkAgreementSigningAttachments);
 
         AdministrativeDivisionRes administrativeDivision = administrativeDivisionManager.findByAdcodeSurely(frameworkAgreement.getAdcode());
         res.setAdministrativeDivision(administrativeDivision);
@@ -167,17 +184,14 @@ public class FrameworkAgreementServiceImpl implements FrameworkAgreementService 
                 .build();
         res.setAssignee(assignee);
 
-        FrameworkAgreementProject project = frameworkAgreementManager.getProjectByFrameworkAgreementId(frameworkAgreement.getId());
-        FrameworkAgreementProjectRes projectRes = frameworkAgreementProjectConverter.toResponse(project);
-        res.setFrameworkAgreementProject(projectRes);
+        FrameworkAgreementProjectRes project = frameworkAgreementManager.getProjectByFrameworkAgreementId(frameworkAgreement.getId());
+        res.setFrameworkAgreementProject(project);
 
-        FrameworkAgreementProjectFunding funding = frameworkAgreementManager.getProjectFundingByFrameworkAgreementId(frameworkAgreement.getId());
-        FrameworkAgreementProjectFundingRes fundingRes = frameworkAgreementProjectFundingConverter.toResponse(funding);
-        res.setFrameworkAgreementProjectFunding(fundingRes);
+        FrameworkAgreementProjectFundingRes funding = frameworkAgreementManager.getProjectFundingByFrameworkAgreementId(frameworkAgreement.getId());
+        res.setFrameworkAgreementProjectFunding(funding);
 
-        FrameworkAgreementChannelEntry channelEntry = frameworkAgreementManager.getChannelEntryByFrameworkAgreementId(frameworkAgreement.getId());
-        FrameworkAgreementChannelEntryRes channelEntryRes = frameworkAgreementChannelEntryConverter.toResponse(channelEntry);
-        res.setFrameworkAgreementChannelEntry(channelEntryRes);
+        FrameworkAgreementChannelEntryRes channelEntry = frameworkAgreementManager.getChannelEntryByFrameworkAgreementId(frameworkAgreement.getId());
+        res.setFrameworkAgreementChannelEntry(channelEntry);
 
         List<Task> tasks = taskManager.listTasksByRefId(id);
         List<TaskRes> taskResList = new ArrayList<>();
@@ -214,6 +228,9 @@ public class FrameworkAgreementServiceImpl implements FrameworkAgreementService 
                 .collect(Collectors.groupingBy(ApprovalRes::getType));
         res.setApprovalMap(approvalResMaps);
 
+        List<VisitRes> visitList = visitManager.findAllByRefId(id);
+        res.setFrameworkVisits(visitList);
+
         return res;
     }
 
@@ -221,6 +238,7 @@ public class FrameworkAgreementServiceImpl implements FrameworkAgreementService 
     public int updateOne(@NonNull Long id, @NonNull FrameworkAgreementReq req) {
         FrameworkAgreement frameworkAgreement = frameworkAgreementManager.mustFoundEntityById(id);
         frameworkAgreementConverter.update(req, frameworkAgreement);
+        frameworkAgreementManager.linkAttachments(req, frameworkAgreement.getId());
         int affected = frameworkAgreementMapper.updateById(frameworkAgreement);
 
         if (req.getFrameworkAgreementProject() != null) {
@@ -235,6 +253,7 @@ public class FrameworkAgreementServiceImpl implements FrameworkAgreementService 
             FrameworkAgreementChannelEntry frameworkAgreementChannelEntry = frameworkAgreementChannelEntryConverter.fromRequest(req.getFrameworkAgreementChannelEntry());
             frameworkAgreementChannelEntry.setFrameworkAgreementId(frameworkAgreement.getId());
             frameworkAgreementChannelEntryMapper.insert(frameworkAgreementChannelEntry);
+            frameworkAgreementManager.linkAttachments(req.getFrameworkAgreementChannelEntry(), frameworkAgreementChannelEntry.getId());
         }
 
         if (req.getFrameworkAgreementProjectFunding() != null) {
@@ -242,6 +261,7 @@ public class FrameworkAgreementServiceImpl implements FrameworkAgreementService 
             FrameworkAgreementProjectFunding frameworkAgreementProjectFunding = frameworkAgreementProjectFundingConverter.fromRequest(req.getFrameworkAgreementProjectFunding());
             frameworkAgreementProjectFunding.setFrameworkAgreementId(frameworkAgreement.getId());
             frameworkAgreementProjectFundingMapper.insert(frameworkAgreementProjectFunding);
+            frameworkAgreementManager.linkAttachments(req.getFrameworkAgreementProjectFunding(), frameworkAgreementProjectFunding.getId());
         }
 
         return affected;

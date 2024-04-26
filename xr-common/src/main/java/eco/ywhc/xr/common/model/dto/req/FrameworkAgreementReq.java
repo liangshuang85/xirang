@@ -10,6 +10,11 @@ import lombok.Setter;
 import lombok.ToString;
 import org.sugar.crud.model.BaseRestRequest;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 /**
  * 框架协议项目Req
  */
@@ -66,5 +71,47 @@ public class FrameworkAgreementReq implements BaseRestRequest {
      */
     FrameworkAgreementProjectFundingReq frameworkAgreementProjectFunding;
 
+    /**
+     * 拜访信息
+     */
+    @Valid
+    @NotNull
+    private List<VisitReq> frameworkVisits = new ArrayList<>();
+
+    /**
+     * 项目建议书附件ID
+     */
+    @NotNull
+    private Set<Long> projectProposalAttachmentIds = new HashSet<>();
+
+    /**
+     * 项目建议书批复附件ID
+     */
+    @NotNull
+    private Set<Long> projectProposalApprovalAttachmentIds = new HashSet<>();
+
+    /**
+     * 会议决议附件ID
+     */
+    @NotNull
+    private Set<Long> meetingResolutionsAttachmentIds = new HashSet<>();
+
+    /**
+     * 会议纪要附件ID
+     */
+    @NotNull
+    private Set<Long> meetingMinutesAttachmentIds = new HashSet<>();
+
+    /**
+     * 框架协议附件ID
+     */
+    @NotNull
+    private Set<Long> frameworkAgreementAttachmentIds = new HashSet<>();
+
+    /**
+     * 框架协议签署附件ID
+     */
+    @NotNull
+    private Set<Long> frameworkAgreementSigningAttachmentIds = new HashSet<>();
 
 }

@@ -2,6 +2,7 @@ package eco.ywhc.xr.core.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import eco.ywhc.xr.common.constant.ApprovalType;
+import eco.ywhc.xr.common.constant.FileOwnerType;
 import eco.ywhc.xr.common.constant.ProjectType;
 import eco.ywhc.xr.common.constant.TaskType;
 import eco.ywhc.xr.common.converter.ProjectConverter;
@@ -15,10 +16,7 @@ import eco.ywhc.xr.common.model.entity.ProjectInformation;
 import eco.ywhc.xr.common.model.entity.Task;
 import eco.ywhc.xr.common.model.lark.LarkEmployee;
 import eco.ywhc.xr.common.model.query.ProjectQuery;
-import eco.ywhc.xr.core.manager.AdministrativeDivisionManager;
-import eco.ywhc.xr.core.manager.ApprovalManager;
-import eco.ywhc.xr.core.manager.ProjectManager;
-import eco.ywhc.xr.core.manager.TaskManager;
+import eco.ywhc.xr.core.manager.*;
 import eco.ywhc.xr.core.manager.lark.LarkEmployeeManager;
 import eco.ywhc.xr.core.mapper.ProjectInformationMapper;
 import eco.ywhc.xr.core.mapper.ProjectMapper;
@@ -62,6 +60,8 @@ public class ProjectServiceImpl implements ProjectService {
 
     private final ApprovalManager approvalManager;
 
+    private final AttachmentManager attachmentManager;
+
 
     public String generateUniqueId() {
         QueryWrapper<Project> qw = new QueryWrapper<>();
@@ -82,7 +82,7 @@ public class ProjectServiceImpl implements ProjectService {
         project.setCode(generateUniqueId());
         project.setStatus(ProjectType.PENDING_PROJECT_MEETING);
         projectMapper.insert(project);
-
+        projectManager.linkAttachments(req, project.getId());
         ProjectInformation projectInformation = projectInformationConverter.fromRequest(req.getProjectInformation());
         projectInformation.setProjectId(project.getId());
         projectInformationMapper.insert(projectInformation);
@@ -132,6 +132,16 @@ public class ProjectServiceImpl implements ProjectService {
     public ProjectRes findOne(@NonNull Long id) {
         Project project = projectManager.mustFoundEntityById(id);
         ProjectRes projectRes = projectConverter.toResponse(project);
+        List<AttachmentResponse> meetingResolutionAttachments = attachmentManager.findManyByOwnerId(id, FileOwnerType.MEETING_RESOLUTION);
+        projectRes.setMeetingResolutionAttachments(meetingResolutionAttachments);
+        List<AttachmentResponse> meetingMinutesAttachments = attachmentManager.findManyByOwnerId(id, FileOwnerType.MEETING_MINUTES);
+        projectRes.setMeetingMinutesAttachments(meetingMinutesAttachments);
+        List<AttachmentResponse> investmentAgreementAttachments = attachmentManager.findManyByOwnerId(id, FileOwnerType.INVESTMENT_AGREEMENT);
+        projectRes.setInvestmentAgreementAttachments(investmentAgreementAttachments);
+        List<AttachmentResponse> investmentAgreementSigningAttachments = attachmentManager.findManyByOwnerId(id, FileOwnerType.INVESTMENT_AGREEMENT_SIGNING);
+        projectRes.setInvestmentAgreementSigningAttachments(investmentAgreementSigningAttachments);
+        List<AttachmentResponse> enterpriseInvestmentRecordAttachments = attachmentManager.findManyByOwnerId(id, FileOwnerType.ENTERPRISE_INVESTMENT_RECORD);
+        projectRes.setEnterpriseInvestmentRecordAttachments(enterpriseInvestmentRecordAttachments);
 
         AdministrativeDivisionRes administrativeDivision = administrativeDivisionManager.findByAdcodeSurely(project.getAdcode());
         projectRes.setAdministrativeDivision(administrativeDivision);
@@ -186,6 +196,7 @@ public class ProjectServiceImpl implements ProjectService {
     public int updateOne(@NonNull Long id, @NonNull ProjectReq req) {
         Project project = projectManager.mustFoundEntityById(id);
         projectConverter.update(req, project);
+        projectManager.linkAttachments(req, project.getId());
         int affected = projectMapper.updateById(project);
 
         if (req.getProjectInformation() != null) {

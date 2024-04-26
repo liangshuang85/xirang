@@ -6,6 +6,9 @@ import jakarta.validation.constraints.Size;
 import lombok.Data;
 import org.sugar.crud.model.BaseRestRequest;
 
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * 项目Req
  */
@@ -42,5 +45,35 @@ public class ProjectReq implements BaseRestRequest {
      * 项目信息Req
      */
     private ProjectInformationReq projectInformation;
+
+    /**
+     * 会议决议附件ID
+     */
+    @NotNull
+    private Set<Long> meetingResolutionsAttachmentIds = new HashSet<>();
+
+    /**
+     * 会议纪要附件ID
+     */
+    @NotNull
+    private Set<Long> meetingMinutesAttachmentIds = new HashSet<>();
+
+    /**
+     * 投资协议附件ID
+     */
+    @NotNull
+    private Set<Long> investmentAgreementAttachmentIds = new HashSet<>();
+
+    /**
+     * 投资协议签订附件ID
+     */
+    @NotNull
+    private Set<Long> investmentAgreementSigningAttachmentIds = new HashSet<>();
+
+    /**
+     * 企业投资备案附件ID
+     */
+    @NotNull
+    private Set<Long> enterpriseInvestmentRecordAttachmentIds = new HashSet<>();
 
 }

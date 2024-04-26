@@ -15,9 +15,9 @@ import java.util.Set;
 public class VisitReq implements BaseRestRequest {
 
     /**
-     * 线索id
+     * 拜访关联ID
      */
-    private Long clueId;
+    private Long refId;
 
     /**
      * 是否为正式拜访

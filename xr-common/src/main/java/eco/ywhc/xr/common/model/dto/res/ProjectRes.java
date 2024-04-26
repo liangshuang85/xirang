@@ -65,4 +65,29 @@ public class ProjectRes implements BaseRestResponse {
      */
     Map<ApprovalType, List<ApprovalRes>> approvalMap;
 
+    /**
+     * 会议决议附件信息
+     */
+    private List<AttachmentResponse> meetingResolutionAttachments;
+
+    /**
+     * 会议纪要附件信息
+     */
+    private List<AttachmentResponse> meetingMinutesAttachments;
+
+    /**
+     * 投资协议附件信息
+     */
+    private List<AttachmentResponse> investmentAgreementAttachments;
+
+    /**
+     * 投资协议签订附件信息
+     */
+    private List<AttachmentResponse> investmentAgreementSigningAttachments;
+
+    /**
+     * 企业投资备案附件信息
+     */
+    private List<AttachmentResponse> enterpriseInvestmentRecordAttachments;
+
 }

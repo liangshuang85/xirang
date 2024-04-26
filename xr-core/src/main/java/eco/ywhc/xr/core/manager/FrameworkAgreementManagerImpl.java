@@ -1,6 +1,17 @@
 package eco.ywhc.xr.core.manager;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import eco.ywhc.xr.common.constant.FileOwnerType;
+import eco.ywhc.xr.common.converter.FrameworkAgreementChannelEntryConverter;
+import eco.ywhc.xr.common.converter.FrameworkAgreementProjectConverter;
+import eco.ywhc.xr.common.converter.FrameworkAgreementProjectFundingConverter;
+import eco.ywhc.xr.common.model.dto.req.FrameworkAgreementChannelEntryReq;
+import eco.ywhc.xr.common.model.dto.req.FrameworkAgreementProjectFundingReq;
+import eco.ywhc.xr.common.model.dto.req.FrameworkAgreementReq;
+import eco.ywhc.xr.common.model.dto.res.AttachmentResponse;
+import eco.ywhc.xr.common.model.dto.res.FrameworkAgreementChannelEntryRes;
+import eco.ywhc.xr.common.model.dto.res.FrameworkAgreementProjectFundingRes;
+import eco.ywhc.xr.common.model.dto.res.FrameworkAgreementProjectRes;
 import eco.ywhc.xr.common.model.entity.FrameworkAgreement;
 import eco.ywhc.xr.common.model.entity.FrameworkAgreementChannelEntry;
 import eco.ywhc.xr.common.model.entity.FrameworkAgreementProject;
@@ -13,6 +24,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
+import org.sugar.commons.exception.InternalErrorException;
+
+import java.util.List;
+import java.util.Set;
 
 @Service
 @Slf4j
@@ -27,33 +42,81 @@ public class FrameworkAgreementManagerImpl implements FrameworkAgreementManager 
 
     private final FrameworkAgreementChannelEntryMapper frameworkAgreementChannelEntryMapper;
 
+    private final FrameworkAgreementProjectConverter frameworkAgreementProjectConverter;
+
+    private final FrameworkAgreementChannelEntryConverter frameworkAgreementChannelEntryConverter;
+
+    private final FrameworkAgreementProjectFundingConverter frameworkAgreementProjectFundingConverter;
+
+    private final AttachmentManager attachmentManager;
+
     @Override
     public FrameworkAgreement findEntityById(@NonNull Long id) {
         return frameworkAgreementMapper.findEntityById(id);
     }
 
     @Override
-    public FrameworkAgreementProject getProjectByFrameworkAgreementId(long id) {
+    public FrameworkAgreementProjectRes getProjectByFrameworkAgreementId(long id) {
         QueryWrapper<FrameworkAgreementProject> qw = new QueryWrapper<>();
         qw.lambda().eq(FrameworkAgreementProject::getDeleted, false)
                 .eq(FrameworkAgreementProject::getFrameworkAgreementId, id);
-        return frameworkAgreementProjectMapper.selectOne(qw);
+        FrameworkAgreementProject frameworkAgreementProject = frameworkAgreementProjectMapper.selectOne(qw);
+        return frameworkAgreementProjectConverter.toResponse(frameworkAgreementProject);
     }
 
     @Override
-    public FrameworkAgreementChannelEntry getChannelEntryByFrameworkAgreementId(long id) {
+    public FrameworkAgreementChannelEntryRes getChannelEntryByFrameworkAgreementId(long id) {
         QueryWrapper<FrameworkAgreementChannelEntry> qw = new QueryWrapper<>();
         qw.lambda().eq(FrameworkAgreementChannelEntry::getDeleted, false)
                 .eq(FrameworkAgreementChannelEntry::getFrameworkAgreementId, id);
-        return frameworkAgreementChannelEntryMapper.selectOne(qw);
+        FrameworkAgreementChannelEntry frameworkAgreementChannelEntry = frameworkAgreementChannelEntryMapper.selectOne(qw);
+        FrameworkAgreementChannelEntryRes channelEntryRes = frameworkAgreementChannelEntryConverter.toResponse(frameworkAgreementChannelEntry);
+        List<AttachmentResponse> projectInfoAttachments = attachmentManager.findManyByOwnerId(channelEntryRes.getId(), FileOwnerType.PROJECT_INFO_STATISTICS);
+        List<AttachmentResponse> manyByOwnerId = attachmentManager.findManyByOwnerId(channelEntryRes.getId(), FileOwnerType.PROJECT_FUNDING);
+        channelEntryRes.setProjectInfoAttachments(projectInfoAttachments);
+        channelEntryRes.setProjectFundingAttachments(manyByOwnerId);
+        return channelEntryRes;
     }
 
     @Override
-    public FrameworkAgreementProjectFunding getProjectFundingByFrameworkAgreementId(long id) {
+    public FrameworkAgreementProjectFundingRes getProjectFundingByFrameworkAgreementId(long id) {
         QueryWrapper<FrameworkAgreementProjectFunding> qw = new QueryWrapper<>();
         qw.lambda().eq(FrameworkAgreementProjectFunding::getDeleted, false)
                 .eq(FrameworkAgreementProjectFunding::getFrameworkAgreementId, id);
-        return frameworkAgreementProjectFundingMapper.selectOne(qw);
+        FrameworkAgreementProjectFunding frameworkAgreementProjectFunding = frameworkAgreementProjectFundingMapper.selectOne(qw);
+        FrameworkAgreementProjectFundingRes fundingRes = frameworkAgreementProjectFundingConverter.toResponse(frameworkAgreementProjectFunding);
+        List<AttachmentResponse> manyByOwnerId = attachmentManager.findManyByOwnerId(fundingRes.getId(), FileOwnerType.MAJOR_ELECTRICITY_CONSUMERS);
+        fundingRes.setMajorElectricityConsumerAttachments(manyByOwnerId);
+        return fundingRes;
+    }
+
+    @Override
+    public void linkAttachments(Object req, long id) {
+        if (req instanceof FrameworkAgreementReq frameworkAgreementReq) {
+            Set<Long> projectProposalAttachmentIds = frameworkAgreementReq.getProjectProposalAttachmentIds();
+            attachmentManager.update(projectProposalAttachmentIds, FileOwnerType.PROJECT_PROPOSAL, id);
+            Set<Long> projectProposalApprovalAttachmentIds = frameworkAgreementReq.getProjectProposalApprovalAttachmentIds();
+            attachmentManager.update(projectProposalApprovalAttachmentIds, FileOwnerType.PROJECT_PROPOSAL_APPROVAL, id);
+            Set<Long> meetingResolutionsAttachmentIds = frameworkAgreementReq.getMeetingResolutionsAttachmentIds();
+            attachmentManager.update(meetingResolutionsAttachmentIds, FileOwnerType.MEETING_RESOLUTION, id);
+            Set<Long> meetingMinutesAttachmentIds = frameworkAgreementReq.getMeetingMinutesAttachmentIds();
+            attachmentManager.update(meetingMinutesAttachmentIds, FileOwnerType.MEETING_MINUTES, id);
+            Set<Long> frameworkAgreementAttachmentIds = frameworkAgreementReq.getFrameworkAgreementAttachmentIds();
+            attachmentManager.update(frameworkAgreementAttachmentIds, FileOwnerType.FRAMEWORK_AGREEMENT, id);
+            Set<Long> frameworkAgreementSigningAttachmentIds = frameworkAgreementReq.getFrameworkAgreementSigningAttachmentIds();
+            attachmentManager.update(frameworkAgreementSigningAttachmentIds, FileOwnerType.FRAMEWORK_AGREEMENT_SIGNING, id);
+        } else if (req instanceof FrameworkAgreementChannelEntryReq frameworkAgreementChannelEntryReq) {
+            Set<Long> projectFundingAttachmentIds = frameworkAgreementChannelEntryReq.getProjectFundingAttachmentIds();
+            attachmentManager.update(projectFundingAttachmentIds, FileOwnerType.PROJECT_FUNDING, id);
+            Set<Long> projectInfoAttachmentIds = frameworkAgreementChannelEntryReq.getProjectInfoAttachmentIds();
+            attachmentManager.update(projectInfoAttachmentIds, FileOwnerType.PROJECT_INFO_STATISTICS, id);
+        } else if (req instanceof FrameworkAgreementProjectFundingReq frameworkAgreementProjectFundingReq) {
+            Set<Long> majorElectricityConsumerAttachmentIds = frameworkAgreementProjectFundingReq.getMajorElectricityConsumerAttachmentIds();
+            attachmentManager.update(majorElectricityConsumerAttachmentIds, FileOwnerType.MAJOR_ELECTRICITY_CONSUMERS, id);
+        } else {
+            log.error("Unknown req type: {}", req.getClass());
+            throw new InternalErrorException("不支持该类型");
+        }
     }
 
 }

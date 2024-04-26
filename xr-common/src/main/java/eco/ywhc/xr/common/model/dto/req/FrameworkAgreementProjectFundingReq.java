@@ -1,9 +1,13 @@
 package eco.ywhc.xr.common.model.dto.req;
 
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import org.sugar.crud.model.BaseRestRequest;
+
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * 框架协议项目项目收资信息Req
@@ -82,5 +86,11 @@ public class FrameworkAgreementProjectFundingReq implements BaseRestRequest {
      * 工商业供暖面积
      */
     private Double commercialHeatingArea;
+
+    /**
+     * 主要用电企业情况附件ID
+     */
+    @NotNull
+    private Set<Long> majorElectricityConsumerAttachmentIds = new HashSet<>();
 
 }
