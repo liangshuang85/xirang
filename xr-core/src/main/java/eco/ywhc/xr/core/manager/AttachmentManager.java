@@ -97,6 +97,14 @@ public interface AttachmentManager {
      * @param ownerId   属主ID
      * @param ownerType 文件属主类型，ownerType为{@code null}时则返回全部文件属主类型的附件
      */
+    List<Attachment> findManyEntitiesByOwnerId(long ownerId, @Nullable FileOwnerType ownerType);
+
+    /**
+     * 指定属主ID查找其附件列表
+     *
+     * @param ownerId   属主ID
+     * @param ownerType 文件属主类型，ownerType为{@code null}时则返回全部文件属主类型的附件
+     */
     List<AttachmentResponse> findManyByOwnerId(long ownerId, @Nullable FileOwnerType ownerType);
 
     /**

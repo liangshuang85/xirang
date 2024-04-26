@@ -92,20 +92,7 @@ public class FrameworkAgreementManagerImpl implements FrameworkAgreementManager 
 
     @Override
     public void linkAttachments(Object req, long id) {
-        if (req instanceof FrameworkAgreementReq frameworkAgreementReq) {
-            Set<Long> projectProposalAttachmentIds = frameworkAgreementReq.getProjectProposalAttachmentIds();
-            attachmentManager.update(projectProposalAttachmentIds, FileOwnerType.PROJECT_PROPOSAL, id);
-            Set<Long> projectProposalApprovalAttachmentIds = frameworkAgreementReq.getProjectProposalApprovalAttachmentIds();
-            attachmentManager.update(projectProposalApprovalAttachmentIds, FileOwnerType.PROJECT_PROPOSAL_APPROVAL, id);
-            Set<Long> meetingResolutionsAttachmentIds = frameworkAgreementReq.getMeetingResolutionsAttachmentIds();
-            attachmentManager.update(meetingResolutionsAttachmentIds, FileOwnerType.MEETING_RESOLUTION, id);
-            Set<Long> meetingMinutesAttachmentIds = frameworkAgreementReq.getMeetingMinutesAttachmentIds();
-            attachmentManager.update(meetingMinutesAttachmentIds, FileOwnerType.MEETING_MINUTES, id);
-            Set<Long> frameworkAgreementAttachmentIds = frameworkAgreementReq.getFrameworkAgreementAttachmentIds();
-            attachmentManager.update(frameworkAgreementAttachmentIds, FileOwnerType.FRAMEWORK_AGREEMENT, id);
-            Set<Long> frameworkAgreementSigningAttachmentIds = frameworkAgreementReq.getFrameworkAgreementSigningAttachmentIds();
-            attachmentManager.update(frameworkAgreementSigningAttachmentIds, FileOwnerType.FRAMEWORK_AGREEMENT_SIGNING, id);
-        } else if (req instanceof FrameworkAgreementChannelEntryReq frameworkAgreementChannelEntryReq) {
+        if (req instanceof FrameworkAgreementChannelEntryReq frameworkAgreementChannelEntryReq) {
             Set<Long> projectFundingAttachmentIds = frameworkAgreementChannelEntryReq.getProjectFundingAttachmentIds();
             attachmentManager.update(projectFundingAttachmentIds, FileOwnerType.PROJECT_FUNDING, id);
             Set<Long> projectInfoAttachmentIds = frameworkAgreementChannelEntryReq.getProjectInfoAttachmentIds();
@@ -117,6 +104,22 @@ public class FrameworkAgreementManagerImpl implements FrameworkAgreementManager 
             log.error("Unknown req type: {}", req.getClass());
             throw new InternalErrorException("不支持该类型");
         }
+    }
+
+    @Override
+    public void compareAndUpdateLinkAttachments(FrameworkAgreementReq req, long id) {
+        Set<Long> projectProposalAttachmentIds = req.getProjectProposalAttachmentIds();
+        attachmentManager.compareAndUpdate(id, projectProposalAttachmentIds, FileOwnerType.PROJECT_PROPOSAL);
+        Set<Long> projectProposalApprovalAttachmentIds = req.getProjectProposalApprovalAttachmentIds();
+        attachmentManager.compareAndUpdate(id, projectProposalApprovalAttachmentIds, FileOwnerType.PROJECT_PROPOSAL_APPROVAL);
+        Set<Long> meetingResolutionsAttachmentIds = req.getMeetingResolutionsAttachmentIds();
+        attachmentManager.compareAndUpdate(id, meetingResolutionsAttachmentIds, FileOwnerType.MEETING_RESOLUTION);
+        Set<Long> meetingMinutesAttachmentIds = req.getMeetingMinutesAttachmentIds();
+        attachmentManager.compareAndUpdate(id, meetingMinutesAttachmentIds, FileOwnerType.MEETING_MINUTES);
+        Set<Long> frameworkAgreementAttachmentIds = req.getFrameworkAgreementAttachmentIds();
+        attachmentManager.compareAndUpdate(id, frameworkAgreementAttachmentIds, FileOwnerType.FRAMEWORK_AGREEMENT);
+        Set<Long> frameworkAgreementSigningAttachmentIds = req.getFrameworkAgreementSigningAttachmentIds();
+        attachmentManager.compareAndUpdate(id, frameworkAgreementSigningAttachmentIds, FileOwnerType.FRAMEWORK_AGREEMENT_SIGNING);
     }
 
 }

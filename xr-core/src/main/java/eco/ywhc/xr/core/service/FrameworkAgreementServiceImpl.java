@@ -90,7 +90,7 @@ public class FrameworkAgreementServiceImpl implements FrameworkAgreementService 
         frameworkAgreement.setCode(generateUniqueId());
         frameworkAgreement.setStatus(FrameworkAgreementType.PRE_PROJECT);
         frameworkAgreementMapper.insert(frameworkAgreement);
-        frameworkAgreementManager.linkAttachments(req, frameworkAgreement.getId());
+        frameworkAgreementManager.compareAndUpdateLinkAttachments(req, frameworkAgreement.getId());
 
         FrameworkAgreementChannelEntry frameworkAgreementChannelEntry = frameworkAgreementChannelEntryConverter.fromRequest(req.getFrameworkAgreementChannelEntry());
         frameworkAgreementChannelEntry.setFrameworkAgreementId(frameworkAgreement.getId());
@@ -237,8 +237,11 @@ public class FrameworkAgreementServiceImpl implements FrameworkAgreementService 
     @Override
     public int updateOne(@NonNull Long id, @NonNull FrameworkAgreementReq req) {
         FrameworkAgreement frameworkAgreement = frameworkAgreementManager.mustFoundEntityById(id);
+        if (req.getStatus() == null) {
+            req.setStatus(frameworkAgreement.getStatus());
+        }
         frameworkAgreementConverter.update(req, frameworkAgreement);
-        frameworkAgreementManager.linkAttachments(req, frameworkAgreement.getId());
+        frameworkAgreementManager.compareAndUpdateLinkAttachments(req, frameworkAgreement.getId());
         int affected = frameworkAgreementMapper.updateById(frameworkAgreement);
 
         if (req.getFrameworkAgreementProject() != null) {

@@ -46,4 +46,6 @@ public interface FrameworkAgreementManager extends BaseManager<Long, FrameworkAg
      */
     void linkAttachments(Object req, long id);
 
+    void compareAndUpdateLinkAttachments(FrameworkAgreementReq req, long id);
+
 }

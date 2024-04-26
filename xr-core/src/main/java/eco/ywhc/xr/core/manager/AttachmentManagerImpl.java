@@ -64,7 +64,7 @@ public class AttachmentManagerImpl implements AttachmentManager {
     @Override
     public void compareAndUpdate(long ownerId, Collection<Long> newIds, FileOwnerType ownerType) {
         // 当前附件ID列表
-        List<Long> currentIds = findAllEntitiesByOwnerId(ownerId).stream().map(Attachment::getId).toList();
+        List<Long> currentIds = findManyEntitiesByOwnerId(ownerId, ownerType).stream().map(Attachment::getId).toList();
         // 待删除附件ID列表
         Collection<Long> pendingDeleteIds = CollectionUtils.removeAll(currentIds, newIds);
         if (CollectionUtils.isNotEmpty(pendingDeleteIds)) {
@@ -130,13 +130,20 @@ public class AttachmentManagerImpl implements AttachmentManager {
     }
 
     @Override
-    public List<AttachmentResponse> findManyByOwnerId(long ownerId, @Nullable FileOwnerType ownerType) {
+    public List<Attachment> findManyEntitiesByOwnerId(long ownerId, FileOwnerType ownerType) {
         QueryWrapper<Attachment> qw = new QueryWrapper<>();
         qw.lambda().eq(Attachment::getDeleted, 0)
                 .eq(Attachment::getOwnerId, ownerId)
                 .eq(ownerType != null, Attachment::getOwnerType, ownerType)
                 .orderByDesc(Attachment::getId);
-        return attachmentMapper.selectList(qw).stream().map(attachmentConverter::toResponse).toList();
+        return attachmentMapper.selectList(qw);
+    }
+
+    @Override
+    public List<AttachmentResponse> findManyByOwnerId(long ownerId, @Nullable FileOwnerType ownerType) {
+        return findManyEntitiesByOwnerId(ownerId, ownerType).stream()
+                .map(attachmentConverter::toResponse)
+                .toList();
     }
 
     @Override

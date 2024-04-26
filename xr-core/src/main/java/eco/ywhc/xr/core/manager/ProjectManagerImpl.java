@@ -41,15 +41,15 @@ public class ProjectManagerImpl implements ProjectManager {
     @Override
     public void linkAttachments(ProjectReq req, long id) {
         Set<Long> meetingResolutionsAttachmentIds = req.getMeetingResolutionsAttachmentIds();
-        attachmentManager.update(meetingResolutionsAttachmentIds, FileOwnerType.MEETING_RESOLUTION, id);
+        attachmentManager.compareAndUpdate(id, meetingResolutionsAttachmentIds, FileOwnerType.MEETING_RESOLUTION);
         Set<Long> meetingMinutesAttachmentIds = req.getMeetingMinutesAttachmentIds();
-        attachmentManager.update(meetingMinutesAttachmentIds, FileOwnerType.MEETING_MINUTES, id);
+        attachmentManager.compareAndUpdate(id, meetingMinutesAttachmentIds, FileOwnerType.MEETING_MINUTES);
         Set<Long> investmentAgreementAttachmentIds = req.getInvestmentAgreementAttachmentIds();
-        attachmentManager.update(investmentAgreementAttachmentIds, FileOwnerType.INVESTMENT_AGREEMENT, id);
+        attachmentManager.compareAndUpdate(id, investmentAgreementAttachmentIds, FileOwnerType.INVESTMENT_AGREEMENT);
         Set<Long> investmentAgreementSigningAttachmentIds = req.getInvestmentAgreementSigningAttachmentIds();
-        attachmentManager.update(investmentAgreementSigningAttachmentIds, FileOwnerType.INVESTMENT_AGREEMENT_SIGNING, id);
+        attachmentManager.compareAndUpdate(id, investmentAgreementSigningAttachmentIds, FileOwnerType.INVESTMENT_AGREEMENT_SIGNING);
         Set<Long> enterpriseInvestmentRecordAttachmentIds = req.getEnterpriseInvestmentRecordAttachmentIds();
-        attachmentManager.update(enterpriseInvestmentRecordAttachmentIds, FileOwnerType.ENTERPRISE_INVESTMENT_RECORD, id);
+        attachmentManager.compareAndUpdate(id, enterpriseInvestmentRecordAttachmentIds, FileOwnerType.ENTERPRISE_INVESTMENT_RECORD);
     }
 
 }
