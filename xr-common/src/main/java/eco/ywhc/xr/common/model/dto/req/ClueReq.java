@@ -36,12 +36,11 @@ public class ClueReq implements BaseRestRequest {
      * 线索状态
      */
     @NotNull
-    private ClueStatusType status;
+    private ClueStatusType status = ClueStatusType.CLUE_DISCOVERY;
 
     /**
      * 线索级别
      */
-    @NotNull
     private ClueLevel level;
 
     /**
