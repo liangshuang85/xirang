@@ -56,7 +56,6 @@ public class ClueServiceImpl implements ClueService {
     public Long createOne(@NonNull ClueReq req) {
         Clue clue = clueConverter.fromRequest(req);
         clue.setClueCode(clueManager.generateUniqueId());
-        clue.setAssigneeId("");
         clueMapper.insert(clue);
         Long id = clue.getId();
 

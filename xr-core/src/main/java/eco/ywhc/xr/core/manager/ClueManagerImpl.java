@@ -34,9 +34,10 @@ public class ClueManagerImpl implements ClueManager {
         int num = 1;
         if (clue != null) {
             String numString = clue.getClueCode().substring(6);
-            num = Integer.parseInt(numString);
+            num = Integer.parseInt(numString) + 1;
         }
-        return "XS" + Year.now() + num;
+        String formattedNum = String.format("%03d", num);
+        return "XS" + Year.now() + formattedNum;
     }
 
 }
