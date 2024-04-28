@@ -57,8 +57,6 @@ public class FrameworkAgreementReq implements BaseRestRequest {
     /**
      * 框架协议项目项目信息
      */
-    @Valid
-    @NotNull
     FrameworkAgreementProjectReq frameworkAgreementProject;
 
     /**

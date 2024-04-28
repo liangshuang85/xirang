@@ -82,7 +82,7 @@ public class ProjectServiceImpl implements ProjectService {
         project.setCode(generateUniqueId());
         project.setStatus(ProjectType.PENDING_PROJECT_MEETING);
         projectMapper.insert(project);
-        projectManager.linkAttachments(req, project.getId());
+        projectManager.compareAndUpdateAttachments(req, project.getId());
         ProjectInformation projectInformation = projectInformationConverter.fromRequest(req.getProjectInformation());
         projectInformation.setProjectId(project.getId());
         projectInformationMapper.insert(projectInformation);
@@ -196,15 +196,14 @@ public class ProjectServiceImpl implements ProjectService {
     public int updateOne(@NonNull Long id, @NonNull ProjectReq req) {
         Project project = projectManager.mustFoundEntityById(id);
         projectConverter.update(req, project);
-        projectManager.linkAttachments(req, project.getId());
+        projectManager.compareAndUpdateAttachments(req, project.getId());
         int affected = projectMapper.updateById(project);
 
-        if (req.getProjectInformation() != null) {
-            projectInformationMapper.logicDeleteEntityById(projectManager.getProjectInformationByProjectId(id).getId());
-            ProjectInformation projectInformation = projectInformationConverter.fromRequest(req.getProjectInformation());
-            projectInformation.setProjectId(project.getId());
-            projectInformationMapper.insert(projectInformation);
-        }
+        ProjectInformation projectInformation = projectManager.getProjectInformationByProjectId(id);
+        projectInformationConverter.update(req.getProjectInformation(), projectInformation);
+        projectInformation.setProjectId(id);
+        projectInformationMapper.updateById(projectInformation);
+
         return affected;
     }
 
@@ -212,6 +211,7 @@ public class ProjectServiceImpl implements ProjectService {
     public int logicDeleteOne(@NonNull Long id) {
         projectInformationMapper.logicDeleteEntityById(projectManager.getProjectInformationByProjectId(id).getId());
         taskManager.logicDeleteEntityById(id);
+        attachmentManager.deleteByOwnerId(id);
         return projectMapper.logicDeleteEntityById(id);
     }
 

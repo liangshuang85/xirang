@@ -24,10 +24,10 @@ public interface ProjectManager extends BaseManager<Long, Project, ProjectReq, P
 
     /**
      * 关联附件
+     *
      * @param req 项目REQ
-     * @param id 项目ID
+     * @param id  项目ID
      */
-    void linkAttachments(ProjectReq req, long id);
-
+    void compareAndUpdateAttachments(ProjectReq req, long id);
 
 }

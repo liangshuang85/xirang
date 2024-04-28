@@ -6,6 +6,9 @@ import eco.ywhc.xr.common.model.dto.res.FrameworkAgreementProjectFundingRes;
 import eco.ywhc.xr.common.model.dto.res.FrameworkAgreementProjectRes;
 import eco.ywhc.xr.common.model.dto.res.FrameworkAgreementRes;
 import eco.ywhc.xr.common.model.entity.FrameworkAgreement;
+import eco.ywhc.xr.common.model.entity.FrameworkAgreementChannelEntry;
+import eco.ywhc.xr.common.model.entity.FrameworkAgreementProject;
+import eco.ywhc.xr.common.model.entity.FrameworkAgreementProjectFunding;
 import eco.ywhc.xr.common.model.query.FrameworkAgreementQuery;
 import org.springframework.lang.NonNull;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,6 +19,13 @@ public interface FrameworkAgreementManager extends BaseManager<Long, FrameworkAg
 
     @Override
     FrameworkAgreement findEntityById(@NonNull Long id);
+
+    /**
+     * 根据框架协议ID查询框架协议项目
+     *
+     * @param id 框架协议ID
+     */
+    FrameworkAgreementProject getFrameworkAgreementProjectById(long id);
 
     /**
      * 根据框架协议ID查询项目信息
@@ -29,7 +39,21 @@ public interface FrameworkAgreementManager extends BaseManager<Long, FrameworkAg
      *
      * @param id 框架协议ID
      */
+    FrameworkAgreementChannelEntry getFrameworkAgreementChannelEntryById(long id);
+
+    /**
+     * 根据框架协议ID查询渠道录入信息
+     *
+     * @param id 框架协议ID
+     */
     FrameworkAgreementChannelEntryRes getChannelEntryByFrameworkAgreementId(long id);
+
+    /**
+     * 根据框架协议ID查询项目收资信息
+     *
+     * @param id 框架协议ID
+     */
+    FrameworkAgreementProjectFunding getFrameworkAgreementProjectFundingById(long id);
 
     /**
      * 根据框架协议ID查询项目收资信息
@@ -39,13 +63,11 @@ public interface FrameworkAgreementManager extends BaseManager<Long, FrameworkAg
     FrameworkAgreementProjectFundingRes getProjectFundingByFrameworkAgreementId(long id);
 
     /**
-     * 关联附件信息
+     * 比较并更新关联附件信息
      *
-     * @param req 附件ID列表所属的REQ
-     * @param id  附件所属的ID
+     * @param req 请求参数
+     * @param id  关联ID
      */
-    void linkAttachments(Object req, long id);
-
-    void compareAndUpdateLinkAttachments(FrameworkAgreementReq req, long id);
+    void compareAndUpdateAttachments(Object req, long id);
 
 }

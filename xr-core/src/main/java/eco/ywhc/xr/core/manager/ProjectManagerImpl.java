@@ -39,7 +39,7 @@ public class ProjectManagerImpl implements ProjectManager {
     }
 
     @Override
-    public void linkAttachments(ProjectReq req, long id) {
+    public void compareAndUpdateAttachments(ProjectReq req, long id) {
         Set<Long> meetingResolutionsAttachmentIds = req.getMeetingResolutionsAttachmentIds();
         attachmentManager.compareAndUpdate(id, meetingResolutionsAttachmentIds, FileOwnerType.MEETING_RESOLUTION);
         Set<Long> meetingMinutesAttachmentIds = req.getMeetingMinutesAttachmentIds();
