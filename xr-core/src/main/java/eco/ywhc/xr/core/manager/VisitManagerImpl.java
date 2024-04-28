@@ -43,6 +43,10 @@ public class VisitManagerImpl implements VisitManager {
     @Override
     public int createMany(Collection<VisitReq> visitReqs, long refId) {
         for (VisitReq visitReq : visitReqs) {
+            if (visitReq.getOfficial() && CollectionUtils.isEmpty(visitReq.getInvitationLetterAttachmentIds())) {
+                throw new InvalidInputException("正式拜访的邀请函不能为空");
+            }
+
             Set<Long> invitationLetterAttachmentIds = visitReq.getInvitationLetterAttachmentIds();
             if (CollectionUtils.isNotEmpty(invitationLetterAttachmentIds) &&
                     !attachmentManager.containsAll(invitationLetterAttachmentIds)) {

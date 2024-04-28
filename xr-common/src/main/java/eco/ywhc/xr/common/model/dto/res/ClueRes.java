@@ -6,6 +6,7 @@ import eco.ywhc.xr.common.constant.ClueStatusType;
 import lombok.Data;
 import org.sugar.crud.model.BaseRestResponse;
 
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -64,6 +65,16 @@ public class ClueRes implements BaseRestResponse {
     /**
      * 线索关联的审批
      */
-    Map<ApprovalType, List<ApprovalRes>> approvalMap;
+    private Map<ApprovalType, List<ApprovalRes>> approvalMap;
+
+    /**
+     * 创建时间
+     */
+    private OffsetDateTime createdAt;
+
+    /**
+     * 最后修改时间
+     */
+    private OffsetDateTime updatedAt;
 
 }

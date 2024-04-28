@@ -8,6 +8,7 @@ import lombok.Setter;
 import lombok.ToString;
 import org.sugar.crud.model.BaseRestResponse;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -113,5 +114,15 @@ public class FrameworkAgreementRes implements BaseRestResponse {
      * 框架协议签署附件信息
      */
     private List<AttachmentResponse> frameworkAgreementSigningAttachments;
+
+    /**
+     * 创建时间
+     */
+    private OffsetDateTime createdAt;
+
+    /**
+     * 最后修改时间
+     */
+    private OffsetDateTime updatedAt;
 
 }

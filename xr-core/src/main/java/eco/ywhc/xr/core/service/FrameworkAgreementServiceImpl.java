@@ -119,7 +119,8 @@ public class FrameworkAgreementServiceImpl implements FrameworkAgreementService 
         qw.lambda().eq(FrameworkAgreement::getDeleted, 0)
                 .eq(StringUtils.isNotBlank(query.getAssigneeId()), FrameworkAgreement::getAssigneeId, query.getAssigneeId())
                 .eq(Objects.nonNull(query.getAdcode()), FrameworkAgreement::getAdcode, query.getAdcode())
-                .eq(Objects.nonNull(query.getStatus()), FrameworkAgreement::getStatus, query.getStatus());
+                .eq(Objects.nonNull(query.getStatus()), FrameworkAgreement::getStatus, query.getStatus())
+                .orderByDesc(FrameworkAgreement::getId);
 
         var rows = frameworkAgreementMapper.selectPage(query.paging(true), qw);
         if (CollectionUtils.isEmpty(rows.getRecords())) {

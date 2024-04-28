@@ -74,7 +74,8 @@ public class ClueServiceImpl implements ClueService {
         qw.lambda().eq(Clue::getDeleted, false)
                 .eq(StringUtils.isNotBlank(query.getAssigneeId()), Clue::getAssigneeId, query.getAssigneeId())
                 .eq(query.getAdcode() != null, Clue::getAdcode, query.getAdcode())
-                .eq(query.getStatus() != null, Clue::getStatus, query.getStatus());
+                .eq(query.getStatus() != null, Clue::getStatus, query.getStatus())
+                .orderByDesc(Clue::getId);
         var rows = clueMapper.selectPage(query.paging(), qw);
         if (rows.getRecords().isEmpty()) {
             return PageableModelSet.from(query.paging());
@@ -86,6 +87,15 @@ public class ClueServiceImpl implements ClueService {
         var result = rows.convert(i -> {
             ClueRes res = clueConverter.toResponse(i);
             res.setAdministrativeDivision(administrativeDivisionMap.get(i.getAdcode()));
+            if (i.getAssigneeId() != null) {
+                LarkEmployee larkEmployee = larkEmployeeManager.retrieveLarkEmployee(i.getAssigneeId());
+                AssigneeRes assignee = AssigneeRes.builder()
+                        .assigneeId(i.getAssigneeId())
+                        .assigneeName(larkEmployee.getName())
+                        .avatarInfo(larkEmployee.getAvatarInfo())
+                        .build();
+                res.setAssignee(assignee);
+            }
             return res;
         });
 
@@ -140,7 +150,7 @@ public class ClueServiceImpl implements ClueService {
         int affected = clueMapper.updateById(clue);
 
         channelEntryManager.logicDeleteEntityByClueId(id);
-        fundingManager.createOne(req.getClueFunding(), id);
+        channelEntryManager.createOne(req.getClueChannelEntry(), id);
 
         fundingManager.logicDeleteEntityByClueId(id);
         fundingManager.createOne(req.getClueFunding(), id);

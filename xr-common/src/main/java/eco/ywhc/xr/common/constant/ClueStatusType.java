@@ -30,6 +30,11 @@ public enum ClueStatusType {
     CLUE_FOLLOW,
 
     /**
+     * 暂缓
+     */
+    CLUE_POSTPONED,
+
+    /**
      * 关闭
      */
     CLUE_CLOSE,

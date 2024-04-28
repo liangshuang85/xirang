@@ -98,7 +98,8 @@ public class ProjectServiceImpl implements ProjectService {
         qw.lambda().eq(Project::getDeleted, 0)
                 .eq(StringUtils.isNotBlank(query.getAssigneeId()), Project::getAssigneeId, query.getAssigneeId())
                 .eq(Objects.nonNull(query.getAdcode()), Project::getAdcode, query.getAdcode())
-                .eq(Objects.nonNull(query.getStatus()), Project::getStatus, query.getStatus());
+                .eq(Objects.nonNull(query.getStatus()), Project::getStatus, query.getStatus())
+                .orderByDesc(Project::getId);
 
         var rows = projectMapper.selectPage(query.paging(true), qw);
         if (CollectionUtils.isEmpty(rows.getRecords())) {

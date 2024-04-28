@@ -80,7 +80,7 @@ public class ChannelEntryManagerImpl implements ChannelEntryManager {
             if (!attachmentManager.containsAll(projectInfoAttachmentIds)) {
                 throw new InvalidInputException("项目基本情况统计表的附件ID列表错误");
             }
-            attachmentManager.update(projectFundingAttachmentIds, FileOwnerType.PROJECT_INFO_STATISTICS, id);
+            attachmentManager.update(projectInfoAttachmentIds, FileOwnerType.PROJECT_INFO_STATISTICS, id);
         }
     }
 

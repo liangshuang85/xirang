@@ -6,6 +6,7 @@ import eco.ywhc.xr.common.constant.TaskType;
 import lombok.Data;
 import org.sugar.crud.model.BaseRestResponse;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -89,5 +90,15 @@ public class ProjectRes implements BaseRestResponse {
      * 企业投资备案附件信息
      */
     private List<AttachmentResponse> enterpriseInvestmentRecordAttachments;
+
+    /**
+     * 创建时间
+     */
+    private OffsetDateTime createdAt;
+
+    /**
+     * 最后修改时间
+     */
+    private OffsetDateTime updatedAt;
 
 }

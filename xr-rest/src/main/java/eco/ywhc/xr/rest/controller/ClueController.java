@@ -61,7 +61,7 @@ public class ClueController {
      * @param id 线索ID
      */
     @PutMapping("/clues/{id}")
-    public OperationResult updateOne(@PathVariable Long id, @RequestBody ClueReq clue) {
+    public OperationResult updateOne(@PathVariable Long id, @Valid @RequestBody ClueReq clue) {
         int affected = clueService.updateOne(id, clue);
         return OperationResult.of(affected);
     }
