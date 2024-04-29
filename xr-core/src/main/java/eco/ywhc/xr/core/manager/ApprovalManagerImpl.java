@@ -129,7 +129,7 @@ public class ApprovalManagerImpl implements ApprovalManager {
         if (res.getApprovalStatus() != approvalStatusType) {
             res.setApprovalStatus(approvalStatusType);
             Approval entity = approvalMapper.findEntityById(res.getId());
-            entity.setApprovalStatus(entity.getApprovalStatus());
+            entity.setApprovalStatus(approvalStatusType);
             approvalMapper.updateById(entity);
         }
 
