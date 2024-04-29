@@ -30,11 +30,6 @@ public enum ClueStatusType {
     CLUE_FOLLOW,
 
     /**
-     * 暂缓
-     */
-    CLUE_POSTPONED,
-
-    /**
      * 关闭
      */
     CLUE_CLOSE,
@@ -43,11 +38,6 @@ public enum ClueStatusType {
      * 可预立项
      */
     CLUE_PROPOSABLE,
-
-    /**
-     * 可派生
-     */
-    CLUE_DERIVABLE,
 
     /**
      * 审批通过

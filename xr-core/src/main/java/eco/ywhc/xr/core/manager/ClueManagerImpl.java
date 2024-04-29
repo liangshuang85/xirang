@@ -1,6 +1,7 @@
 package eco.ywhc.xr.core.manager;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import eco.ywhc.xr.common.constant.ClueStatusType;
 import eco.ywhc.xr.common.model.entity.Clue;
 import eco.ywhc.xr.core.mapper.ClueMapper;
 import lombok.RequiredArgsConstructor;
@@ -8,6 +9,7 @@ import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 
 import java.time.Year;
+import java.util.List;
 
 /**
  * 基础线索信息(eco.ywhc.xr.common.model.entity.BClue)表服务实现类
@@ -38,6 +40,17 @@ public class ClueManagerImpl implements ClueManager {
         }
         String formattedNum = String.format("%03d", num);
         return "XS" + Year.now() + formattedNum;
+    }
+
+    @Override
+    public List<Clue> findEffectiveEntityByAdcode(@NonNull Long adcode) {
+        QueryWrapper<Clue> qw = new QueryWrapper<>();
+        qw.lambda().eq(Clue::getDeleted, false)
+                .eq(Clue::getAdcode, adcode);
+
+        return clueMapper.selectList(qw).stream()
+                .filter(i -> i.getStatus() != ClueStatusType.CLUE_CLOSE)
+                .toList();
     }
 
 }

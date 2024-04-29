@@ -8,6 +8,8 @@ import org.springframework.lang.NonNull;
 import org.springframework.transaction.annotation.Transactional;
 import org.sugar.crud.manager.BaseManager;
 
+import java.util.List;
+
 /**
  * 基础线索信息(eco.ywhc.xr.common.model.entity.BClue)表服务接口
  *
@@ -29,6 +31,13 @@ public interface ClueManager extends BaseManager<Long, Clue, ClueReq, ClueRes, C
      * 生成唯一线索编号
      */
     String generateUniqueId();
+
+    /**
+     * 根据地区编号查找有效线索
+     *
+     * @param adcode 地区编号
+     */
+    List<Clue> findEffectiveEntityByAdcode(@NonNull Long adcode);
 
 }
 

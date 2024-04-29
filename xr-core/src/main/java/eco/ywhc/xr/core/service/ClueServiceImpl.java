@@ -19,11 +19,12 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
-import org.sugar.commons.exception.InvalidInputException;
+import org.sugar.commons.exception.ConditionNotMetException;
 import org.sugar.crud.model.PageableModelSet;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -54,6 +55,11 @@ public class ClueServiceImpl implements ClueService {
 
     @Override
     public Long createOne(@NonNull ClueReq req) {
+        List<Clue> effectiveEntityByAdcode = clueManager.findEffectiveEntityByAdcode(req.getAdcode());
+        if (CollectionUtils.isNotEmpty(effectiveEntityByAdcode)) {
+            throw new ConditionNotMetException("不能重复新建线索");
+        }
+
         Clue clue = clueConverter.fromRequest(req);
         clue.setClueCode(clueManager.generateUniqueId());
         clueMapper.insert(clue);
@@ -141,11 +147,14 @@ public class ClueServiceImpl implements ClueService {
 
     @Override
     public int updateOne(@NonNull Long id, @NonNull ClueReq req) {
-        if (CollectionUtils.isNotEmpty(req.getClueVisits())) {
-            throw new InvalidInputException("不应该包含拜访信息");
+        Clue clue = clueManager.mustFoundEntityById(id);
+        if (!Objects.equals(req.getAdcode(), clue.getAdcode())) {
+            List<Clue> effectiveEntityByAdcode = clueManager.findEffectiveEntityByAdcode(req.getAdcode());
+            if (CollectionUtils.isNotEmpty(effectiveEntityByAdcode)) {
+                throw new ConditionNotMetException("该地区已经存在线索");
+            }
         }
 
-        Clue clue = clueManager.mustFoundEntityById(id);
         clueConverter.update(req, clue);
         int affected = clueMapper.updateById(clue);
 
@@ -154,6 +163,9 @@ public class ClueServiceImpl implements ClueService {
 
         fundingManager.logicDeleteEntityByClueId(id);
         fundingManager.createOne(req.getClueFunding(), id);
+
+        visitManager.logicDeleteAllEntitiesByRefId(id);
+        visitManager.createMany(req.getClueVisits(), id);
 
         return affected;
     }
