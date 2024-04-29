@@ -20,5 +20,9 @@ public enum TaskStatusType {
      * 已完成
      */
     done,
+    /**
+     * 已删除
+     */
+    deleted,
 
 }

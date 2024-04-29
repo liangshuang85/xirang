@@ -92,7 +92,7 @@ public class TaskServiceImpl implements TaskService {
             currentTask.setStatus(TaskStatusType.todo);
             taskMapper.updateById(currentTask);
             return 1;
-        } else if (currentTask.getStatus() == TaskStatusType.done) {
+        } else if (currentTask.getStatus() == TaskStatusType.done || currentTask.getStatus() == TaskStatusType.deleted) {
             Task newTask = taskConverter.with(currentTask);
             newTask.setTaskGuid(resp.getData().getTask().getGuid());
             newTask.setStatus(TaskStatusType.todo);

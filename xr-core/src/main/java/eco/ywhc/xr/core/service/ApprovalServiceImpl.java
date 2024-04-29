@@ -135,8 +135,10 @@ public class ApprovalServiceImpl implements ApprovalService {
             currentApproval.setApprovalStatus(ApprovalStatusType.PENDING);
             approvalMapper.updateById(currentApproval);
             return 1;
-        } else if (currentApproval.getApprovalStatus() == ApprovalStatusType.APPROVED
-                || currentApproval.getApprovalStatus() == ApprovalStatusType.PENDING) {
+        } else if (currentApproval.getApprovalStatus() == ApprovalStatusType.APPROVED ||
+                currentApproval.getApprovalStatus() == ApprovalStatusType.REJECTED ||
+                currentApproval.getApprovalStatus() == ApprovalStatusType.CANCELED ||
+                currentApproval.getApprovalStatus() == ApprovalStatusType.DELETED) {
             Approval newApproval = approvalConverter.with(currentApproval);
             newApproval.setApprovalInstanceId(resp.getData().getInstanceCode());
             newApproval.setApprovalStatus(ApprovalStatusType.PENDING);

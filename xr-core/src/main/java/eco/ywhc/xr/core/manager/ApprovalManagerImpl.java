@@ -149,6 +149,14 @@ public class ApprovalManagerImpl implements ApprovalManager {
                 })
                 .toList();
         res.setAssignees(assignees);
+
+        List<String> appLinks = Arrays.stream(taskList)
+                .filter(instanceTask -> ApprovalStatusType.PENDING.name().equals(instanceTask.getStatus()))
+                .map(instanceTask ->
+                        "https://applink.feishu.cn/client/mini_program/open?appId=cli_9cb844403dbb9108&mode=appCenter&path=pc/pages/in-process/index?enableTrusteeship=true&instanceId="
+                                + instanceTask.getId() + "&source=approval_bot&relaunch=true")
+                .toList();
+        res.setAppLinks(appLinks);
     }
 
     @Override

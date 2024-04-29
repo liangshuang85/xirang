@@ -1,6 +1,5 @@
 package eco.ywhc.xr.common.model.dto.res;
 
-
 import eco.ywhc.xr.common.constant.ApprovalStatusType;
 import eco.ywhc.xr.common.constant.ApprovalType;
 import lombok.Data;
@@ -49,5 +48,10 @@ public class ApprovalRes implements BaseRestResponse {
      * 部门名称
      */
     private String departmentName;
+
+    /**
+     * 审批单跳转地址
+     */
+    private List<String> appLinks = new ArrayList<>();
 
 }
