@@ -120,8 +120,13 @@ public class AdministrativeDivisionManagerImpl implements AdministrativeDivision
     }
 
     @Override
+    public AdministrativeDivision findEntityByAdcode(long adcode) {
+        return administrativeDivisionMapper.findEntityById(adcode);
+    }
+
+    @Override
     public AdministrativeDivisionRes findByAdcode(long adcode) {
-        AdministrativeDivision entity = administrativeDivisionMapper.findEntityById(adcode);
+        AdministrativeDivision entity = findEntityByAdcode(adcode);
         if (entity == null) {
             throw new ResourceNotFoundException("该行政区不存在");
         }
@@ -130,7 +135,7 @@ public class AdministrativeDivisionManagerImpl implements AdministrativeDivision
 
     @Override
     public AdministrativeDivisionRes findByAdcodeSurely(long adcode) {
-        AdministrativeDivision entity = administrativeDivisionMapper.findEntityById(adcode);
+        AdministrativeDivision entity = findEntityByAdcode(adcode);
         return administrativeDivisionConverter.toResponse(entity);
     }
 
@@ -166,6 +171,31 @@ public class AdministrativeDivisionManagerImpl implements AdministrativeDivision
         return result;
     }
 
+    @Override
+    public List<AdministrativeDivision> findAllEntitiesSince(long firstAdcode) {
+        AdministrativeDivision first = findEntityByAdcode(firstAdcode);
+        if (first == null) {
+            return Collections.emptyList();
+        }
+        List<AdministrativeDivision> divisions = new ArrayList<>();
+        divisions.add(first);
+        Map<Long, List<AdministrativeDivision>> parentEntitiesMap = groupEntitiesByParent(findAllEntities());
+        List<AdministrativeDivision> children = parentEntitiesMap.getOrDefault(firstAdcode, Collections.emptyList());
+        while (!children.isEmpty()) {
+            divisions.addAll(children);
+            children = children.stream()
+                    .map(child -> parentEntitiesMap.getOrDefault(child.getAdcode(), Collections.emptyList()))
+                    .flatMap(List::stream)
+                    .toList();
+        }
+        return divisions;
+    }
+
+    @Override
+    public List<Long> findAllEntityIdsSince(long firstAdcode) {
+        return findAllEntitiesSince(firstAdcode).stream().map(AdministrativeDivision::getAdcode).toList();
+    }
+
     private CompletableFuture<List<AdministrativeDivision>> findAllEntitiesAsync() {
         return CompletableFuture.supplyAsync(() -> {
             QueryWrapper<AdministrativeDivision> qw = Wrappers.query();
@@ -173,6 +203,15 @@ public class AdministrativeDivisionManagerImpl implements AdministrativeDivision
                     .orderByAsc(AdministrativeDivision::getAdcode);
             return administrativeDivisionMapper.selectList(qw);
         });
+    }
+
+    private Map<Long, List<AdministrativeDivision>> groupEntitiesByParent(Collection<AdministrativeDivision> divisions) {
+        if (CollectionUtils.isEmpty(divisions)) {
+            return Collections.emptyMap();
+        }
+        return divisions.stream()
+                .filter(i -> i.getParent() != null)
+                .collect(Collectors.groupingBy(AdministrativeDivision::getParent));
     }
 
     private Map<Long, List<AdministrativeDivisionRes>> groupByParent(Collection<AdministrativeDivisionRes> divisions) {

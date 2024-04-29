@@ -54,6 +54,13 @@ public interface AdministrativeDivisionManager {
      *
      * @param adcode 行政区划代码
      */
+    AdministrativeDivision findEntityByAdcode(long adcode);
+
+    /**
+     * 获取指定行政区
+     *
+     * @param adcode 行政区划代码
+     */
     AdministrativeDivisionRes findByAdcode(long adcode);
 
     /**
@@ -85,5 +92,19 @@ public interface AdministrativeDivisionManager {
      * @return Key为上级行政区的 {@link AdministrativeDivision#level 级别}，Value为 {@link AdministrativeDivision 行政区}
      */
     Map<Short, AdministrativeDivision> analyzeByAdcode(long adcode);
+
+    /**
+     * 查找从指定行政区开始的全部直接和间接下级行政区
+     *
+     * @param firstAdcode 第一个行政区划代码
+     */
+    List<AdministrativeDivision> findAllEntitiesSince(long firstAdcode);
+
+    /**
+     * 查找从指定行政区开始的全部直接和间接下级行政区，返回一个行政区划代码列表
+     *
+     * @param firstAdcode 第一个行政区划代码
+     */
+    List<Long> findAllEntityIdsSince(long firstAdcode);
 
 }
