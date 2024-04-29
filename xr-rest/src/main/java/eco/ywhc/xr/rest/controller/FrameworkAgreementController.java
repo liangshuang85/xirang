@@ -4,8 +4,10 @@ import eco.ywhc.xr.common.constant.FrameworkAgreementType;
 import eco.ywhc.xr.common.model.FrameworkAgreementStatus;
 import eco.ywhc.xr.common.model.dto.req.FrameworkAgreementReq;
 import eco.ywhc.xr.common.model.dto.res.FrameworkAgreementRes;
+import eco.ywhc.xr.common.model.dto.res.StatusTree;
 import eco.ywhc.xr.common.model.query.FrameworkAgreementQuery;
 import eco.ywhc.xr.core.service.FrameworkAgreementService;
+import eco.ywhc.xr.core.service.StatusFlowService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,6 +29,8 @@ import java.util.Map;
 public class FrameworkAgreementController {
 
     private final FrameworkAgreementService frameworkAgreementService;
+
+    private final StatusFlowService<FrameworkAgreementType> statusFlowService;
 
     /**
      * 新建一个框架协议项目
@@ -89,6 +93,14 @@ public class FrameworkAgreementController {
     @GetMapping("/frameworkAgreements/status")
     public Map<FrameworkAgreementType, List<FrameworkAgreementType>> getMap() {
         return FrameworkAgreementStatus.getMap();
+    }
+
+    /**
+     * 获取状态流转树
+     */
+    @GetMapping("/frameworkAgreements/statusFlow")
+    public List<StatusTree<FrameworkAgreementType>> getStatusTree() {
+        return statusFlowService.getStatusTree(FrameworkAgreementStatus.getMap());
     }
 
 }

@@ -4,8 +4,10 @@ import eco.ywhc.xr.common.constant.ClueStatusType;
 import eco.ywhc.xr.common.model.ClueStatus;
 import eco.ywhc.xr.common.model.dto.req.ClueReq;
 import eco.ywhc.xr.common.model.dto.res.ClueRes;
+import eco.ywhc.xr.common.model.dto.res.StatusTree;
 import eco.ywhc.xr.common.model.query.ClueQuery;
 import eco.ywhc.xr.core.service.ClueService;
+import eco.ywhc.xr.core.service.StatusFlowService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,6 +29,8 @@ import java.util.Map;
 public class ClueController {
 
     private final ClueService clueService;
+
+    private final StatusFlowService<ClueStatusType> statusFlowService;
 
     /**
      * 创建新的线索
@@ -87,6 +91,14 @@ public class ClueController {
     @GetMapping("/clues/status")
     public Map<ClueStatusType, List<ClueStatusType>> getMap() {
         return ClueStatus.getMap();
+    }
+
+    /**
+     * 获取状态流转树
+     */
+    @GetMapping("/clues/statusFlow")
+    public List<StatusTree<ClueStatusType>> getStatusTree() {
+        return statusFlowService.getStatusTree(ClueStatus.getMap());
     }
 
 }

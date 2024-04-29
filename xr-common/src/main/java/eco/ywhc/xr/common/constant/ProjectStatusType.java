@@ -6,12 +6,12 @@ import eco.ywhc.xr.common.annotation.DictionaryEntryConstant;
  * 项目状态类型
  */
 @DictionaryEntryConstant
-public enum ProjectType {
+public enum ProjectStatusType {
 
     /**
-     * 待立项会
+     * 新建
      */
-    PENDING_PROJECT_MEETING,
+    NEW,
 
     /**
      * 投资协议拟定
@@ -31,7 +31,7 @@ public enum ProjectType {
     /**
      * 投资协议终审
      */
-    INVESTMENT_AGREEMENT_Final_Review,
+    INVESTMENT_AGREEMENT_FINAL_REVIEW,
 
     /**
      * 投资协议签订

@@ -1,7 +1,7 @@
 package eco.ywhc.xr.common.model.dto.res;
 
 import eco.ywhc.xr.common.constant.ApprovalType;
-import eco.ywhc.xr.common.constant.ProjectType;
+import eco.ywhc.xr.common.constant.ProjectStatusType;
 import eco.ywhc.xr.common.constant.TaskType;
 import lombok.Data;
 import org.sugar.crud.model.BaseRestResponse;
@@ -34,7 +34,7 @@ public class ProjectRes implements BaseRestResponse {
     /**
      * 项目状态
      */
-    private ProjectType status;
+    private ProjectStatusType status;
 
     /**
      * 行政区

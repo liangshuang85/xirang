@@ -20,8 +20,10 @@ public class FrameworkAgreementStatus {
         map.put(FrameworkAgreementType.PROJECT_PROPOSAL_INTERNAL_REVIEW, List.of(FrameworkAgreementType.GOVERNMENT_APPROVAL));
         map.put(FrameworkAgreementType.GOVERNMENT_APPROVAL, List.of(FrameworkAgreementType.FRAMEWORK_AGREEMENT_DRAFTING, FrameworkAgreementType.GOVERNMENT_APPROVAL_REFUSED));
         map.put(FrameworkAgreementType.FRAMEWORK_AGREEMENT_DRAFTING, List.of(FrameworkAgreementType.PENDING_PROJECT_MEETING));
-        map.put(FrameworkAgreementType.PENDING_PROJECT_MEETING, List.of(FrameworkAgreementType.CLOSED, FrameworkAgreementType.FRAMEWORK_AGREEMENT_INTERNAL_REVIEW));
+        map.put(FrameworkAgreementType.PENDING_PROJECT_MEETING, List.of(FrameworkAgreementType.FRAMEWORK_AGREEMENT_INTERNAL_REVIEW));
         map.put(FrameworkAgreementType.FRAMEWORK_AGREEMENT_INTERNAL_REVIEW, List.of(FrameworkAgreementType.FRAMEWORK_AGREEMENT_SIGNING));
+        map.put(FrameworkAgreementType.GOVERNMENT_APPROVAL_REFUSED, List.of());
+        map.put(FrameworkAgreementType.FRAMEWORK_AGREEMENT_SIGNING, List.of());
     }
 
     public static Map<FrameworkAgreementType, List<FrameworkAgreementType>> getMap() {

@@ -1,6 +1,6 @@
 package eco.ywhc.xr.common.model.query;
 
-import eco.ywhc.xr.common.constant.ProjectType;
+import eco.ywhc.xr.common.constant.ProjectStatusType;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
@@ -18,7 +18,7 @@ public class ProjectQuery extends BasePageQuery {
     /**
      * 框架协议项目状态
      */
-    private ProjectType status;
+    private ProjectStatusType status;
 
     /**
      * 所属行政区划代码

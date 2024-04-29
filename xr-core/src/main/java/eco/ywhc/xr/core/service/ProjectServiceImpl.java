@@ -3,7 +3,7 @@ package eco.ywhc.xr.core.service;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import eco.ywhc.xr.common.constant.ApprovalType;
 import eco.ywhc.xr.common.constant.FileOwnerType;
-import eco.ywhc.xr.common.constant.ProjectType;
+import eco.ywhc.xr.common.constant.ProjectStatusType;
 import eco.ywhc.xr.common.constant.TaskType;
 import eco.ywhc.xr.common.converter.ProjectConverter;
 import eco.ywhc.xr.common.converter.ProjectInformationConverter;
@@ -80,7 +80,7 @@ public class ProjectServiceImpl implements ProjectService {
     public Long createOne(@NonNull ProjectReq req) {
         Project project = projectConverter.fromRequest(req);
         project.setCode(generateUniqueId());
-        project.setStatus(ProjectType.PENDING_PROJECT_MEETING);
+        project.setStatus(ProjectStatusType.NEW);
         projectMapper.insert(project);
         projectManager.compareAndUpdateAttachments(req, project.getId());
         ProjectInformation projectInformation = projectInformationConverter.fromRequest(req.getProjectInformation());

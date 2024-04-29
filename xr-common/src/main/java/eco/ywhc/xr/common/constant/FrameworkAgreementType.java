@@ -56,11 +56,13 @@ public enum FrameworkAgreementType {
     /**
      * 暂缓
      */
+    @Deprecated
     POSTPONED,
 
     /**
      * 关闭
      */
+    @Deprecated
     CLOSED,
 
 }

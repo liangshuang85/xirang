@@ -4,7 +4,7 @@ package eco.ywhc.xr.common.model.entity;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import eco.ywhc.xr.common.constant.ProjectType;
+import eco.ywhc.xr.common.constant.ProjectStatusType;
 import lombok.Getter;
 import lombok.Setter;
 import org.sugar.crud.entity.IdentifiableEntity;
@@ -38,7 +38,7 @@ public class Project extends BaseEntity implements IdentifiableEntity<Long> {
     /**
      * 项目状态
      */
-    private ProjectType status;
+    private ProjectStatusType status;
 
     /**
      * 行政区划代码

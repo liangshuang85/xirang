@@ -1,11 +1,13 @@
 package eco.ywhc.xr.rest.controller;
 
-import eco.ywhc.xr.common.constant.ProjectType;
+import eco.ywhc.xr.common.constant.ProjectStatusType;
 import eco.ywhc.xr.common.model.ProjectStatus;
 import eco.ywhc.xr.common.model.dto.req.ProjectReq;
 import eco.ywhc.xr.common.model.dto.res.ProjectRes;
+import eco.ywhc.xr.common.model.dto.res.StatusTree;
 import eco.ywhc.xr.common.model.query.ProjectQuery;
 import eco.ywhc.xr.core.service.ProjectService;
+import eco.ywhc.xr.core.service.StatusFlowService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,6 +29,8 @@ import java.util.Map;
 public class ProjectController {
 
     private final ProjectService projectService;
+
+    private final StatusFlowService<ProjectStatusType> statusFlowService;
 
     /**
      * 新建一个项目
@@ -87,8 +91,16 @@ public class ProjectController {
      * value：当前状态可以变更为的状态列表
      */
     @GetMapping("/projects/status")
-    public Map<ProjectType, List<ProjectType>> getMap() {
+    public Map<ProjectStatusType, List<ProjectStatusType>> getMap() {
         return ProjectStatus.getMap();
+    }
+
+    /**
+     * 获取状态流转树
+     */
+    @GetMapping("/projects/statusFlow")
+    public List<StatusTree<ProjectStatusType>> getStatusTree() {
+        return statusFlowService.getStatusTree(ProjectStatus.getMap());
     }
 
 }
