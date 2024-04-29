@@ -3,7 +3,6 @@ package eco.ywhc.xr.core.service;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import eco.ywhc.xr.common.constant.ApprovalType;
 import eco.ywhc.xr.common.constant.FileOwnerType;
-import eco.ywhc.xr.common.constant.ProjectStatusType;
 import eco.ywhc.xr.common.constant.TaskType;
 import eco.ywhc.xr.common.converter.ProjectConverter;
 import eco.ywhc.xr.common.converter.ProjectInformationConverter;
@@ -80,7 +79,6 @@ public class ProjectServiceImpl implements ProjectService {
     public Long createOne(@NonNull ProjectReq req) {
         Project project = projectConverter.fromRequest(req);
         project.setCode(generateUniqueId());
-        project.setStatus(ProjectStatusType.NEW);
         projectMapper.insert(project);
         projectManager.compareAndUpdateAttachments(req, project.getId());
         ProjectInformation projectInformation = projectInformationConverter.fromRequest(req.getProjectInformation());
@@ -94,11 +92,18 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     public PageableModelSet<ProjectRes> findMany(@NonNull ProjectQuery query) {
+        List<Long> adIds = new ArrayList<>();
+        if (query.getAdcode() != null) {
+            adIds = administrativeDivisionManager.findAllEntityIdsSince(query.getAdcode());
+            if (CollectionUtils.isEmpty(adIds)) {
+                return PageableModelSet.from(query.paging());
+            }
+        }
         QueryWrapper<Project> qw = new QueryWrapper<>();
         qw.lambda().eq(Project::getDeleted, 0)
                 .eq(StringUtils.isNotBlank(query.getAssigneeId()), Project::getAssigneeId, query.getAssigneeId())
-                .eq(Objects.nonNull(query.getAdcode()), Project::getAdcode, query.getAdcode())
                 .eq(Objects.nonNull(query.getStatus()), Project::getStatus, query.getStatus())
+                .in(CollectionUtils.isNotEmpty(adIds), Project::getAdcode, adIds)
                 .orderByDesc(Project::getId);
 
         var rows = projectMapper.selectPage(query.paging(true), qw);

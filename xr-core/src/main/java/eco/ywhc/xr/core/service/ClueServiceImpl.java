@@ -6,6 +6,7 @@ import eco.ywhc.xr.common.converter.ClueConverter;
 import eco.ywhc.xr.common.event.ClueCreatedEvent;
 import eco.ywhc.xr.common.model.dto.req.ClueReq;
 import eco.ywhc.xr.common.model.dto.res.*;
+import eco.ywhc.xr.common.model.entity.AdministrativeDivision;
 import eco.ywhc.xr.common.model.entity.Clue;
 import eco.ywhc.xr.common.model.lark.LarkEmployee;
 import eco.ywhc.xr.common.model.query.ClueQuery;
@@ -22,10 +23,7 @@ import org.springframework.stereotype.Service;
 import org.sugar.commons.exception.ConditionNotMetException;
 import org.sugar.crud.model.PageableModelSet;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -76,11 +74,18 @@ public class ClueServiceImpl implements ClueService {
 
     @Override
     public PageableModelSet<ClueRes> findMany(@NonNull ClueQuery query) {
+        List<Long> adIds = new ArrayList<>();
+        if (query.getAdcode() != null) {
+            adIds = administrativeDivisionManager.findAllEntityIdsSince(query.getAdcode());
+            if (CollectionUtils.isEmpty(adIds)) {
+                return PageableModelSet.from(query.paging());
+            }
+        }
         QueryWrapper<Clue> qw = new QueryWrapper<>();
         qw.lambda().eq(Clue::getDeleted, false)
                 .eq(StringUtils.isNotBlank(query.getAssigneeId()), Clue::getAssigneeId, query.getAssigneeId())
-                .eq(query.getAdcode() != null, Clue::getAdcode, query.getAdcode())
                 .eq(query.getStatus() != null, Clue::getStatus, query.getStatus())
+                .in(CollectionUtils.isNotEmpty(adIds), Clue::getAdcode, adIds)
                 .orderByDesc(Clue::getId);
         var rows = clueMapper.selectPage(query.paging(), qw);
         if (rows.getRecords().isEmpty()) {

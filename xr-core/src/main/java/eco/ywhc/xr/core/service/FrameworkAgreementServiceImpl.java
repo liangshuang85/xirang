@@ -115,11 +115,18 @@ public class FrameworkAgreementServiceImpl implements FrameworkAgreementService 
 
     @Override
     public PageableModelSet<FrameworkAgreementRes> findMany(@NonNull FrameworkAgreementQuery query) {
+        List<Long> adIds = new ArrayList<>();
+        if (query.getAdcode() != null) {
+            adIds = administrativeDivisionManager.findAllEntityIdsSince(query.getAdcode());
+            if (CollectionUtils.isEmpty(adIds)) {
+                return PageableModelSet.from(query.paging());
+            }
+        }
         QueryWrapper<FrameworkAgreement> qw = new QueryWrapper<>();
         qw.lambda().eq(FrameworkAgreement::getDeleted, 0)
                 .eq(StringUtils.isNotBlank(query.getAssigneeId()), FrameworkAgreement::getAssigneeId, query.getAssigneeId())
-                .eq(Objects.nonNull(query.getAdcode()), FrameworkAgreement::getAdcode, query.getAdcode())
                 .eq(Objects.nonNull(query.getStatus()), FrameworkAgreement::getStatus, query.getStatus())
+                .in(CollectionUtils.isNotEmpty(adIds), FrameworkAgreement::getAdcode, adIds)
                 .orderByDesc(FrameworkAgreement::getId);
 
         var rows = frameworkAgreementMapper.selectPage(query.paging(true), qw);
