@@ -8,7 +8,9 @@ import eco.ywhc.xr.common.constant.TaskStatusType;
 import eco.ywhc.xr.common.model.dto.res.TaskRes;
 import eco.ywhc.xr.common.model.entity.BaseEntity;
 import eco.ywhc.xr.common.model.entity.Task;
+import eco.ywhc.xr.common.model.entity.TaskTemplate;
 import eco.ywhc.xr.core.mapper.TaskMapper;
+import eco.ywhc.xr.core.mapper.TaskTemplateMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.lang.NonNull;
@@ -28,6 +30,8 @@ import java.util.stream.Collectors;
 public class TaskMangerImpl implements TaskManager {
 
     private final TaskMapper taskMapper;
+
+    private final TaskTemplateMapper taskTemplateMapper;
 
     private final Client client;
 
@@ -92,6 +96,14 @@ public class TaskMangerImpl implements TaskManager {
         res.setCompletedAt(taskData.getCompletedAt());
         res.setType(task.getType());
         return res;
+    }
+
+    @Override
+    public TaskTemplate getTaskTemplateById(long id) {
+        QueryWrapper<TaskTemplate> qw = new QueryWrapper<>();
+        qw.lambda().eq(TaskTemplate::getDeleted, 0)
+                .eq(TaskTemplate::getId, id);
+        return taskTemplateMapper.selectOne(qw);
     }
 
     @Override

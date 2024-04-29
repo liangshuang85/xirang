@@ -2,6 +2,7 @@ package eco.ywhc.xr.core.manager;
 
 import eco.ywhc.xr.common.model.dto.res.TaskRes;
 import eco.ywhc.xr.common.model.entity.Task;
+import eco.ywhc.xr.common.model.entity.TaskTemplate;
 import org.springframework.lang.NonNull;
 
 import java.util.List;
@@ -26,6 +27,13 @@ public interface TaskManager {
      * 获取飞书任务
      */
     TaskRes getLarkTask(Task task);
+
+    /**
+     * 根据ID获取任务模板
+     *
+     * @param id 任务模板ID
+     */
+    TaskTemplate getTaskTemplateById(long id);
 
     Task findEntityById(@NonNull Long id);
 

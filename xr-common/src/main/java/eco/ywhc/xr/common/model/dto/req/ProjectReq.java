@@ -1,5 +1,6 @@
 package eco.ywhc.xr.common.model.dto.req;
 
+import eco.ywhc.xr.common.constant.ProjectStatusType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -40,6 +41,12 @@ public class ProjectReq implements BaseRestRequest {
     @NotBlank
     @Size(max = 40)
     private String assigneeId;
+
+    /**
+     * 项目状态
+     */
+    @NotNull
+    private ProjectStatusType status;
 
     /**
      * 项目信息Req
