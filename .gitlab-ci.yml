@@ -1,0 +1,4 @@
+include:
+  - project: 'gitlab/gitlab-ci-config'
+    ref: master
+    file: 'config/ywhc-xirang-xirang-backend.yml'
