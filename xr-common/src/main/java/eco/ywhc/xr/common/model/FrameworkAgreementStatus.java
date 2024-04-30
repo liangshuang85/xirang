@@ -22,7 +22,7 @@ public class FrameworkAgreementStatus {
         map.put(FrameworkAgreementType.FRAMEWORK_AGREEMENT_DRAFTING, List.of(FrameworkAgreementType.PENDING_PROJECT_MEETING));
         map.put(FrameworkAgreementType.PENDING_PROJECT_MEETING, List.of(FrameworkAgreementType.FRAMEWORK_AGREEMENT_INTERNAL_REVIEW));
         map.put(FrameworkAgreementType.FRAMEWORK_AGREEMENT_INTERNAL_REVIEW, List.of(FrameworkAgreementType.FRAMEWORK_AGREEMENT_SIGNING));
-        map.put(FrameworkAgreementType.GOVERNMENT_APPROVAL_REFUSED, List.of());
+        map.put(FrameworkAgreementType.GOVERNMENT_APPROVAL_REFUSED, List.of(FrameworkAgreementType.PROJECT_PROPOSAL_DRAFTING));
         map.put(FrameworkAgreementType.FRAMEWORK_AGREEMENT_SIGNING, List.of());
     }
 

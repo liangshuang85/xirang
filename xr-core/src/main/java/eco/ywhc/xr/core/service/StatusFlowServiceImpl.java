@@ -6,9 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 @Slf4j
@@ -21,7 +19,7 @@ public class StatusFlowServiceImpl<T extends Enum<T>> implements StatusFlowServi
         if (CollectionUtils.isEmpty(roots)) {
             return Collections.emptyList();
         } else {
-            return roots.stream().map(i -> convertToTree(i, statusMap)).toList();
+            return roots.stream().map(i -> convertToTree(i, statusMap, new HashSet<>())).toList();
         }
     }
 
@@ -43,13 +41,20 @@ public class StatusFlowServiceImpl<T extends Enum<T>> implements StatusFlowServi
      * @param root 根节点
      * @param <T2> 状态关系Map
      */
-    private <T2> StatusTree<T2> convertToTree(T2 root, Map<T2, List<T2>> statusMap) {
+    private <T2> StatusTree<T2> convertToTree(T2 root, Map<T2, List<T2>> statusMap, Set<T2> visited) {
+        if (visited.contains(root)) {
+            return null;
+        }
+        visited.add(root);
+
         StatusTree<T2> tree = new StatusTree<>();
         tree.setStatus(root);
         if (statusMap.containsKey(root)) {
             statusMap.get(root).forEach(child -> {
-                StatusTree<T2> childNode = convertToTree(child, statusMap);
-                tree.getChildren().add(childNode);
+                StatusTree<T2> childNode = convertToTree(child, statusMap, visited);
+                if (childNode != null) {
+                    tree.getChildren().add(childNode);
+                }
             });
         }
         return tree;
