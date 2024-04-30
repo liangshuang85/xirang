@@ -18,7 +18,6 @@ import eco.ywhc.xr.common.model.lark.LarkEmployee;
 import eco.ywhc.xr.core.manager.lark.LarkEmployeeManager;
 import eco.ywhc.xr.core.mapper.ApprovalMapper;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import org.sugar.commons.exception.InternalErrorException;
@@ -41,8 +40,6 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class ApprovalManagerImpl implements ApprovalManager {
-
-    private final ApplicationEventPublisher applicationEventPublisher;
 
     private final Client client;
 
@@ -200,6 +197,17 @@ public class ApprovalManagerImpl implements ApprovalManager {
             case PROJECT -> projectManager.findEntityById(refId).getAssigneeId();
         };
 
+    }
+
+    @Override
+    public List<Approval> listApprovals(long prevApprovalId, int limit) {
+        QueryWrapper<Approval> qw = new QueryWrapper<>();
+        qw.lambda().eq(Approval::getDeleted, 0)
+                .eq(Approval::getApprovalStatus, ApprovalStatusType.PENDING)
+                .gt(Approval::getId, prevApprovalId)
+                .orderByAsc(Approval::getId)
+                .last("LIMIT " + limit);
+        return approvalMapper.selectList(qw);
     }
 
 }

@@ -137,6 +137,17 @@ public class TaskMangerImpl implements TaskManager {
     }
 
     @Override
+    public List<Task> listTasks(long prevTaskId, int limit) {
+        QueryWrapper<Task> qw = new QueryWrapper<>();
+        qw.lambda().eq(Task::getDeleted, 0)
+                .eq(Task::getStatus, TaskStatusType.todo)
+                .gt(Task::getId, prevTaskId)
+                .orderByAsc(Task::getId)
+                .last("LIMIT " + limit);
+        return taskMapper.selectList(qw);
+    }
+
+    @Override
     public Task findEntityById(@NonNull Long id) {
         return taskMapper.findEntityById(id);
     }

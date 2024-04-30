@@ -88,5 +88,13 @@ public interface ApprovalManager {
      */
     String getOpenIdByRefTypeAndRefId(ApprovalTemplateRefType refType, long refId);
 
+    /**
+     * 获取审核中的审批列表
+     *
+     * @param prevApprovalId 上一个审批ID
+     * @param limit          限制数量
+     */
+    List<Approval> listApprovals(long prevApprovalId, int limit);
+
 }
 

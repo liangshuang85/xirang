@@ -43,6 +43,14 @@ public interface TaskManager {
      */
     DepartmentRes getDepartmentByDepartmentId(@NonNull String departmentId);
 
+    /**
+     * 获取未完成的任务列表
+     *
+     * @param prevTaskId 上一个任务ID
+     * @param limit      限制数量
+     */
+    List<Task> listTasks(long prevTaskId, int limit);
+
     Task findEntityById(@NonNull Long id);
 
 }
