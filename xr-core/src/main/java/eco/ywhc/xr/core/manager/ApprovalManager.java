@@ -47,11 +47,11 @@ public interface ApprovalManager {
     List<ApprovalRes> findAllByClueId(long clueId);
 
     /**
-     * 根据线索Id删除审批
+     * 根据关联对象Id删除审批
      *
-     * @param clueId 线索id
+     * @param refId 关联对象id
      */
-    void logicDeleteAllEntitiesByClueId(long clueId);
+    void logicDeleteAllEntitiesByRefId(long refId);
 
     /**
      * 通过关联ID查询审批记录

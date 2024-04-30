@@ -6,7 +6,6 @@ import eco.ywhc.xr.common.converter.ClueConverter;
 import eco.ywhc.xr.common.event.ClueCreatedEvent;
 import eco.ywhc.xr.common.model.dto.req.ClueReq;
 import eco.ywhc.xr.common.model.dto.res.*;
-import eco.ywhc.xr.common.model.entity.AdministrativeDivision;
 import eco.ywhc.xr.common.model.entity.Clue;
 import eco.ywhc.xr.common.model.lark.LarkEmployee;
 import eco.ywhc.xr.common.model.query.ClueQuery;
@@ -183,7 +182,7 @@ public class ClueServiceImpl implements ClueService {
         channelEntryManager.logicDeleteEntityByClueId(id);
         fundingManager.logicDeleteEntityByClueId(id);
         visitManager.logicDeleteAllEntitiesByRefId(id);
-        approvalManager.logicDeleteAllEntitiesByClueId(id);
+        approvalManager.logicDeleteAllEntitiesByRefId(id);
 
         return affected;
     }

@@ -84,10 +84,10 @@ public class ApprovalManagerImpl implements ApprovalManager {
     }
 
     @Override
-    public void logicDeleteAllEntitiesByClueId(long clueId) {
+    public void logicDeleteAllEntitiesByRefId(long refId) {
         UpdateWrapper<Approval> uw = new UpdateWrapper<>();
         uw.lambda().eq(Approval::getDeleted, false)
-                .eq(Approval::getRefId, clueId)
+                .eq(Approval::getRefId, refId)
                 .set(Approval::getDeleted, true);
         approvalMapper.update(null, uw);
     }

@@ -269,6 +269,9 @@ public class FrameworkAgreementServiceImpl implements FrameworkAgreementService 
         frameworkAgreementManager.compareAndUpdateAttachments(req.getFrameworkAgreementProjectFunding(), frameworkAgreementProjectFunding.getId());
         frameworkAgreementProjectFundingMapper.updateById(frameworkAgreementProjectFunding);
 
+        visitManager.logicDeleteAllEntitiesByRefId(id);
+        visitManager.createMany(req.getFrameworkVisits(), id);
+
         return affected;
     }
 
@@ -281,6 +284,8 @@ public class FrameworkAgreementServiceImpl implements FrameworkAgreementService 
         frameworkAgreementProjectFundingMapper.logicDeleteEntityById(frameworkAgreementManager.getProjectFundingByFrameworkAgreementId(id).getId());
         frameworkAgreementChannelEntryMapper.logicDeleteEntityById(frameworkAgreementManager.getChannelEntryByFrameworkAgreementId(id).getId());
         taskManager.logicDeleteEntityById(id);
+        approvalManager.logicDeleteAllEntitiesByRefId(id);
+        visitManager.logicDeleteAllEntitiesByRefId(id);
         return frameworkAgreementMapper.logicDeleteEntityById(id);
     }
 
