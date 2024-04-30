@@ -42,20 +42,17 @@ public class StatusFlowServiceImpl<T extends Enum<T>> implements StatusFlowServi
      * @param <T2> 状态关系Map
      */
     private <T2> StatusTree<T2> convertToTree(T2 root, Map<T2, List<T2>> statusMap, Set<T2> visited) {
-        if (visited.contains(root)) {
-            return null;
-        }
-        visited.add(root);
-
         StatusTree<T2> tree = new StatusTree<>();
         tree.setStatus(root);
-        if (statusMap.containsKey(root)) {
-            statusMap.get(root).forEach(child -> {
-                StatusTree<T2> childNode = convertToTree(child, statusMap, visited);
-                if (childNode != null) {
+
+        if (!visited.contains(root)) {
+            visited.add(root);
+            if (statusMap.containsKey(root)) {
+                statusMap.get(root).forEach(child -> {
+                    StatusTree<T2> childNode = convertToTree(child, statusMap, new HashSet<>(visited));
                     tree.getChildren().add(childNode);
-                }
-            });
+                });
+            }
         }
         return tree;
     }
