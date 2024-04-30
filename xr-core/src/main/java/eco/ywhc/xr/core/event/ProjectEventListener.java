@@ -56,7 +56,7 @@ public class ProjectEventListener {
     }
 
     public void createTasks(long id, TaskType type) {
-        List<Task> tasks = taskTemplateManager.listByType(TaskTemplateRefType.FRAMEWORK_AGREEMENT, type).stream()
+        List<Task> tasks = taskTemplateManager.listByType(TaskTemplateRefType.PROJECT, type).stream()
                 .map(i -> {
                     Task task = new Task();
                     DepartmentRes departmentRes = taskManager.getDepartmentByDepartmentId(i.getDepartmentId());

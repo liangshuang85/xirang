@@ -114,6 +114,8 @@ public class TaskMangerImpl implements TaskManager {
     public DepartmentRes getDepartmentByDepartmentId(@NonNull String departmentId) {
         GetDepartmentReq req = GetDepartmentReq.newBuilder()
                 .departmentId(departmentId)
+                .userIdType("open_id")
+                .departmentIdType("department_id")
                 .build();
         GetDepartmentResp resp;
         try {
