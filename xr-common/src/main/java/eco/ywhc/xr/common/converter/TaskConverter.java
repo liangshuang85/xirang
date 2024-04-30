@@ -8,6 +8,7 @@ import org.mapstruct.Mapping;
 @Mapper
 public interface TaskConverter {
 
+    @Mapping(source = "department",target = "departmentName")
     TaskRes toResponse(Task task);
 
     @Mapping(target = "id", ignore = true)
