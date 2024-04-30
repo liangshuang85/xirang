@@ -16,9 +16,9 @@ public class ProjectStatus {
     @PostConstruct
     public void initProjectStatus() {
         map.put(ProjectStatusType.NEW, List.of(ProjectStatusType.INVESTMENT_AGREEMENT_DRAFTING));
-        map.put(ProjectStatusType.INVESTMENT_AGREEMENT_DRAFTING, List.of(ProjectStatusType.INVESTMENT_AGREEMENT_INTERNAL_REVIEW, ProjectStatusType.PENDING_DECISION));
+        map.put(ProjectStatusType.INVESTMENT_AGREEMENT_DRAFTING, List.of(ProjectStatusType.INVESTMENT_AGREEMENT_INTERNAL_REVIEW));
         map.put(ProjectStatusType.INVESTMENT_AGREEMENT_INTERNAL_REVIEW, List.of(ProjectStatusType.PENDING_DECISION));
-        map.put(ProjectStatusType.PENDING_DECISION, List.of(ProjectStatusType.INVESTMENT_AGREEMENT_FINAL_REVIEW));
+        map.put(ProjectStatusType.PENDING_DECISION, List.of(ProjectStatusType.INVESTMENT_AGREEMENT_DRAFTING, ProjectStatusType.INVESTMENT_AGREEMENT_FINAL_REVIEW));
         map.put(ProjectStatusType.INVESTMENT_AGREEMENT_FINAL_REVIEW, List.of(ProjectStatusType.INVESTMENT_AGREEMENT_SIGNING));
         map.put(ProjectStatusType.INVESTMENT_AGREEMENT_SIGNING, List.of(ProjectStatusType.ENTERPRISE_FILING));
         map.put(ProjectStatusType.ENTERPRISE_FILING, List.of(ProjectStatusType.FILING_COMPLETED));
