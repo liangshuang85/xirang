@@ -94,6 +94,7 @@ public class TaskMangerImpl implements TaskManager {
         } else {
             res.setStatus(task.getStatus());
         }
+        res.setDepartmentName(task.getDepartment());
         res.setId(task.getId());
         res.setTaskUrl(taskData.getUrl());
         res.setSummary(taskData.getSummary());
