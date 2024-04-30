@@ -66,7 +66,7 @@ public class LarkEmployeeManagerImpl implements LarkEmployeeManager {
      *
      * @param userId 用户OpenId
      */
-    @Cacheable(cacheNames = "larkEmployees", key = "#p0", sync = true)
+    @Cacheable(cacheNames = "larkEmployees", key = "#p0", unless = "#result == null")
     public LarkEmployee retrieveLarkEmployee(String userId) {
         log.debug("获取用户信息，用户OpenId：{}", userId);
         GetUserReq req = GetUserReq.newBuilder()
