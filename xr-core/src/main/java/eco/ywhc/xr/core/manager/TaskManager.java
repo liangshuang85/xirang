@@ -1,5 +1,6 @@
 package eco.ywhc.xr.core.manager;
 
+import eco.ywhc.xr.common.model.dto.res.DepartmentRes;
 import eco.ywhc.xr.common.model.dto.res.TaskRes;
 import eco.ywhc.xr.common.model.entity.Task;
 import eco.ywhc.xr.common.model.entity.TaskTemplate;
@@ -34,6 +35,13 @@ public interface TaskManager {
      * @param id 任务模板ID
      */
     TaskTemplate getTaskTemplateById(long id);
+
+    /**
+     * 根据部门ID从飞书获取部门信息
+     *
+     * @param departmentId 部门ID
+     */
+    DepartmentRes getDepartmentByDepartmentId(@NonNull String departmentId);
 
     Task findEntityById(@NonNull Long id);
 

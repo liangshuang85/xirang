@@ -4,9 +4,11 @@ import eco.ywhc.xr.common.constant.*;
 import eco.ywhc.xr.common.converter.ApprovalConverter;
 import eco.ywhc.xr.common.converter.TaskConverter;
 import eco.ywhc.xr.common.event.ProjectCreatedEvent;
+import eco.ywhc.xr.common.model.dto.res.DepartmentRes;
 import eco.ywhc.xr.common.model.entity.Approval;
 import eco.ywhc.xr.common.model.entity.Task;
 import eco.ywhc.xr.core.manager.ApprovalTemplateManager;
+import eco.ywhc.xr.core.manager.TaskManager;
 import eco.ywhc.xr.core.manager.TaskTemplateManager;
 import eco.ywhc.xr.core.mapper.ApprovalMapper;
 import eco.ywhc.xr.core.mapper.TaskMapper;
@@ -41,6 +43,8 @@ public class ProjectEventListener {
 
     private final ApprovalMapper approvalMapper;
 
+    private final TaskManager taskManager;
+
     @Async
     @TransactionalEventListener
     public void onApplicationEvent(ProjectCreatedEvent event) {
@@ -54,7 +58,11 @@ public class ProjectEventListener {
     public void createTasks(long id, TaskType type) {
         List<Task> tasks = taskTemplateManager.listByType(TaskTemplateRefType.FRAMEWORK_AGREEMENT, type).stream()
                 .map(i -> {
-                    Task task = taskConverter.fromTaskTemplate(i);
+                    Task task = new Task();
+                    DepartmentRes departmentRes = taskManager.getDepartmentByDepartmentId(i.getDepartmentId());
+                    task.setDepartment(departmentRes.getName());
+                    task.setAssigneeId(departmentRes.getLeaderUserId());
+                    task.setType(i.getType());
                     task.setCompletedAt("0");
                     task.setRefId(id);
                     task.setStatus(TaskStatusType.pending);

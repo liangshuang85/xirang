@@ -26,14 +26,9 @@ public class TaskTemplate extends BaseEntity implements IdentifiableEntity<Long>
     private Long id;
 
     /**
-     * 任务模板部门名称
+     * 任务模板部门ID
      */
-    private String department;
-
-    /**
-     * 任务模板负责人的飞书OpenID
-     */
-    private String assigneeId;
+    private String departmentId;
 
     /**
      * 任务模板类型
