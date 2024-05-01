@@ -15,7 +15,6 @@ import eco.ywhc.xr.core.mapper.TaskMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionalEventListener;
@@ -45,7 +44,6 @@ public class FrameworkAgreementEventListener {
 
     private final TaskManager taskManager;
 
-    @Async
     @TransactionalEventListener
     public void onApplicationEvent(FrameworkAgreementCreatedEvent event) {
         log.debug("处理框架协议已创建事件：{}", event);

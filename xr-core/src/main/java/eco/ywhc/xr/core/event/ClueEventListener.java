@@ -11,7 +11,6 @@ import eco.ywhc.xr.core.mapper.ApprovalMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionalEventListener;
@@ -33,7 +32,6 @@ public class ClueEventListener {
 
     private final ApprovalConverter approvalConverter;
 
-    @Async
     @TransactionalEventListener
     public void onApplicationEvent(ClueCreatedEvent event) {
         log.debug("处理线索已创建事件：{}", event);
