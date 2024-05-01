@@ -2,13 +2,9 @@ package eco.ywhc.xr.core.manager;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.lark.oapi.Client;
-import com.lark.oapi.service.contact.v3.model.Department;
-import com.lark.oapi.service.contact.v3.model.GetDepartmentReq;
-import com.lark.oapi.service.contact.v3.model.GetDepartmentResp;
 import com.lark.oapi.service.task.v2.model.GetTaskReq;
 import com.lark.oapi.service.task.v2.model.GetTaskResp;
 import eco.ywhc.xr.common.constant.TaskStatusType;
-import eco.ywhc.xr.common.model.dto.res.DepartmentRes;
 import eco.ywhc.xr.common.model.dto.res.TaskRes;
 import eco.ywhc.xr.common.model.entity.BaseEntity;
 import eco.ywhc.xr.common.model.entity.Task;
@@ -109,31 +105,6 @@ public class TaskMangerImpl implements TaskManager {
         qw.lambda().eq(TaskTemplate::getDeleted, 0)
                 .eq(TaskTemplate::getId, id);
         return taskTemplateMapper.selectOne(qw);
-    }
-
-    @Override
-    public DepartmentRes getDepartmentByDepartmentId(@NonNull String departmentId) {
-        GetDepartmentReq req = GetDepartmentReq.newBuilder()
-                .departmentId(departmentId)
-                .userIdType("open_id")
-                .departmentIdType("department_id")
-                .build();
-        GetDepartmentResp resp;
-        try {
-            resp = client.contact().department().get(req);
-            if (!resp.success()) {
-                log.error("获取部门信息失败：{}", resp.getMsg());
-                throw new InternalErrorException();
-            }
-        } catch (Exception e) {
-            log.error("获取部门信息失败：{}", e.getMessage());
-            throw new InternalErrorException(e);
-        }
-        Department department = resp.getData().getDepartment();
-        if (department.getLeaderUserId() == null) {
-            throw new InternalErrorException("部门负责人未设置");
-        }
-        return DepartmentRes.of(department.getName(), department.getLeaderUserId());
     }
 
     @Override

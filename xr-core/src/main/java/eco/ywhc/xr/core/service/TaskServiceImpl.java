@@ -9,15 +9,19 @@ import eco.ywhc.xr.common.constant.TaskStatusType;
 import eco.ywhc.xr.common.constant.TaskTemplateRefType;
 import eco.ywhc.xr.common.constant.TaskType;
 import eco.ywhc.xr.common.converter.TaskConverter;
+import eco.ywhc.xr.common.model.dto.res.DepartmentRes;
 import eco.ywhc.xr.common.model.entity.Task;
 import eco.ywhc.xr.common.model.entity.TaskTemplate;
 import eco.ywhc.xr.core.manager.FrameworkAgreementManager;
 import eco.ywhc.xr.core.manager.ProjectManager;
 import eco.ywhc.xr.core.manager.TaskManager;
+import eco.ywhc.xr.core.manager.lark.LarkDepartmentManager;
 import eco.ywhc.xr.core.mapper.TaskMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
+import org.sugar.commons.exception.ConditionNotMetException;
 import org.sugar.commons.exception.InternalErrorException;
 import org.sugar.commons.exception.InvalidInputException;
 
@@ -35,6 +39,8 @@ public class TaskServiceImpl implements TaskService {
     private final TaskManager taskManager;
 
     private final FrameworkAgreementManager frameworkAgreementManager;
+
+    private final LarkDepartmentManager larkDepartmentManager;
 
     private final ProjectManager projectManager;
 
@@ -61,7 +67,12 @@ public class TaskServiceImpl implements TaskService {
             summary = "【项目管理任务】" + "【投资协议拟定】" + name;
         }
 
-        String description = "此任务为息壤机器人向" + currentTask.getDepartment() + "发起的自动任务请求，详情请见" + baseUrl + currentTask.getId() + "&edit=1";
+        DepartmentRes department = larkDepartmentManager.getDepartmentByDepartmentId(currentTask.getDepartmentId());
+        if (StringUtils.isBlank(department.getLeaderUserId())) {
+            throw new ConditionNotMetException("部分负责人未设置，无法发起任务");
+        }
+
+        String description = "此任务为息壤机器人向" + department.getName() + "发起的自动任务请求，详情请见" + baseUrl + currentTask.getId() + "&edit=1";
 
         CreateTaskReq req = CreateTaskReq.newBuilder()
                 .userIdType("open_id")
@@ -70,7 +81,7 @@ public class TaskServiceImpl implements TaskService {
                         .description(description)
                         .members(new Member[]{
                                 Member.newBuilder()
-                                        .id(currentTask.getAssigneeId())
+                                        .id(department.getLeaderUserId())
                                         .type("user")
                                         .role("assignee")
                                         .build()
@@ -80,10 +91,10 @@ public class TaskServiceImpl implements TaskService {
         CreateTaskResp resp;
         try {
             resp = client.task().v2().task().create(req);
-            if (!resp.success()) {
-                throw new InternalErrorException("任务发起失败");
-            }
         } catch (Exception e) {
+            throw new InternalErrorException("任务发起失败");
+        }
+        if (!resp.success()) {
             throw new InternalErrorException("任务发起失败");
         }
 

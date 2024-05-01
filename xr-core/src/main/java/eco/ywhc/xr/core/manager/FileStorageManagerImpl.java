@@ -159,6 +159,7 @@ public class FileStorageManagerImpl implements FileStorageManager {
         try {
             s3Client.putObject(putObjectRequest, RequestBody.fromBytes(bytes));
         } catch (AwsServiceException | SdkClientException ex) {
+            log.error("上传文件到S3失败：{}", ex.getMessage());
             throw new StorageException("上传文件到S3失败");
         }
         uploadedFile.setFilePath(key);

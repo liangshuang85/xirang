@@ -31,9 +31,9 @@ public class Task extends BaseEntity implements IdentifiableEntity<Long> {
     private String department;
 
     /**
-     * 负责人的飞书OpenID
+     * 部门ID
      */
-    private String assigneeId;
+    private String departmentId;
 
     /**
      * 任务类型

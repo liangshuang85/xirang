@@ -16,7 +16,12 @@ public class DepartmentRes {
     private String name;
 
     /**
-     * 部门主管ID
+     * 部门ID
+     */
+    private String departmentId;
+
+    /**
+     * 部门主管OpenId
      */
     private String leaderUserId;
 

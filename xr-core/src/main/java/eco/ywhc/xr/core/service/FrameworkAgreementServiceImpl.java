@@ -13,6 +13,7 @@ import eco.ywhc.xr.common.model.entity.*;
 import eco.ywhc.xr.common.model.lark.LarkEmployee;
 import eco.ywhc.xr.common.model.query.FrameworkAgreementQuery;
 import eco.ywhc.xr.core.manager.*;
+import eco.ywhc.xr.core.manager.lark.LarkDepartmentManager;
 import eco.ywhc.xr.core.manager.lark.LarkEmployeeManager;
 import eco.ywhc.xr.core.mapper.FrameworkAgreementChannelEntryMapper;
 import eco.ywhc.xr.core.mapper.FrameworkAgreementMapper;
@@ -70,6 +71,8 @@ public class FrameworkAgreementServiceImpl implements FrameworkAgreementService 
     private final VisitManager visitManager;
 
     private final AttachmentManager attachmentManager;
+
+    private final LarkDepartmentManager larkDepartmentManager;
 
     public String generateUniqueId() {
         QueryWrapper<FrameworkAgreement> qw = new QueryWrapper<>();
@@ -212,13 +215,17 @@ public class FrameworkAgreementServiceImpl implements FrameworkAgreementService 
             }
             try {
                 TaskRes larkTask = taskManager.getLarkTask(task);
-                LarkEmployee taskLarkEmployee = larkEmployeeManager.retrieveLarkEmployee(task.getAssigneeId());
-                AssigneeRes taskAssignee = AssigneeRes.builder()
-                        .assigneeId(task.getAssigneeId())
-                        .assigneeName(taskLarkEmployee.getName())
-                        .avatarInfo(taskLarkEmployee.getAvatarInfo())
-                        .build();
-                larkTask.setAssignee(taskAssignee);
+                DepartmentRes department = larkDepartmentManager.getDepartmentByDepartmentId(task.getDepartmentId());
+                String leaderUserId = department.getLeaderUserId();
+                if (StringUtils.isNotBlank(leaderUserId)) {
+                    LarkEmployee taskLarkEmployee = larkEmployeeManager.retrieveLarkEmployee(leaderUserId);
+                    AssigneeRes taskAssignee = AssigneeRes.builder()
+                            .assigneeId(leaderUserId)
+                            .assigneeName(taskLarkEmployee.getName())
+                            .avatarInfo(taskLarkEmployee.getAvatarInfo())
+                            .build();
+                    larkTask.setAssignee(taskAssignee);
+                }
                 taskResList.add(larkTask);
             } catch (Exception e) {
                 throw new InternalErrorException("查询飞书任务失败");

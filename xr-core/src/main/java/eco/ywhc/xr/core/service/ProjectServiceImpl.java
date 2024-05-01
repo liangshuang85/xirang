@@ -16,6 +16,7 @@ import eco.ywhc.xr.common.model.entity.Task;
 import eco.ywhc.xr.common.model.lark.LarkEmployee;
 import eco.ywhc.xr.common.model.query.ProjectQuery;
 import eco.ywhc.xr.core.manager.*;
+import eco.ywhc.xr.core.manager.lark.LarkDepartmentManager;
 import eco.ywhc.xr.core.manager.lark.LarkEmployeeManager;
 import eco.ywhc.xr.core.mapper.ProjectInformationMapper;
 import eco.ywhc.xr.core.mapper.ProjectMapper;
@@ -60,6 +61,8 @@ public class ProjectServiceImpl implements ProjectService {
     private final ApprovalManager approvalManager;
 
     private final AttachmentManager attachmentManager;
+
+    private final LarkDepartmentManager larkDepartmentManager;
 
 
     public String generateUniqueId() {
@@ -174,13 +177,17 @@ public class ProjectServiceImpl implements ProjectService {
                 continue;
             }
             TaskRes larkTask = taskManager.getLarkTask(task);
-            LarkEmployee larkEmployee = larkEmployeeManager.retrieveLarkEmployee(task.getAssigneeId());
-            AssigneeRes taskAssignee = AssigneeRes.builder()
-                    .assigneeId(task.getAssigneeId())
-                    .assigneeName(larkEmployee.getName())
-                    .avatarInfo(larkEmployee.getAvatarInfo())
-                    .build();
-            larkTask.setAssignee(taskAssignee);
+            DepartmentRes department = larkDepartmentManager.getDepartmentByDepartmentId(task.getDepartmentId());
+            String leaderUserId = department.getLeaderUserId();
+            if (StringUtils.isNotBlank(leaderUserId)) {
+                LarkEmployee larkEmployee = larkEmployeeManager.retrieveLarkEmployee(leaderUserId);
+                AssigneeRes taskAssignee = AssigneeRes.builder()
+                        .assigneeId(leaderUserId)
+                        .assigneeName(larkEmployee.getName())
+                        .avatarInfo(larkEmployee.getAvatarInfo())
+                        .build();
+                larkTask.setAssignee(taskAssignee);
+            }
             taskResList.add(larkTask);
         }
         Map<TaskType, List<TaskRes>> taskMap = taskResList.stream().collect(Collectors.groupingBy(TaskRes::getType));
