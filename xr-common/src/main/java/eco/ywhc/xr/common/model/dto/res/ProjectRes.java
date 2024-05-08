@@ -52,9 +52,9 @@ public class ProjectRes implements BaseRestResponse {
     private ProjectInformationRes projectInformation;
 
     /**
-     * 框架协议关联的任务
+     * 项目关联的任务
      */
-    Map<TaskType, List<TaskRes>> taskMap;
+    Map<TaskType, Map<String, List<TaskRes>>> taskMap;
 
     /**
      * 负责人信息
@@ -62,9 +62,9 @@ public class ProjectRes implements BaseRestResponse {
     private AssigneeRes assignee;
 
     /**
-     * 框架协议关联的审批
+     * 项目关联的审批
      */
-    Map<ApprovalType, List<ApprovalRes>> approvalMap;
+    Map<ApprovalType, Map<String, List<ApprovalRes>>> approvalMap;
 
     /**
      * 会议决议附件信息

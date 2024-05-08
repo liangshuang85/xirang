@@ -170,7 +170,6 @@ public class FrameworkAgreementServiceImpl implements FrameworkAgreementService 
     public FrameworkAgreementRes findOne(@NonNull Long id) {
         FrameworkAgreement frameworkAgreement = frameworkAgreementManager.mustFoundEntityById(id);
         FrameworkAgreementRes res = frameworkAgreementConverter.toResponse(frameworkAgreement);
-        //查询框架协议关联的附件
         List<AttachmentResponse> projectProposalAttachments = attachmentManager.findManyByOwnerId(id, FileOwnerType.PROJECT_PROPOSAL);
         List<AttachmentResponse> projectProposalApprovalAttachments = attachmentManager.findManyByOwnerId(id, FileOwnerType.PROJECT_PROPOSAL_APPROVAL);
         List<AttachmentResponse> meetingResolutionAttachments = attachmentManager.findManyByOwnerId(id, FileOwnerType.MEETING_RESOLUTION);
@@ -206,7 +205,6 @@ public class FrameworkAgreementServiceImpl implements FrameworkAgreementService 
 
         List<Task> tasks = taskManager.listTasksByRefId(id);
         List<TaskRes> taskResList = new ArrayList<>();
-        // 遍历任务列表，更新每个任务的状态
         for (Task task : tasks) {
             if (task.getTaskGuid() == null) {
                 TaskRes taskRes = taskConverter.toResponse(task);
@@ -231,16 +229,23 @@ public class FrameworkAgreementServiceImpl implements FrameworkAgreementService 
                 throw new InternalErrorException("查询飞书任务失败");
             }
         }
-        Map<TaskType, List<TaskRes>> taskMap = taskResList.stream().collect(Collectors.groupingBy(TaskRes::getType));
+        Map<TaskType, Map<String, List<TaskRes>>> taskMap = taskResList.stream()
+                .collect(Collectors.groupingBy(
+                        TaskRes::getType,
+                        Collectors.groupingBy(TaskRes::getDepartmentName)
+                ));
         res.setTaskMap(taskMap);
 
-        Map<ApprovalType, List<ApprovalRes>> approvalResMaps = approvalManager.listApprovalsByRefId(id).stream()
+        Map<ApprovalType, Map<String, List<ApprovalRes>>> approvalResMaps = approvalManager.listApprovalsByRefId(id).stream()
                 .peek(i -> {
                     if (i.getApprovalInstanceId() != null) {
                         approvalManager.updateApproval(i);
                     }
                 })
-                .collect(Collectors.groupingBy(ApprovalRes::getType));
+                .collect(Collectors.groupingBy(
+                        ApprovalRes::getType,
+                        Collectors.groupingBy(ApprovalRes::getDepartmentName)
+                ));
         res.setApprovalMap(approvalResMaps);
 
         List<VisitRes> visitList = visitManager.findAllByRefId(id);

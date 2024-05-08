@@ -137,13 +137,16 @@ public class ClueServiceImpl implements ClueService {
         List<VisitRes> visits = visitManager.findAllByRefId(id);
         res.setClueVisits(visits);
 
-        Map<ApprovalType, List<ApprovalRes>> approvalMap = approvalManager.listApprovalsByRefId(id).stream()
+        Map<ApprovalType, Map<String, List<ApprovalRes>>> approvalMap = approvalManager.listApprovalsByRefId(id).stream()
                 .peek(i -> {
                     if (i.getApprovalInstanceId() != null) {
                         approvalManager.updateApproval(i);
                     }
                 })
-                .collect(Collectors.groupingBy(ApprovalRes::getType));
+                .collect(Collectors.groupingBy(
+                        ApprovalRes::getType,
+                        Collectors.groupingBy(ApprovalRes::getDepartmentName)
+                ));
         res.setApprovalMap(approvalMap);
 
         return res;

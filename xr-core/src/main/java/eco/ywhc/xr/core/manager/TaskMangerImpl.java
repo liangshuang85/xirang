@@ -17,12 +17,8 @@ import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import org.sugar.commons.exception.InternalErrorException;
 
-import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
-import java.util.function.BinaryOperator;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -39,17 +35,9 @@ public class TaskMangerImpl implements TaskManager {
     public List<Task> listTasksByRefId(long id) {
         QueryWrapper<Task> qw = new QueryWrapper<>();
         qw.lambda().eq(BaseEntity::getDeleted, 0)
-                .eq(Task::getRefId, id);
-        List<Task> tasks = taskMapper.selectList(qw);
-        return tasks.stream()
-                .collect(Collectors.toMap(
-                        Task::getTaskTemplateId,
-                        Function.identity(),
-                        BinaryOperator.maxBy(Comparator.comparing(Task::getCreatedAt))
-                ))
-                .values()
-                .stream()
-                .toList();
+                .eq(Task::getRefId, id)
+                .orderByDesc(Task::getId);
+        return taskMapper.selectList(qw);
     }
 
     @Override

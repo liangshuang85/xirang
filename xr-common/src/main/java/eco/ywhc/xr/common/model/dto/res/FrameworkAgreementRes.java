@@ -73,12 +73,12 @@ public class FrameworkAgreementRes implements BaseRestResponse {
     /**
      * 框架协议关联的任务
      */
-    Map<TaskType, List<TaskRes>> taskMap;
+    Map<TaskType, Map<String, List<TaskRes>>> taskMap;
 
     /**
      * 框架协议关联的审批
      */
-    Map<ApprovalType, List<ApprovalRes>> approvalMap;
+    Map<ApprovalType, Map<String, List<ApprovalRes>>> approvalMap;
 
     /**
      * 拜访信息Res

@@ -65,7 +65,7 @@ public class ClueRes implements BaseRestResponse {
     /**
      * 线索关联的审批
      */
-    private Map<ApprovalType, List<ApprovalRes>> approvalMap;
+    private Map<ApprovalType, Map<String, List<ApprovalRes>>> approvalMap;
 
     /**
      * 创建时间

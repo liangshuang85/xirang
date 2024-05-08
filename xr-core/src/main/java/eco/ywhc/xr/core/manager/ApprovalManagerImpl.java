@@ -24,12 +24,8 @@ import org.sugar.commons.exception.InternalErrorException;
 import org.sugar.commons.exception.ResourceNotFoundException;
 
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.BinaryOperator;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 /**
  * 审批记录(eco.ywhc.xr.common.model.entity.BApproval)表服务实现类
@@ -93,16 +89,10 @@ public class ApprovalManagerImpl implements ApprovalManager {
     public List<ApprovalRes> listApprovalsByRefId(long id) {
         QueryWrapper<Approval> qw = new QueryWrapper<>();
         qw.lambda().eq(Approval::getDeleted, 0)
-                .eq(Approval::getRefId, id);
+                .eq(Approval::getRefId, id)
+                .orderByDesc(Approval::getId);
         List<Approval> approvals = approvalMapper.selectList(qw);
         return approvals.stream()
-                .collect(Collectors.toMap(
-                        Approval::getApprovalCode,
-                        Function.identity(),
-                        BinaryOperator.maxBy(Comparator.comparing(Approval::getCreatedAt))
-                ))
-                .values()
-                .stream()
                 .map(approvalConverter::toResponse)
                 .toList();
     }

@@ -190,16 +190,23 @@ public class ProjectServiceImpl implements ProjectService {
             }
             taskResList.add(larkTask);
         }
-        Map<TaskType, List<TaskRes>> taskMap = taskResList.stream().collect(Collectors.groupingBy(TaskRes::getType));
+        Map<TaskType, Map<String, List<TaskRes>>> taskMap = taskResList.stream()
+                .collect(Collectors.groupingBy(
+                        TaskRes::getType,
+                        Collectors.groupingBy(TaskRes::getDepartmentName)
+                ));
         projectRes.setTaskMap(taskMap);
 
-        Map<ApprovalType, List<ApprovalRes>> approvalResMaps = approvalManager.listApprovalsByRefId(id).stream()
+        Map<ApprovalType, Map<String, List<ApprovalRes>>> approvalResMaps = approvalManager.listApprovalsByRefId(id).stream()
                 .peek(i -> {
                     if (i.getApprovalInstanceId() != null) {
                         approvalManager.updateApproval(i);
                     }
                 })
-                .collect(Collectors.groupingBy(ApprovalRes::getType));
+                .collect(Collectors.groupingBy(
+                        ApprovalRes::getType,
+                        Collectors.groupingBy(ApprovalRes::getDepartmentName)
+                ));
         projectRes.setApprovalMap(approvalResMaps);
 
         return projectRes;
