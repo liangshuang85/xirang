@@ -27,6 +27,7 @@ dependencies {
     implementation(libs.spring.boot.starter.aop)
     implementation(libs.spring.boot.starter.data.redis)
     implementation(libs.spring.boot.starter.validation)
+    implementation(libs.spring.security.crypto)
     implementation(libs.spring.session.data.redis)
     implementation(libs.sugar.commons)
     implementation(libs.sugar.crud)

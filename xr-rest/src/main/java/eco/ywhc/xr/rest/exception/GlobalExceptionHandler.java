@@ -1,6 +1,7 @@
 package eco.ywhc.xr.rest.exception;
 
 import eco.ywhc.xr.common.exception.ErrorMessage;
+import eco.ywhc.xr.common.exception.InvalidCredentialException;
 import io.swagger.v3.oas.annotations.Hidden;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolation;
@@ -118,6 +119,22 @@ public class GlobalExceptionHandler {
                 .code(errorCode)
                 .message(ErrorMessage.Message.of(messageStr, request.getRequestURI()))
                 .errors(errors)
+                .build();
+    }
+
+    /**
+     * 401错误
+     */
+    @ExceptionHandler({InvalidCredentialException.class})
+    @ResponseStatus(code = HttpStatus.UNAUTHORIZED)
+    protected ErrorMessage handle401UnauthorizedException(Exception ex, HttpServletRequest request) {
+        String messageStr = ex.getMessage();
+        if (StringUtils.isBlank(messageStr)) {
+            messageStr = "认证失败";
+        }
+        return ErrorMessage.builder()
+                .code(ErrorMessage.ErrorCode.InvalidAuthenticationInfo.name())
+                .message(ErrorMessage.Message.of(messageStr, request.getRequestURI()))
                 .build();
     }
 

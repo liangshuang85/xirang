@@ -43,8 +43,8 @@ public class SpringAppConfig implements WebMvcConfigurer {
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(localeChangeInterceptor());
         registry.addInterceptor(sessionInterceptor)
-                .addPathPatterns(apiPrefix + "/**")
-                .excludePathPatterns(apiPrefix + "/public/**");
+                .addPathPatterns(apiPrefix + "/**").excludePathPatterns(apiPrefix + "/public/**")
+                .addPathPatterns("/admin/rest/**").excludePathPatterns("/admin/rest/tokens", "/admin/rest/public/**");
     }
 
 }

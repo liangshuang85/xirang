@@ -1,9 +1,9 @@
 package eco.ywhc.xr.rest.oauth2;
 
+import eco.ywhc.xr.common.model.AuthToken;
 import eco.ywhc.xr.common.model.ExchangeTokenRequest;
 import eco.ywhc.xr.common.model.OAuth2Callback;
 import eco.ywhc.xr.common.model.OAuth2Redirection;
-import eco.ywhc.xr.common.model.OAuth2Token;
 import eco.ywhc.xr.core.config.property.LarkProperties;
 import eco.ywhc.xr.core.manager.OAuth2Manager;
 import io.swagger.v3.oas.annotations.Hidden;
@@ -109,8 +109,8 @@ public class OAuth2Controller {
      * 通过OAuth2授权成功后返回的授权码换取系统的X-Auth-Token
      */
     @PostMapping("/oauth2/token")
-    public ResponseEntity<OAuth2Token> exchange(HttpServletRequest request,
-                                                @Valid @RequestBody ExchangeTokenRequest exchangeTokenRequest) {
+    public ResponseEntity<AuthToken> exchange(HttpServletRequest request,
+                                              @Valid @RequestBody ExchangeTokenRequest exchangeTokenRequest) {
         String okFlag = oauth2Manager.retrieveOAuth2State(exchangeTokenRequest.getState());
         if (!oauth2Manager.OK_FLAG.equals(okFlag)) {
             throw new InvalidInputException("state参数错误");
@@ -120,7 +120,7 @@ public class OAuth2Controller {
             throw new InvalidInputException("code参数错误");
         }
         HttpSession session = request.getSession(true);
-        return ResponseEntity.ok(OAuth2Token.of(session.getId()));
+        return ResponseEntity.ok(AuthToken.of(session.getId()));
     }
 
 }

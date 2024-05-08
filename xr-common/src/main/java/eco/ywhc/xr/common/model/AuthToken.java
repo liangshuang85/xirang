@@ -5,11 +5,11 @@ import lombok.AllArgsConstructor;
 import lombok.ToString;
 
 /**
- * OAuth2 Token对象
+ * 认证Token
  */
 @ToString
 @AllArgsConstructor(staticName = "of")
-public class OAuth2Token {
+public class AuthToken {
 
     /**
      * X-Auth-Token
