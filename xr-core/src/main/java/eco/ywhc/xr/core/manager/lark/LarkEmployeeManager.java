@@ -1,8 +1,10 @@
 package eco.ywhc.xr.core.manager.lark;
 
 import com.lark.oapi.service.ehr.v1.model.ListEmployeeRespBody;
+import eco.ywhc.xr.common.model.entity.LarkDepartmentMember;
 import eco.ywhc.xr.common.model.lark.LarkEmployee;
 
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -25,6 +27,13 @@ public interface LarkEmployeeManager {
     LarkEmployee retrieveLarkEmployee(String userId);
 
     /**
+     * 获取用户信息
+     *
+     * @param userId 用户OpenId
+     */
+    LarkEmployee retrieveLarkEmployeeSync(String userId);
+
+    /**
      * 保存员工的用户ID
      */
     void appendLarkEmployeeUserId(String... userId);
@@ -33,5 +42,12 @@ public interface LarkEmployeeManager {
      * 获取全部员工的用户ID
      */
     Set<String> getAllLarkEmployeeUserIds();
+
+    /**
+     * 保存部门成员信息
+     *
+     * @param larkEmployee 部门成员信息
+     */
+    void upsertLarkDepartmentEmployees(LarkEmployee larkEmployee);
 
 }

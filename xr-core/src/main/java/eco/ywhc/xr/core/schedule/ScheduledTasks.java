@@ -5,8 +5,10 @@ import com.lark.oapi.service.ehr.v1.model.ListEmployeeRespBody;
 import eco.ywhc.xr.common.converter.ApprovalConverter;
 import eco.ywhc.xr.common.model.entity.Approval;
 import eco.ywhc.xr.common.model.entity.Task;
+import eco.ywhc.xr.common.model.lark.LarkEmployee;
 import eco.ywhc.xr.core.manager.ApprovalManager;
 import eco.ywhc.xr.core.manager.TaskManager;
+import eco.ywhc.xr.core.manager.lark.LarkDepartmentManager;
 import eco.ywhc.xr.core.manager.lark.LarkEmployeeManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,6 +29,8 @@ public class ScheduledTasks {
     private final ThreadPoolTaskScheduler taskScheduler;
 
     private final LarkEmployeeManager larkEmployeeManager;
+
+    private final LarkDepartmentManager larkDepartmentManager;
 
     private final TaskManager taskManager;
 
@@ -51,6 +55,8 @@ public class ScheduledTasks {
                 taskScheduler.submit(new Thread(() -> {
                     for (var employee : employees) {
                         larkEmployeeManager.retrieveLarkEmployee(employee.getUserId());
+                        LarkEmployee larkEmployee = larkEmployeeManager.retrieveLarkEmployeeSync(employee.getUserId());
+                        larkEmployeeManager.upsertLarkDepartmentEmployees(larkEmployee);
                     }
                 }));
             }
@@ -94,6 +100,11 @@ public class ScheduledTasks {
             }
             prevApprovalId = approvals.get(approvals.size() - 1).getId();
         }
+    }
+
+    @Scheduled(initialDelay = 10000, fixedDelay = 60000)
+    public void syncLarkDepartments() {
+        larkDepartmentManager.syncLarkDepartments();
     }
 
 }
