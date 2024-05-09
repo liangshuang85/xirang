@@ -101,4 +101,9 @@ public class ProjectRes implements BaseRestResponse {
      */
     private OffsetDateTime updatedAt;
 
+    /**
+     * 实例角色成员
+     */
+    private List<InstanceRoleLarkMemberRes> instanceRoleLarkMembers;
+
 }

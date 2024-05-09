@@ -65,4 +65,11 @@ public class ClueReq implements BaseRestRequest {
     @NotNull
     private List<VisitReq> clueVisits = new ArrayList<>();
 
+    /**
+     * 实例角色成员
+     */
+    @Valid
+    @NotNull
+    private List<InstanceRoleLarkMemberReq> instanceRoleLarkMembers = new ArrayList<>();
+
 }

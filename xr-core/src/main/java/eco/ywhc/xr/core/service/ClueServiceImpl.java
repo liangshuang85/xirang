@@ -50,6 +50,8 @@ public class ClueServiceImpl implements ClueService {
 
     private final LarkEmployeeManager larkEmployeeManager;
 
+    private final InstanceRoleLarkMemberManager instanceRoleLarkMemberManager;
+
     @Override
     public Long createOne(@NonNull ClueReq req) {
         List<Clue> effectiveEntityByAdcode = clueManager.findEffectiveEntityByAdcode(req.getAdcode());
@@ -65,6 +67,8 @@ public class ClueServiceImpl implements ClueService {
         channelEntryManager.createOne(req.getClueChannelEntry(), id);
         fundingManager.createOne(req.getClueFunding(), id);
         visitManager.createMany(req.getClueVisits(), id);
+
+        instanceRoleLarkMemberManager.insertInstanceRoleLarkMember(req, id);
 
         applicationEventPublisher.publishEvent(ClueCreatedEvent.of(clue));
 
@@ -149,6 +153,9 @@ public class ClueServiceImpl implements ClueService {
                 ));
         res.setApprovalMap(approvalMap);
 
+        List<InstanceRoleLarkMemberRes> instanceRoleLarkMemberRes = instanceRoleLarkMemberManager.findInstanceRoleLarkMemberByRefId(id);
+        res.setInstanceRoleLarkMembers(instanceRoleLarkMemberRes);
+
         return res;
     }
 
@@ -173,6 +180,9 @@ public class ClueServiceImpl implements ClueService {
 
         visitManager.logicDeleteAllEntitiesByRefId(id);
         visitManager.createMany(req.getClueVisits(), id);
+
+        instanceRoleLarkMemberManager.deleteInstanceRoleLarkMember(id);
+        instanceRoleLarkMemberManager.insertInstanceRoleLarkMember(req, id);
 
         return affected;
     }

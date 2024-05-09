@@ -64,6 +64,8 @@ public class ProjectServiceImpl implements ProjectService {
 
     private final LarkDepartmentManager larkDepartmentManager;
 
+    private final InstanceRoleLarkMemberManager instanceRoleLarkMemberManager;
+
 
     public String generateUniqueId() {
         QueryWrapper<Project> qw = new QueryWrapper<>();
@@ -87,6 +89,7 @@ public class ProjectServiceImpl implements ProjectService {
         ProjectInformation projectInformation = projectInformationConverter.fromRequest(req.getProjectInformation());
         projectInformation.setProjectId(project.getId());
         projectInformationMapper.insert(projectInformation);
+        instanceRoleLarkMemberManager.insertInstanceRoleLarkMember(req, project.getId());
 
         applicationEventPublisher.publishEvent(ProjectCreatedEvent.of(project));
 
@@ -209,6 +212,9 @@ public class ProjectServiceImpl implements ProjectService {
                 ));
         projectRes.setApprovalMap(approvalResMaps);
 
+        List<InstanceRoleLarkMemberRes> instanceRoleLarkMemberRes = instanceRoleLarkMemberManager.findInstanceRoleLarkMemberByRefId(id);
+        projectRes.setInstanceRoleLarkMembers(instanceRoleLarkMemberRes);
+
         return projectRes;
     }
 
@@ -223,6 +229,9 @@ public class ProjectServiceImpl implements ProjectService {
         projectInformationConverter.update(req.getProjectInformation(), projectInformation);
         projectInformation.setProjectId(id);
         projectInformationMapper.updateById(projectInformation);
+
+        instanceRoleLarkMemberManager.deleteInstanceRoleLarkMember(id);
+        instanceRoleLarkMemberManager.insertInstanceRoleLarkMember(req, id);
 
         return affected;
     }

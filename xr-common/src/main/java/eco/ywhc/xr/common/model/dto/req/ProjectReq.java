@@ -1,13 +1,16 @@
 package eco.ywhc.xr.common.model.dto.req;
 
 import eco.ywhc.xr.common.constant.ProjectStatusType;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 import org.sugar.crud.model.BaseRestRequest;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -82,5 +85,12 @@ public class ProjectReq implements BaseRestRequest {
      */
     @NotNull
     private Set<Long> enterpriseInvestmentRecordAttachmentIds = new HashSet<>();
+
+    /**
+     * 实例角色成员
+     */
+    @Valid
+    @NotNull
+    private List<InstanceRoleLarkMemberReq> instanceRoleLarkMembers = new ArrayList<>();
 
 }

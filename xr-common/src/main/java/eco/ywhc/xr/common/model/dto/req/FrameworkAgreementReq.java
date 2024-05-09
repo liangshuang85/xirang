@@ -112,4 +112,11 @@ public class FrameworkAgreementReq implements BaseRestRequest {
     @NotNull
     private Set<Long> frameworkAgreementSigningAttachmentIds = new HashSet<>();
 
+    /**
+     * 实例角色成员
+     */
+    @Valid
+    @NotNull
+    private List<InstanceRoleLarkMemberReq> instanceRoleLarkMembers = new ArrayList<>();
+
 }

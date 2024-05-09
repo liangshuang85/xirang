@@ -74,6 +74,8 @@ public class FrameworkAgreementServiceImpl implements FrameworkAgreementService 
 
     private final LarkDepartmentManager larkDepartmentManager;
 
+    private final InstanceRoleLarkMemberManager instanceRoleLarkMemberManager;
+
     public String generateUniqueId() {
         QueryWrapper<FrameworkAgreement> qw = new QueryWrapper<>();
         qw.select("id", "code").orderByDesc("id").last("LIMIT 1");
@@ -110,6 +112,7 @@ public class FrameworkAgreementServiceImpl implements FrameworkAgreementService 
         frameworkAgreementProjectMapper.insert(frameworkAgreementProject);
 
         visitManager.createMany(req.getFrameworkVisits(), frameworkAgreement.getId());
+        instanceRoleLarkMemberManager.insertInstanceRoleLarkMember(req, frameworkAgreement.getId());
 
         applicationEventPublisher.publishEvent(FrameworkAgreementCreatedEvent.of(frameworkAgreement));
 
@@ -251,6 +254,9 @@ public class FrameworkAgreementServiceImpl implements FrameworkAgreementService 
         List<VisitRes> visitList = visitManager.findAllByRefId(id);
         res.setFrameworkVisits(visitList);
 
+        List<InstanceRoleLarkMemberRes> instanceRoleLarkMembers = instanceRoleLarkMemberManager.findInstanceRoleLarkMemberByRefId(id);
+        res.setInstanceRoleLarkMembers(instanceRoleLarkMembers);
+
         return res;
     }
 
@@ -283,6 +289,9 @@ public class FrameworkAgreementServiceImpl implements FrameworkAgreementService 
 
         visitManager.logicDeleteAllEntitiesByRefId(id);
         visitManager.createMany(req.getFrameworkVisits(), id);
+
+        instanceRoleLarkMemberManager.deleteInstanceRoleLarkMember(id);
+        instanceRoleLarkMemberManager.insertInstanceRoleLarkMember(req, id);
 
         return affected;
     }
