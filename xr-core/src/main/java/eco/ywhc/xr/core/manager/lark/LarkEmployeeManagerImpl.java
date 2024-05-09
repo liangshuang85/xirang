@@ -99,7 +99,7 @@ public class LarkEmployeeManagerImpl implements LarkEmployeeManager {
                     .openId(user.getOpenId())
                     .name(user.getName())
                     .mobile(user.getMobile())
-                    .departmentIds(user.getDepartmentIds())
+                    .departmentIds(Optional.ofNullable(user.getDepartmentIds()).orElse(new String[0]))
                     .employeeNo(user.getEmployeeNo())
                     .avatarInfo(LarkAvatarInfo.of(user.getAvatar().getAvatar72(), user.getAvatar().getAvatar240(), user.getAvatar().getAvatar640(), user.getAvatar().getAvatarOrigin()))
                     .build();
