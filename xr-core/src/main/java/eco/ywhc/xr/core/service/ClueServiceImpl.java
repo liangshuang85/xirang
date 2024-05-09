@@ -2,8 +2,10 @@ package eco.ywhc.xr.core.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import eco.ywhc.xr.common.constant.ApprovalType;
+import eco.ywhc.xr.common.constant.InstanceRefType;
 import eco.ywhc.xr.common.converter.ClueConverter;
 import eco.ywhc.xr.common.event.ClueCreatedEvent;
+import eco.ywhc.xr.common.event.StatusChangedEvent;
 import eco.ywhc.xr.common.model.dto.req.ClueReq;
 import eco.ywhc.xr.common.model.dto.res.*;
 import eco.ywhc.xr.common.model.entity.Clue;
@@ -52,6 +54,8 @@ public class ClueServiceImpl implements ClueService {
 
     private final InstanceRoleLarkMemberManager instanceRoleLarkMemberManager;
 
+    private final ChangeManager changeManager;
+
     @Override
     public Long createOne(@NonNull ClueReq req) {
         List<Clue> effectiveEntityByAdcode = clueManager.findEffectiveEntityByAdcode(req.getAdcode());
@@ -71,6 +75,16 @@ public class ClueServiceImpl implements ClueService {
         instanceRoleLarkMemberManager.insertInstanceRoleLarkMember(req, id);
 
         applicationEventPublisher.publishEvent(ClueCreatedEvent.of(clue));
+
+        StatusChangedEvent statusChangedEvent = StatusChangedEvent.builder()
+                .refId(clue.getId())
+                .refType(InstanceRefType.CLUE)
+                .before("")
+                .after(clue.getStatus().name())
+                .operatorId(clue.getAssigneeId())
+                .lastModifiedAt(clue.getCreatedAt())
+                .build();
+        applicationEventPublisher.publishEvent(statusChangedEvent);
 
         return id;
     }
@@ -156,6 +170,9 @@ public class ClueServiceImpl implements ClueService {
         List<InstanceRoleLarkMemberRes> instanceRoleLarkMemberRes = instanceRoleLarkMemberManager.findInstanceRoleLarkMemberByRefId(id);
         res.setInstanceRoleLarkMembers(instanceRoleLarkMemberRes);
 
+        List<ChangeRes> changes = changeManager.findAllByRefId(id);
+        res.setChanges(changes);
+
         return res;
     }
 
@@ -184,6 +201,18 @@ public class ClueServiceImpl implements ClueService {
         instanceRoleLarkMemberManager.deleteInstanceRoleLarkMember(id);
         instanceRoleLarkMemberManager.insertInstanceRoleLarkMember(req, id);
 
+        if (clue.getStatus() != req.getStatus()) {
+            StatusChangedEvent statusChangedEvent = StatusChangedEvent.builder()
+                    .refId(clue.getId())
+                    .refType(InstanceRefType.CLUE)
+                    .before(clue.getStatus().name())
+                    .after(req.getStatus().name())
+                    .operatorId(clue.getAssigneeId())
+                    .lastModifiedAt(clue.getUpdatedAt())
+                    .build();
+            applicationEventPublisher.publishEvent(statusChangedEvent);
+        }
+
         return affected;
     }
 
@@ -196,7 +225,7 @@ public class ClueServiceImpl implements ClueService {
         fundingManager.logicDeleteEntityByClueId(id);
         visitManager.logicDeleteAllEntitiesByRefId(id);
         approvalManager.logicDeleteAllEntitiesByRefId(id);
-
+        changeManager.bulkDeleteByRefId(id);
         return affected;
     }
 

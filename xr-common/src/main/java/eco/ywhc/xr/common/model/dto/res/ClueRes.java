@@ -82,4 +82,9 @@ public class ClueRes implements BaseRestResponse {
      */
     private List<InstanceRoleLarkMemberRes> instanceRoleLarkMembers;
 
+    /**
+     * 线索状态变更记录
+     */
+    private List<ChangeRes> changes;
+
 }

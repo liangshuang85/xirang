@@ -3,11 +3,13 @@ package eco.ywhc.xr.core.service;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import eco.ywhc.xr.common.constant.ApprovalType;
 import eco.ywhc.xr.common.constant.FileOwnerType;
+import eco.ywhc.xr.common.constant.InstanceRefType;
 import eco.ywhc.xr.common.constant.TaskType;
 import eco.ywhc.xr.common.converter.ProjectConverter;
 import eco.ywhc.xr.common.converter.ProjectInformationConverter;
 import eco.ywhc.xr.common.converter.TaskConverter;
 import eco.ywhc.xr.common.event.ProjectCreatedEvent;
+import eco.ywhc.xr.common.event.StatusChangedEvent;
 import eco.ywhc.xr.common.model.dto.req.ProjectReq;
 import eco.ywhc.xr.common.model.dto.res.*;
 import eco.ywhc.xr.common.model.entity.Project;
@@ -66,6 +68,7 @@ public class ProjectServiceImpl implements ProjectService {
 
     private final InstanceRoleLarkMemberManager instanceRoleLarkMemberManager;
 
+    private final ChangeManager changeManager;
 
     public String generateUniqueId() {
         QueryWrapper<Project> qw = new QueryWrapper<>();
@@ -92,6 +95,16 @@ public class ProjectServiceImpl implements ProjectService {
         instanceRoleLarkMemberManager.insertInstanceRoleLarkMember(req, project.getId());
 
         applicationEventPublisher.publishEvent(ProjectCreatedEvent.of(project));
+
+        StatusChangedEvent statusChangedEvent = StatusChangedEvent.builder()
+                .refId(project.getId())
+                .refType(InstanceRefType.PROJECT)
+                .before("")
+                .after(project.getStatus().name())
+                .operatorId(project.getAssigneeId())
+                .lastModifiedAt(project.getCreatedAt())
+                .build();
+        applicationEventPublisher.publishEvent(statusChangedEvent);
 
         return project.getId();
     }
@@ -215,6 +228,9 @@ public class ProjectServiceImpl implements ProjectService {
         List<InstanceRoleLarkMemberRes> instanceRoleLarkMemberRes = instanceRoleLarkMemberManager.findInstanceRoleLarkMemberByRefId(id);
         projectRes.setInstanceRoleLarkMembers(instanceRoleLarkMemberRes);
 
+        List<ChangeRes> changes = changeManager.findAllByRefId(id);
+        projectRes.setChanges(changes);
+
         return projectRes;
     }
 
@@ -233,6 +249,18 @@ public class ProjectServiceImpl implements ProjectService {
         instanceRoleLarkMemberManager.deleteInstanceRoleLarkMember(id);
         instanceRoleLarkMemberManager.insertInstanceRoleLarkMember(req, id);
 
+        if (project.getStatus() != req.getStatus()) {
+            StatusChangedEvent statusChangedEvent = StatusChangedEvent.builder()
+                    .refId(project.getId())
+                    .refType(InstanceRefType.PROJECT)
+                    .before(project.getStatus().name())
+                    .after(req.getStatus().name())
+                    .operatorId(project.getAssigneeId())
+                    .lastModifiedAt(project.getUpdatedAt())
+                    .build();
+            applicationEventPublisher.publishEvent(statusChangedEvent);
+        }
+
         return affected;
     }
 
@@ -241,6 +269,7 @@ public class ProjectServiceImpl implements ProjectService {
         projectInformationMapper.logicDeleteEntityById(projectManager.getProjectInformationByProjectId(id).getId());
         taskManager.logicDeleteEntityById(id);
         attachmentManager.deleteByOwnerId(id);
+        changeManager.bulkDeleteByRefId(id);
         return projectMapper.logicDeleteEntityById(id);
     }
 

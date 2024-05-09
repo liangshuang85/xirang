@@ -1,12 +1,10 @@
 package eco.ywhc.xr.core.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import eco.ywhc.xr.common.constant.ApprovalType;
-import eco.ywhc.xr.common.constant.FileOwnerType;
-import eco.ywhc.xr.common.constant.FrameworkAgreementType;
-import eco.ywhc.xr.common.constant.TaskType;
+import eco.ywhc.xr.common.constant.*;
 import eco.ywhc.xr.common.converter.*;
 import eco.ywhc.xr.common.event.FrameworkAgreementCreatedEvent;
+import eco.ywhc.xr.common.event.StatusChangedEvent;
 import eco.ywhc.xr.common.model.dto.req.FrameworkAgreementReq;
 import eco.ywhc.xr.common.model.dto.res.*;
 import eco.ywhc.xr.common.model.entity.*;
@@ -76,6 +74,8 @@ public class FrameworkAgreementServiceImpl implements FrameworkAgreementService 
 
     private final InstanceRoleLarkMemberManager instanceRoleLarkMemberManager;
 
+    private final ChangeManager changeManager;
+
     public String generateUniqueId() {
         QueryWrapper<FrameworkAgreement> qw = new QueryWrapper<>();
         qw.select("id", "code").orderByDesc("id").last("LIMIT 1");
@@ -115,6 +115,16 @@ public class FrameworkAgreementServiceImpl implements FrameworkAgreementService 
         instanceRoleLarkMemberManager.insertInstanceRoleLarkMember(req, frameworkAgreement.getId());
 
         applicationEventPublisher.publishEvent(FrameworkAgreementCreatedEvent.of(frameworkAgreement));
+
+        StatusChangedEvent statusChangedEvent = StatusChangedEvent.builder()
+                .refId(frameworkAgreement.getId())
+                .refType(InstanceRefType.FRAMEWORK_AGREEMENT)
+                .before("")
+                .after(frameworkAgreement.getStatus().name())
+                .operatorId(frameworkAgreement.getAssigneeId())
+                .lastModifiedAt(frameworkAgreement.getCreatedAt())
+                .build();
+        applicationEventPublisher.publishEvent(statusChangedEvent);
 
         return frameworkAgreement.getId();
     }
@@ -257,6 +267,9 @@ public class FrameworkAgreementServiceImpl implements FrameworkAgreementService 
         List<InstanceRoleLarkMemberRes> instanceRoleLarkMembers = instanceRoleLarkMemberManager.findInstanceRoleLarkMemberByRefId(id);
         res.setInstanceRoleLarkMembers(instanceRoleLarkMembers);
 
+        List<ChangeRes> changes = changeManager.findAllByRefId(id);
+        res.setChanges(changes);
+
         return res;
     }
 
@@ -266,6 +279,7 @@ public class FrameworkAgreementServiceImpl implements FrameworkAgreementService 
         if (req.getStatus() == null) {
             req.setStatus(frameworkAgreement.getStatus());
         }
+
         frameworkAgreementConverter.update(req, frameworkAgreement);
         frameworkAgreementManager.compareAndUpdateAttachments(req, frameworkAgreement.getId());
         int affected = frameworkAgreementMapper.updateById(frameworkAgreement);
@@ -293,6 +307,18 @@ public class FrameworkAgreementServiceImpl implements FrameworkAgreementService 
         instanceRoleLarkMemberManager.deleteInstanceRoleLarkMember(id);
         instanceRoleLarkMemberManager.insertInstanceRoleLarkMember(req, id);
 
+        if (frameworkAgreement.getStatus() != req.getStatus()) {
+            StatusChangedEvent statusChangedEvent = StatusChangedEvent.builder()
+                    .refId(frameworkAgreement.getId())
+                    .refType(InstanceRefType.FRAMEWORK_AGREEMENT)
+                    .before(frameworkAgreement.getStatus().name())
+                    .after(req.getStatus().name())
+                    .operatorId(frameworkAgreement.getAssigneeId())
+                    .lastModifiedAt(frameworkAgreement.getUpdatedAt())
+                    .build();
+            applicationEventPublisher.publishEvent(statusChangedEvent);
+        }
+
         return affected;
     }
 
@@ -307,6 +333,7 @@ public class FrameworkAgreementServiceImpl implements FrameworkAgreementService 
         taskManager.logicDeleteEntityById(id);
         approvalManager.logicDeleteAllEntitiesByRefId(id);
         visitManager.logicDeleteAllEntitiesByRefId(id);
+        changeManager.bulkDeleteByRefId(id);
         return frameworkAgreementMapper.logicDeleteEntityById(id);
     }
 
