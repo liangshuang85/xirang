@@ -41,4 +41,14 @@ public class AdministrativeDivisionRes implements BaseRestResponse {
      */
     private List<AdministrativeDivisionRes> children = new ArrayList<>();
 
+    /**
+     * 上级行政区
+     */
+    private List<AdministrativeDivisionRes> parents = new ArrayList<>();
+
+    /**
+     * 完整行政区名称
+     */
+    private String fullName;
+
 }

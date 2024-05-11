@@ -136,7 +136,14 @@ public class AdministrativeDivisionManagerImpl implements AdministrativeDivision
     @Override
     public AdministrativeDivisionRes findByAdcodeSurely(long adcode) {
         AdministrativeDivision entity = findEntityByAdcode(adcode);
-        return administrativeDivisionConverter.toResponse(entity);
+        AdministrativeDivisionRes divisionRes = administrativeDivisionConverter.toResponse(entity);
+        List<AdministrativeDivisionRes> parents = findParentsByAdcode(adcode);
+        divisionRes.setParents(parents);
+        String fullName = parents.stream()
+                .map(AdministrativeDivisionRes::getName)
+                .collect(Collectors.joining());
+        divisionRes.setFullName(fullName);
+        return divisionRes;
     }
 
     @Override
@@ -149,6 +156,14 @@ public class AdministrativeDivisionManagerImpl implements AdministrativeDivision
     @Override
     public Map<Long, AdministrativeDivisionRes> findAllAsMapByAdcodesSurely(Collection<Long> adcodes) {
         return findAllByAdcodesSurely(adcodes).stream()
+                .peek(i -> {
+                    List<AdministrativeDivisionRes> parents = findParentsByAdcode(i.getAdcode());
+                    i.setParents(parents);
+                    String fullName = parents.stream()
+                            .map(AdministrativeDivisionRes::getName)
+                            .collect(Collectors.joining());
+                    i.setFullName(fullName);
+                })
                 .collect(Collectors.toMap(AdministrativeDivisionRes::getAdcode, Function.identity()));
     }
 
@@ -225,6 +240,21 @@ public class AdministrativeDivisionManagerImpl implements AdministrativeDivision
 
     private Map<Long, List<AdministrativeDivisionRes>> groupByParent() {
         return groupByParent(findAll());
+    }
+
+    /**
+     * 获取指定行政区的全部上级行政区
+     *
+     * @param adcode 行政区划代码
+     * @return 返回一个行政区划列表，列表中的行政区从大到小排序，最大的行政区为省级
+     */
+    private List<AdministrativeDivisionRes> findParentsByAdcode(long adcode) {
+        Map<Short, AdministrativeDivision> divisionMap = analyzeByAdcode(adcode);
+        return divisionMap.entrySet().stream()
+                .filter(i -> i.getKey() >= 1)
+                .sorted(Map.Entry.comparingByKey())
+                .map(i -> administrativeDivisionConverter.toResponse(i.getValue()))
+                .toList();
     }
 
 }
