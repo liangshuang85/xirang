@@ -3,6 +3,8 @@ package eco.ywhc.xr.common.model.dto.res;
 import eco.ywhc.xr.common.constant.InstanceRefType;
 import lombok.Data;
 
+import java.time.OffsetDateTime;
+
 /**
  * 变更记录Res
  */
@@ -34,5 +36,15 @@ public class ChangeRes {
      * 变更耗时
      */
     private Integer elapsedDays;
+
+    /**
+     * 操作人
+     */
+    private AssigneeRes operator;
+
+    /**
+     * 变更时间
+     */
+    private OffsetDateTime createdAt;
 
 }

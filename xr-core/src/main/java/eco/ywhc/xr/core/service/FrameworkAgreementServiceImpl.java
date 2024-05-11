@@ -268,7 +268,8 @@ public class FrameworkAgreementServiceImpl implements FrameworkAgreementService 
         res.setInstanceRoleLarkMembers(instanceRoleLarkMembers);
 
         List<ChangeRes> changes = changeManager.findAllByRefId(id);
-        res.setChanges(changes);
+        List<ChangeRes> changeRes = changes.stream().peek(i -> i.setOperator(assignee)).toList();
+        res.setChanges(changeRes);
 
         return res;
     }

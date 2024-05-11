@@ -229,7 +229,8 @@ public class ProjectServiceImpl implements ProjectService {
         projectRes.setInstanceRoleLarkMembers(instanceRoleLarkMemberRes);
 
         List<ChangeRes> changes = changeManager.findAllByRefId(id);
-        projectRes.setChanges(changes);
+        List<ChangeRes> changeRes = changes.stream().peek(i -> i.setOperator(assignee)).toList();
+        projectRes.setChanges(changeRes);
 
         return projectRes;
     }
