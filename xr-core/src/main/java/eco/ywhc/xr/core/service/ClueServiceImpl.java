@@ -7,6 +7,7 @@ import eco.ywhc.xr.common.converter.ClueConverter;
 import eco.ywhc.xr.common.event.ClueCreatedEvent;
 import eco.ywhc.xr.common.event.StatusChangedEvent;
 import eco.ywhc.xr.common.model.dto.req.ClueReq;
+import eco.ywhc.xr.common.model.dto.req.VisitReq;
 import eco.ywhc.xr.common.model.dto.res.*;
 import eco.ywhc.xr.common.model.entity.Clue;
 import eco.ywhc.xr.common.model.lark.LarkEmployee;
@@ -65,6 +66,10 @@ public class ClueServiceImpl implements ClueService {
 
         Clue clue = clueConverter.fromRequest(req);
         clue.setClueCode(clueManager.generateUniqueId());
+
+        boolean hasOfficialVisit = req.getClueVisits().stream().anyMatch(VisitReq::getOfficial);
+        clue.setHasOfficialVisit(hasOfficialVisit);
+
         clueMapper.insert(clue);
         Long id = clue.getId();
 
@@ -103,6 +108,7 @@ public class ClueServiceImpl implements ClueService {
                 .eq(StringUtils.isNotBlank(query.getAssigneeId()), Clue::getAssigneeId, query.getAssigneeId())
                 .eq(query.getStatus() != null, Clue::getStatus, query.getStatus())
                 .in(CollectionUtils.isNotEmpty(adIds), Clue::getAdcode, adIds)
+                .eq(query.getLevel() != null, Clue::getLevel, query.getLevel())
                 .orderByDesc(Clue::getId);
         var rows = clueMapper.selectPage(query.paging(), qw);
         if (rows.getRecords().isEmpty()) {
@@ -186,8 +192,11 @@ public class ClueServiceImpl implements ClueService {
                 throw new ConditionNotMetException("该地区已经存在线索");
             }
         }
-
         clueConverter.update(req, clue);
+
+        boolean hasOfficialVisit = req.getClueVisits().stream().anyMatch(VisitReq::getOfficial);
+        clue.setHasOfficialVisit(hasOfficialVisit);
+
         int affected = clueMapper.updateById(clue);
 
         channelEntryManager.logicDeleteEntityByClueId(id);

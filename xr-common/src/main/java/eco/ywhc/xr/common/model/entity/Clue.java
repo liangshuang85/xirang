@@ -46,10 +46,14 @@ public class Clue extends BaseEntity implements IdentifiableEntity<Long> {
     private String clueCode;
 
     /**
+     * 是否已经正式拜访
+     */
+    private Boolean hasOfficialVisit;
+
+    /**
      * 负责人
      */
     private String assigneeId;
-
 
 }
 

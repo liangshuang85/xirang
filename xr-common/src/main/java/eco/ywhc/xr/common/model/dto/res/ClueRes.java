@@ -63,6 +63,11 @@ public class ClueRes implements BaseRestResponse {
     private List<VisitRes> clueVisits = new ArrayList<>();
 
     /**
+     * 是否已经正式拜访
+     */
+    private Boolean hasOfficialVisit;
+
+    /**
      * 线索关联的审批
      */
     private Map<ApprovalType, Map<String, List<ApprovalRes>>> approvalMap;

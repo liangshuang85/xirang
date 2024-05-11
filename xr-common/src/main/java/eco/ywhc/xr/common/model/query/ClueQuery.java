@@ -1,5 +1,6 @@
 package eco.ywhc.xr.common.model.query;
 
+import eco.ywhc.xr.common.constant.ClueLevel;
 import eco.ywhc.xr.common.constant.ClueStatusType;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
@@ -27,5 +28,10 @@ public class ClueQuery extends BasePageQuery {
      */
     @Size(max = 255)
     private String assigneeId;
+
+    /**
+     * 线索评级
+     */
+    private ClueLevel level;
 
 }
