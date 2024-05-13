@@ -32,4 +32,9 @@ public class FrameworkAgreementQuery extends BasePageQuery {
     @Size(max = 255)
     private String assigneeId;
 
+    /**
+     * 框架协议项目名称
+     */
+    private String name;
+
 }

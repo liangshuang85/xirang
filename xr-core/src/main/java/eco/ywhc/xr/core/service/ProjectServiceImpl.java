@@ -5,6 +5,7 @@ import eco.ywhc.xr.common.constant.ApprovalType;
 import eco.ywhc.xr.common.constant.FileOwnerType;
 import eco.ywhc.xr.common.constant.InstanceRefType;
 import eco.ywhc.xr.common.constant.TaskType;
+import eco.ywhc.xr.common.converter.BasicDataConverter;
 import eco.ywhc.xr.common.converter.ProjectConverter;
 import eco.ywhc.xr.common.converter.ProjectInformationConverter;
 import eco.ywhc.xr.common.converter.TaskConverter;
@@ -12,6 +13,7 @@ import eco.ywhc.xr.common.event.ProjectCreatedEvent;
 import eco.ywhc.xr.common.event.StatusChangedEvent;
 import eco.ywhc.xr.common.model.dto.req.ProjectReq;
 import eco.ywhc.xr.common.model.dto.res.*;
+import eco.ywhc.xr.common.model.entity.BasicData;
 import eco.ywhc.xr.common.model.entity.Project;
 import eco.ywhc.xr.common.model.entity.ProjectInformation;
 import eco.ywhc.xr.common.model.entity.Task;
@@ -20,6 +22,7 @@ import eco.ywhc.xr.common.model.query.ProjectQuery;
 import eco.ywhc.xr.core.manager.*;
 import eco.ywhc.xr.core.manager.lark.LarkDepartmentManager;
 import eco.ywhc.xr.core.manager.lark.LarkEmployeeManager;
+import eco.ywhc.xr.core.mapper.BasicDataMapper;
 import eco.ywhc.xr.core.mapper.ProjectInformationMapper;
 import eco.ywhc.xr.core.mapper.ProjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -46,6 +49,8 @@ public class ProjectServiceImpl implements ProjectService {
 
     private final ProjectInformationMapper projectInformationMapper;
 
+    private final BasicDataMapper basicDataMapper;
+
     private final ProjectManager projectManager;
 
     private final LarkEmployeeManager larkEmployeeManager;
@@ -54,9 +59,13 @@ public class ProjectServiceImpl implements ProjectService {
 
     private final TaskManager taskManager;
 
+    private final BasicDataManager basicDataManager;
+
     private final ProjectConverter projectConverter;
 
     private final ProjectInformationConverter projectInformationConverter;
+
+    private final BasicDataConverter basicDataConverter;
 
     private final TaskConverter taskConverter;
 
@@ -69,6 +78,8 @@ public class ProjectServiceImpl implements ProjectService {
     private final InstanceRoleLarkMemberManager instanceRoleLarkMemberManager;
 
     private final ChangeManager changeManager;
+
+    private final VisitManager visitManager;
 
     public String generateUniqueId() {
         QueryWrapper<Project> qw = new QueryWrapper<>();
@@ -93,6 +104,12 @@ public class ProjectServiceImpl implements ProjectService {
         projectInformation.setProjectId(project.getId());
         projectInformationMapper.insert(projectInformation);
         instanceRoleLarkMemberManager.insertInstanceRoleLarkMember(req, project.getId());
+        // 创建基础信息
+        BasicData basicData = basicDataConverter.fromRequest(req.getBasicData());
+        basicData.setRefId(project.getId());
+        basicDataMapper.insert(basicData);
+        // 创建拜访记录
+        visitManager.createMany(req.getProjectVisits(), project.getId());
 
         applicationEventPublisher.publishEvent(ProjectCreatedEvent.of(project));
 
@@ -175,6 +192,12 @@ public class ProjectServiceImpl implements ProjectService {
         ProjectInformationRes projectInformationRes = projectInformationConverter.toResponse(projectInformation);
         projectRes.setProjectInformation(projectInformationRes);
 
+        // 获取基础信息
+        projectRes.setBasicData(basicDataManager.findEntityByRefId(id));
+        // 获取拜访记录
+        List<VisitRes> visitList = visitManager.findAllByRefId(id);
+        projectRes.setProjectVisits(visitList);
+
         LarkEmployee projectLarkEmployee = larkEmployeeManager.retrieveLarkEmployee(project.getAssigneeId());
         AssigneeRes assignee = AssigneeRes.builder()
                 .assigneeId(project.getAssigneeId())
@@ -247,6 +270,15 @@ public class ProjectServiceImpl implements ProjectService {
         projectInformation.setProjectId(id);
         projectInformationMapper.updateById(projectInformation);
 
+        // 更新基础数据
+        BasicData basicData = basicDataConverter.fromResponse(basicDataManager.findEntityByRefId(id));
+        basicDataConverter.update(req.getBasicData(), basicData);
+        basicData.setRefId(id);
+        basicDataMapper.updateById(basicData);
+        // 更新拜访记录
+        visitManager.logicDeleteAllEntitiesByRefId(id);
+        visitManager.createMany(req.getProjectVisits(), id);
+
         instanceRoleLarkMemberManager.deleteInstanceRoleLarkMember(id);
         instanceRoleLarkMemberManager.insertInstanceRoleLarkMember(req, id);
 
@@ -271,6 +303,8 @@ public class ProjectServiceImpl implements ProjectService {
         taskManager.logicDeleteEntityById(id);
         attachmentManager.deleteByOwnerId(id);
         changeManager.bulkDeleteByRefId(id);
+        // 逻辑删除基础信息
+        basicDataManager.deleteEntityByRefId(id);
         return projectMapper.logicDeleteEntityById(id);
     }
 

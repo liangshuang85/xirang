@@ -13,10 +13,7 @@ import eco.ywhc.xr.common.model.query.FrameworkAgreementQuery;
 import eco.ywhc.xr.core.manager.*;
 import eco.ywhc.xr.core.manager.lark.LarkDepartmentManager;
 import eco.ywhc.xr.core.manager.lark.LarkEmployeeManager;
-import eco.ywhc.xr.core.mapper.FrameworkAgreementChannelEntryMapper;
-import eco.ywhc.xr.core.mapper.FrameworkAgreementMapper;
-import eco.ywhc.xr.core.mapper.FrameworkAgreementProjectFundingMapper;
-import eco.ywhc.xr.core.mapper.FrameworkAgreementProjectMapper;
+import eco.ywhc.xr.core.mapper.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -46,6 +43,8 @@ public class FrameworkAgreementServiceImpl implements FrameworkAgreementService 
 
     private final FrameworkAgreementChannelEntryMapper frameworkAgreementChannelEntryMapper;
 
+    private final BasicDataMapper basicDataMapper;
+
     private final FrameworkAgreementConverter frameworkAgreementConverter;
 
     private final FrameworkAgreementChannelEntryConverter frameworkAgreementChannelEntryConverter;
@@ -53,6 +52,8 @@ public class FrameworkAgreementServiceImpl implements FrameworkAgreementService 
     private final FrameworkAgreementProjectFundingConverter frameworkAgreementProjectFundingConverter;
 
     private final FrameworkAgreementProjectConverter frameworkAgreementProjectConverter;
+
+    private final BasicDataConverter basicDataConverter;
 
     private final AdministrativeDivisionManager administrativeDivisionManager;
 
@@ -76,6 +77,8 @@ public class FrameworkAgreementServiceImpl implements FrameworkAgreementService 
 
     private final ChangeManager changeManager;
 
+    private final BasicDataManager basicDataManager;
+
     public String generateUniqueId() {
         QueryWrapper<FrameworkAgreement> qw = new QueryWrapper<>();
         qw.select("id", "code").orderByDesc("id").last("LIMIT 1");
@@ -96,6 +99,18 @@ public class FrameworkAgreementServiceImpl implements FrameworkAgreementService 
         frameworkAgreement.setStatus(FrameworkAgreementType.PRE_PROJECT);
         frameworkAgreementMapper.insert(frameworkAgreement);
         frameworkAgreementManager.compareAndUpdateAttachments(req, frameworkAgreement.getId());
+        // 判断项目建议书批复状态
+        boolean projectProposalApproved = !attachmentManager.findManyEntitiesByOwnerId(frameworkAgreement.getId(), FileOwnerType.PROJECT_PROPOSAL_APPROVAL).isEmpty();
+        if (projectProposalApproved) {
+            frameworkAgreement.setProjectProposalApproved(true);
+            frameworkAgreementMapper.updateById(frameworkAgreement);
+        }
+        // 判断框架协议书签署状态
+        boolean frameworkAgreementSigned = !attachmentManager.findManyEntitiesByOwnerId(frameworkAgreement.getId(), FileOwnerType.FRAMEWORK_AGREEMENT_SIGNING).isEmpty();
+        if (frameworkAgreementSigned) {
+            frameworkAgreement.setFrameworkAgreementSigned(true);
+            frameworkAgreementMapper.updateById(frameworkAgreement);
+        }
 
         FrameworkAgreementChannelEntry frameworkAgreementChannelEntry = frameworkAgreementChannelEntryConverter.fromRequest(req.getFrameworkAgreementChannelEntry());
         frameworkAgreementChannelEntry.setFrameworkAgreementId(frameworkAgreement.getId());
@@ -110,6 +125,10 @@ public class FrameworkAgreementServiceImpl implements FrameworkAgreementService 
         FrameworkAgreementProject frameworkAgreementProject = frameworkAgreementProjectConverter.fromRequest(req.getFrameworkAgreementProject());
         frameworkAgreementProject.setFrameworkAgreementId(frameworkAgreement.getId());
         frameworkAgreementProjectMapper.insert(frameworkAgreementProject);
+        //插入基本数据
+        BasicData basicData = basicDataConverter.fromRequest(req.getBasicData());
+        basicData.setRefId(frameworkAgreement.getId());
+        basicDataMapper.insert(basicData);
 
         visitManager.createMany(req.getFrameworkVisits(), frameworkAgreement.getId());
         instanceRoleLarkMemberManager.insertInstanceRoleLarkMember(req, frameworkAgreement.getId());
@@ -142,6 +161,7 @@ public class FrameworkAgreementServiceImpl implements FrameworkAgreementService 
         qw.lambda().eq(FrameworkAgreement::getDeleted, 0)
                 .eq(StringUtils.isNotBlank(query.getAssigneeId()), FrameworkAgreement::getAssigneeId, query.getAssigneeId())
                 .eq(Objects.nonNull(query.getStatus()), FrameworkAgreement::getStatus, query.getStatus())
+                .like(StringUtils.isNotBlank(query.getName()), FrameworkAgreement::getName, query.getName())
                 .in(CollectionUtils.isNotEmpty(adIds), FrameworkAgreement::getAdcode, adIds)
                 .orderByDesc(FrameworkAgreement::getId);
 
@@ -216,6 +236,10 @@ public class FrameworkAgreementServiceImpl implements FrameworkAgreementService 
         FrameworkAgreementChannelEntryRes channelEntry = frameworkAgreementManager.getChannelEntryByFrameworkAgreementId(frameworkAgreement.getId());
         res.setFrameworkAgreementChannelEntry(channelEntry);
 
+        // 查询基础数据
+        BasicDataRes basicData = basicDataManager.findEntityByRefId(id);
+        res.setBasicData(basicData);
+
         List<Task> tasks = taskManager.listTasksByRefId(id);
         List<TaskRes> taskResList = new ArrayList<>();
         for (Task task : tasks) {
@@ -285,6 +309,19 @@ public class FrameworkAgreementServiceImpl implements FrameworkAgreementService 
         frameworkAgreementManager.compareAndUpdateAttachments(req, frameworkAgreement.getId());
         int affected = frameworkAgreementMapper.updateById(frameworkAgreement);
 
+        // 判断项目建议书批复状态
+        boolean projectProposalApproved = !attachmentManager.findManyEntitiesByOwnerId(frameworkAgreement.getId(), FileOwnerType.PROJECT_PROPOSAL_APPROVAL).isEmpty();
+        if (projectProposalApproved) {
+            frameworkAgreement.setProjectProposalApproved(true);
+            frameworkAgreementMapper.updateById(frameworkAgreement);
+        }
+        // 判断框架协议书签署状态
+        boolean frameworkAgreementSigned = !attachmentManager.findManyEntitiesByOwnerId(frameworkAgreement.getId(), FileOwnerType.FRAMEWORK_AGREEMENT_SIGNING).isEmpty();
+        if (frameworkAgreementSigned) {
+            frameworkAgreement.setFrameworkAgreementSigned(true);
+            frameworkAgreementMapper.updateById(frameworkAgreement);
+        }
+
         FrameworkAgreementProject frameworkAgreementProject = frameworkAgreementManager.getFrameworkAgreementProjectById(id);
         frameworkAgreementProjectConverter.update(req.getFrameworkAgreementProject(), frameworkAgreementProject);
         frameworkAgreementProject.setFrameworkAgreementId(id);
@@ -301,6 +338,12 @@ public class FrameworkAgreementServiceImpl implements FrameworkAgreementService 
         frameworkAgreementProjectFunding.setFrameworkAgreementId(id);
         frameworkAgreementManager.compareAndUpdateAttachments(req.getFrameworkAgreementProjectFunding(), frameworkAgreementProjectFunding.getId());
         frameworkAgreementProjectFundingMapper.updateById(frameworkAgreementProjectFunding);
+
+        //更新基础数据
+        BasicData basicData = basicDataConverter.fromResponse(basicDataManager.findEntityByRefId(id));
+        basicDataConverter.update(req.getBasicData(), basicData);
+        basicData.setRefId(id);
+        basicDataMapper.updateById(basicData);
 
         visitManager.logicDeleteAllEntitiesByRefId(id);
         visitManager.createMany(req.getFrameworkVisits(), id);
@@ -335,6 +378,8 @@ public class FrameworkAgreementServiceImpl implements FrameworkAgreementService 
         approvalManager.logicDeleteAllEntitiesByRefId(id);
         visitManager.logicDeleteAllEntitiesByRefId(id);
         changeManager.bulkDeleteByRefId(id);
+        // 逻辑删除基础信息
+        basicDataManager.deleteEntityByRefId(id);
         return frameworkAgreementMapper.logicDeleteEntityById(id);
     }
 

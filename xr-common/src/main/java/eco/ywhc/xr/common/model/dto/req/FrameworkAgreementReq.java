@@ -119,4 +119,9 @@ public class FrameworkAgreementReq implements BaseRestRequest {
     @NotNull
     private List<InstanceRoleLarkMemberReq> instanceRoleLarkMembers = new ArrayList<>();
 
+    /**
+     * 基础数据
+     */
+    private BasicDataReq basicData;
+
 }

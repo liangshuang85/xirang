@@ -111,4 +111,14 @@ public class ProjectRes implements BaseRestResponse {
      */
     private List<ChangeRes> changes;
 
+    /**
+     * 项目基础数据
+     */
+    private BasicDataRes basicData;
+
+    /**
+     * 拜访信息Res
+     */
+    private List<VisitRes> projectVisits;
+
 }

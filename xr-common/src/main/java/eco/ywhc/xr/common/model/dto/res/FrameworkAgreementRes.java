@@ -56,6 +56,17 @@ public class FrameworkAgreementRes implements BaseRestResponse {
     private AssigneeRes assignee;
 
     /**
+     * 是否已签署框架协议书
+     */
+    private boolean documentSigningStatus;
+
+    /**
+     * 是否已批复项目建议书
+     */
+    private boolean projectProposalApprovalStatus;
+
+
+    /**
      * 框架协议项目项目信息Res
      */
     FrameworkAgreementProjectRes frameworkAgreementProject;
@@ -134,5 +145,10 @@ public class FrameworkAgreementRes implements BaseRestResponse {
      * 线索状态变更记录
      */
     private List<ChangeRes> changes;
+
+    /**
+     * 基础数据
+     */
+    private BasicDataRes basicData;
 
 }

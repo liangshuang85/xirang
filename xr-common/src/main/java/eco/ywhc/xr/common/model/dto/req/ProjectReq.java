@@ -93,4 +93,16 @@ public class ProjectReq implements BaseRestRequest {
     @NotNull
     private List<InstanceRoleLarkMemberReq> instanceRoleLarkMembers = new ArrayList<>();
 
+    /**
+     * 基础数据
+     */
+    private BasicDataReq basicData;
+
+    /**
+     * 拜访信息
+     */
+    @Valid
+    @NotNull
+    private List<VisitReq> projectVisits = new ArrayList<>();
+
 }

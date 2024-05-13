@@ -54,4 +54,14 @@ public class FrameworkAgreement extends BaseEntity implements IdentifiableEntity
      */
     private String assigneeId;
 
+    /**
+     * 是否已签署框架协议书
+     */
+    private boolean frameworkAgreementSigned = false;
+
+    /**
+     * 是否已批复项目建议书
+     */
+    private boolean projectProposalApproved = false;
+
 }
