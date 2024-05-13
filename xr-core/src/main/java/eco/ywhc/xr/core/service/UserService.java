@@ -20,6 +20,14 @@ public interface UserService {
     String usernamePasswordAuthenticate(HttpServletRequest httpServletRequest, String username, String rawPassword);
 
     /**
+     * 通过授权码进行认证
+     *
+     * @param authorizationCode 授权码
+     * @param state             {@code state}参数
+     */
+    String oauth2Authenticate(HttpServletRequest httpServletRequest, String authorizationCode, String state);
+
+    /**
      * 修改当前登录用户的密码
      */
     boolean changePassword(HttpServletRequest httpServletRequest, PasswordChangeRequest req);

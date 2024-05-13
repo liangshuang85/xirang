@@ -28,4 +28,11 @@ public interface OAuth2Manager {
      */
     String handleOAuth2Callback(String authorizationCode);
 
+    /**
+     * 获取用户的OpenID
+     *
+     * @param userAccessToken 用户access_token
+     */
+    String getUserOpenId(String userAccessToken);
+
 }

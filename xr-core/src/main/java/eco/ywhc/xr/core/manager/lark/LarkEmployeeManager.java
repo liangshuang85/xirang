@@ -1,10 +1,8 @@
 package eco.ywhc.xr.core.manager.lark;
 
 import com.lark.oapi.service.ehr.v1.model.ListEmployeeRespBody;
-import eco.ywhc.xr.common.model.entity.LarkDepartmentMember;
 import eco.ywhc.xr.common.model.lark.LarkEmployee;
 
-import java.util.List;
 import java.util.Set;
 
 /**

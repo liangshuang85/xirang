@@ -2,14 +2,13 @@ package eco.ywhc.xr.rest.oauth2;
 
 import eco.ywhc.xr.common.model.AuthToken;
 import eco.ywhc.xr.common.model.ExchangeTokenRequest;
-import eco.ywhc.xr.common.model.OAuth2Callback;
 import eco.ywhc.xr.common.model.OAuth2Redirection;
 import eco.ywhc.xr.core.config.property.LarkProperties;
 import eco.ywhc.xr.core.manager.OAuth2Manager;
+import eco.ywhc.xr.core.service.UserService;
 import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,6 +22,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import org.sugar.commons.exception.InvalidInputException;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -40,6 +40,8 @@ public class OAuth2Controller {
     private final LarkProperties larkProperties;
 
     private final OAuth2Manager oauth2Manager;
+
+    private final UserService userService;
 
     /**
      * 获取OAuth2授权地址或者直接跳转到授权地址
@@ -84,25 +86,17 @@ public class OAuth2Controller {
      */
     @Hidden
     @GetMapping("/oauth2/callback")
-    public ResponseEntity<OAuth2Callback> callback(HttpServletRequest request,
-                                                   @RequestParam(value = "code") String code,
-                                                   @RequestParam(value = "state", required = false) String state) {
+    public ResponseEntity<Map<String, String>> callback(HttpServletRequest request,
+                                                        @RequestParam(value = "code") String code,
+                                                        @RequestParam(value = "state", required = false) String state) {
         if (StringUtils.isBlank(code)) {
             throw new InvalidInputException("code参数的值不能为空");
         }
         if (StringUtils.isBlank(state)) {
             throw new InvalidInputException("state参数的值不能为空");
         }
-        String okFlag = oauth2Manager.retrieveOAuth2State(state);
-        if (!oauth2Manager.OK_FLAG.equals(okFlag)) {
-            throw new InvalidInputException("state参数错误");
-        }
-        String userAccessToken = oauth2Manager.handleOAuth2Callback(code);
-        if (StringUtils.isBlank(userAccessToken)) {
-            throw new InvalidInputException("code参数错误");
-        }
-        request.getSession(true);
-        return ResponseEntity.ok(OAuth2Callback.of("ok"));
+        userService.oauth2Authenticate(request, code, state);
+        return ResponseEntity.ok(Map.of("message", "ok"));
     }
 
     /**
@@ -111,16 +105,8 @@ public class OAuth2Controller {
     @PostMapping("/oauth2/token")
     public ResponseEntity<AuthToken> exchange(HttpServletRequest request,
                                               @Valid @RequestBody ExchangeTokenRequest exchangeTokenRequest) {
-        String okFlag = oauth2Manager.retrieveOAuth2State(exchangeTokenRequest.getState());
-        if (!oauth2Manager.OK_FLAG.equals(okFlag)) {
-            throw new InvalidInputException("state参数错误");
-        }
-        String userAccessToken = oauth2Manager.handleOAuth2Callback(exchangeTokenRequest.getCode());
-        if (StringUtils.isBlank(userAccessToken)) {
-            throw new InvalidInputException("code参数错误");
-        }
-        HttpSession session = request.getSession(true);
-        return ResponseEntity.ok(AuthToken.of(session.getId()));
+        String sessionId = userService.oauth2Authenticate(request, exchangeTokenRequest.getCode(), exchangeTokenRequest.getState());
+        return ResponseEntity.ok(AuthToken.of(sessionId));
     }
 
 }

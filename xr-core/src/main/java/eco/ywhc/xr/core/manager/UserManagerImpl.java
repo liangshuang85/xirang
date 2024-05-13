@@ -7,10 +7,13 @@ import eco.ywhc.xr.common.exception.InvalidCredentialException;
 import eco.ywhc.xr.common.model.PasswordChangeRequest;
 import eco.ywhc.xr.common.model.RequestContextUser;
 import eco.ywhc.xr.common.model.entity.User;
+import eco.ywhc.xr.common.model.lark.LarkEmployee;
+import eco.ywhc.xr.core.manager.lark.LarkEmployeeManager;
 import eco.ywhc.xr.core.mapper.UserMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.lang.NonNull;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.sugar.commons.exception.ConditionNotMetException;
@@ -31,6 +34,8 @@ public class UserManagerImpl implements UserManager {
 
     private final PasswordEncoder passwordEncoder;
 
+    private final LarkEmployeeManager larkEmployeeManager;
+
     @Override
     public User findEntityById(long id) {
         return userMapper.findEntityById(id);
@@ -40,6 +45,13 @@ public class UserManagerImpl implements UserManager {
     public User findEntityByUsername(String username) {
         QueryWrapper<User> qw = new QueryWrapper<>();
         qw.lambda().eq(User::getDeleted, 0).eq(User::getUsername, username);
+        return userMapper.selectOne(qw);
+    }
+
+    @Override
+    public User findEntityByLarkOpenId(String larkOpenId) {
+        QueryWrapper<User> qw = new QueryWrapper<>();
+        qw.lambda().eq(User::getDeleted, 0).eq(User::getLarkOpenId, larkOpenId);
         return userMapper.selectOne(qw);
     }
 
@@ -70,6 +82,33 @@ public class UserManagerImpl implements UserManager {
         boolean ok = passwordEncoder.matches(rawPassword, user.getPasswordHash());
         if (!ok) {
             throw new InvalidCredentialException(COMMON_AUTH_FAILED_MSG);
+        }
+        return userConverter.toRequestContextUser(user);
+    }
+
+    @Override
+    public RequestContextUser authWithUserOpenId(@NonNull String userOpenId) {
+        log.debug("飞书用户的OpenID\"{}\"登录系统", userOpenId);
+        if (StringUtils.isBlank(userOpenId)) {
+            log.warn("登录提供的用户OpenID为空");
+            throw new InvalidCredentialException("登录失败");
+        }
+        LarkEmployee larkEmployee = larkEmployeeManager.retrieveLarkEmployeeSync(userOpenId);
+        if (larkEmployee == null) {
+            log.warn("获取用户信息失败");
+            throw new InvalidCredentialException("登录失败");
+        }
+        User user = findEntityByLarkOpenId(userOpenId);
+        if (user == null) {
+            user = new User();
+            user.setUsername(userOpenId);
+            user.setFullName(larkEmployee.getName());
+            user.setPhoneNumber(larkEmployee.getMobile());
+            user.setEmail(larkEmployee.getEmail());
+            user.setLarkOpenId(userOpenId);
+            user.setAdmin(false);
+            user.setBlocked(false);
+            userMapper.insert(user);
         }
         return userConverter.toRequestContextUser(user);
     }
