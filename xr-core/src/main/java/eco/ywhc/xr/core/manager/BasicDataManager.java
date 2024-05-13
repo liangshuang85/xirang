@@ -1,6 +1,6 @@
 package eco.ywhc.xr.core.manager;
 
-import eco.ywhc.xr.common.model.dto.res.BasicDataRes;
+import eco.ywhc.xr.common.model.entity.BasicData;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
@@ -14,7 +14,7 @@ public interface BasicDataManager {
      *
      * @param refId 关联ID
      */
-    BasicDataRes findEntityByRefId(long refId);
+    BasicData findEntityByRefId(long refId);
 
     /**
      * 根据refId删除基础信息

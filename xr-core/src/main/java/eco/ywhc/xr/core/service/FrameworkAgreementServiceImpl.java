@@ -237,7 +237,7 @@ public class FrameworkAgreementServiceImpl implements FrameworkAgreementService 
         res.setFrameworkAgreementChannelEntry(channelEntry);
 
         // 查询基础数据
-        BasicDataRes basicData = basicDataManager.findEntityByRefId(id);
+        BasicDataRes basicData = basicDataConverter.toResponse(basicDataManager.findEntityByRefId(id));
         res.setBasicData(basicData);
 
         List<Task> tasks = taskManager.listTasksByRefId(id);
@@ -340,7 +340,7 @@ public class FrameworkAgreementServiceImpl implements FrameworkAgreementService 
         frameworkAgreementProjectFundingMapper.updateById(frameworkAgreementProjectFunding);
 
         //更新基础数据
-        BasicData basicData = basicDataConverter.fromResponse(basicDataManager.findEntityByRefId(id));
+        BasicData basicData = basicDataManager.findEntityByRefId(id);
         basicDataConverter.update(req.getBasicData(), basicData);
         basicData.setRefId(id);
         basicDataMapper.updateById(basicData);

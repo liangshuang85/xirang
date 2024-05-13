@@ -8,6 +8,4 @@ import org.mapstruct.Mapper;
 @Mapper
 public interface BasicDataConverter extends SimpleConverter<BasicData, BasicDataReq, BasicDataRes> {
 
-    BasicData fromResponse(BasicDataRes res);
-
 }

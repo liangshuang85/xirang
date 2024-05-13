@@ -193,7 +193,7 @@ public class ProjectServiceImpl implements ProjectService {
         projectRes.setProjectInformation(projectInformationRes);
 
         // 获取基础信息
-        projectRes.setBasicData(basicDataManager.findEntityByRefId(id));
+        projectRes.setBasicData(basicDataConverter.toResponse(basicDataManager.findEntityByRefId(id)));
         // 获取拜访记录
         List<VisitRes> visitList = visitManager.findAllByRefId(id);
         projectRes.setProjectVisits(visitList);
@@ -271,7 +271,7 @@ public class ProjectServiceImpl implements ProjectService {
         projectInformationMapper.updateById(projectInformation);
 
         // 更新基础数据
-        BasicData basicData = basicDataConverter.fromResponse(basicDataManager.findEntityByRefId(id));
+        BasicData basicData = basicDataManager.findEntityByRefId(id);
         basicDataConverter.update(req.getBasicData(), basicData);
         basicData.setRefId(id);
         basicDataMapper.updateById(basicData);

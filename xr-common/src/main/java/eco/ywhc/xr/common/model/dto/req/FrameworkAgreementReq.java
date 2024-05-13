@@ -122,6 +122,7 @@ public class FrameworkAgreementReq implements BaseRestRequest {
     /**
      * 基础数据
      */
+    @NotNull
     private BasicDataReq basicData;
 
 }
