@@ -77,7 +77,9 @@ public class ClueServiceImpl implements ClueService {
         fundingManager.createOne(req.getClueFunding(), id);
         visitManager.createMany(req.getClueVisits(), id);
 
-        instanceRoleLarkMemberManager.insertInstanceRoleLarkMember(req, id);
+        if (CollectionUtils.isNotEmpty(req.getInstanceRoleLarkMembers())) {
+            instanceRoleLarkMemberManager.insertInstanceRoleLarkMember(req, id);
+        }
 
         applicationEventPublisher.publishEvent(ClueCreatedEvent.of(clue));
 
@@ -209,7 +211,9 @@ public class ClueServiceImpl implements ClueService {
         visitManager.createMany(req.getClueVisits(), id);
 
         instanceRoleLarkMemberManager.deleteInstanceRoleLarkMember(id);
-        instanceRoleLarkMemberManager.insertInstanceRoleLarkMember(req, id);
+        if (CollectionUtils.isNotEmpty(req.getInstanceRoleLarkMembers())) {
+            instanceRoleLarkMemberManager.insertInstanceRoleLarkMember(req, id);
+        }
 
         if (clue.getStatus() != req.getStatus()) {
             StatusChangedEvent statusChangedEvent = StatusChangedEvent.builder()

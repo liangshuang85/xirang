@@ -9,6 +9,9 @@ import eco.ywhc.xr.common.constant.TaskStatusType;
 import eco.ywhc.xr.common.constant.TaskTemplateRefType;
 import eco.ywhc.xr.common.constant.TaskType;
 import eco.ywhc.xr.common.converter.TaskConverter;
+import eco.ywhc.xr.common.event.InstanceRoleLarkMemberInsertedEvent;
+import eco.ywhc.xr.common.model.TaskListInfo;
+import eco.ywhc.xr.common.model.dto.req.TaskListReq;
 import eco.ywhc.xr.common.model.dto.res.DepartmentRes;
 import eco.ywhc.xr.common.model.entity.Task;
 import eco.ywhc.xr.common.model.entity.TaskTemplate;
@@ -21,9 +24,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.event.TransactionalEventListener;
 import org.sugar.commons.exception.ConditionNotMetException;
 import org.sugar.commons.exception.InternalErrorException;
 import org.sugar.commons.exception.InvalidInputException;
+
+import java.util.Collections;
+import java.util.List;
 
 @Service
 @Slf4j
@@ -52,21 +59,25 @@ public class TaskServiceImpl implements TaskService {
         if (currentTask.getStatus() == TaskStatusType.todo) {
             throw new InvalidInputException("当前任务未完成");
         }
-
         TaskTemplate taskTemplate = taskManager.getTaskTemplateById(currentTask.getTaskTemplateId());
         String summary;
+        String name;
         if (taskTemplate.getRefType() == TaskTemplateRefType.FRAMEWORK_AGREEMENT) {
-            String name = frameworkAgreementManager.findEntityById(currentTask.getRefId()).getName();
+            name = frameworkAgreementManager.findEntityById(currentTask.getRefId()).getName();
             if (currentTask.getType() == TaskType.FRAMEWORK_AGREEMENT_PREPARATION) {
                 summary = "【框架项目任务】" + "【项目建议书拟定】" + name;
             } else {
                 summary = "【框架项目任务】" + "【框架协议拟定】" + name;
             }
         } else {
-            String name = projectManager.findEntityById(currentTask.getRefId()).getName();
+            name = projectManager.findEntityById(currentTask.getRefId()).getName();
             summary = "【项目管理任务】" + "【投资协议拟定】" + name;
         }
-
+        // 获取任务清单
+        String taskListGuid = taskManager.getTaskList(taskTemplate.getRefType(),name, currentTask.getRefId()).getTaskListGuid();
+        // 获取任务分组
+        String sectionGuid = taskManager.getSections(taskTemplate.getType(),taskListGuid);
+        // 获取部门信息
         DepartmentRes department = larkDepartmentManager.getDepartmentByDepartmentId(currentTask.getDepartmentId());
         if (StringUtils.isBlank(department.getLeaderUserId())) {
             throw new ConditionNotMetException("部分负责人未设置，无法发起任务");
@@ -91,6 +102,15 @@ public class TaskServiceImpl implements TaskService {
         CreateTaskResp resp;
         try {
             resp = client.task().v2().task().create(req);
+            TaskListReq taskListReq = TaskListReq.builder()
+                    .taskGuid(resp.getData().getTask().getGuid())
+                    .taskListGuid(taskListGuid)
+                    .sectionGuid(sectionGuid)
+                    .build();
+            // 添加任务到任务清单
+            taskManager.addTaskToTaskList(taskListReq);
+            // 添加成员到任务清单
+            taskManager.addMemberToTaskList(taskListGuid, Collections.singletonList(department.getLeaderUserId()));
         } catch (Exception e) {
             throw new InternalErrorException("任务发起失败");
         }
@@ -111,6 +131,29 @@ public class TaskServiceImpl implements TaskService {
             return 1;
         }
         return 0;
+    }
+
+    @Override
+    @TransactionalEventListener
+    public void InstanceRoleLarkMemberInsertedEvent(InstanceRoleLarkMemberInsertedEvent event) {
+        HandleInstanceRoleLarkMemberInsertedEvent(event);
+    }
+
+    private void HandleInstanceRoleLarkMemberInsertedEvent(InstanceRoleLarkMemberInsertedEvent event) {
+        // 获取任务清单
+        TaskListInfo taskList = taskManager.getTaskList(event.getRefType(), event.getName(), event.getId());
+        // 查找需要移出任务清单的成员
+        List<String> removeMembers = taskList.getMembers().stream()
+                .filter(member -> !event.getCurrentMembers().contains(member))
+                        .toList();
+        // 添加成员到任务清单
+        if(!event.getCurrentMembers().isEmpty()){
+            taskManager.addMemberToTaskList(taskList.getTaskListGuid(), event.getCurrentMembers());
+        }
+        // 移出成员
+        if(!removeMembers.isEmpty()){
+        taskManager.removeMemberFromTaskList(taskList.getTaskListGuid(), removeMembers);
+        }
     }
 
 }

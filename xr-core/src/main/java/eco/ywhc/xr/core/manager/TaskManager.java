@@ -1,5 +1,9 @@
 package eco.ywhc.xr.core.manager;
 
+import eco.ywhc.xr.common.constant.TaskTemplateRefType;
+import eco.ywhc.xr.common.constant.TaskType;
+import eco.ywhc.xr.common.model.TaskListInfo;
+import eco.ywhc.xr.common.model.dto.req.TaskListReq;
 import eco.ywhc.xr.common.model.dto.res.TaskRes;
 import eco.ywhc.xr.common.model.entity.Task;
 import eco.ywhc.xr.common.model.entity.TaskTemplate;
@@ -42,6 +46,45 @@ public interface TaskManager {
      * @param limit      限制数量
      */
     List<Task> listTasks(long prevTaskId, int limit);
+
+    /**
+     * 获取任务清单
+     *
+     * @param refType 任务关联类型
+     * @param name    任务关联对象名称
+     */
+    TaskListInfo getTaskList(TaskTemplateRefType refType, String name, Long id);
+
+    /**
+     * 获取任务清单分组
+     *
+     * @param type         任务类型
+     * @param taskListGuid 任务清单Guid
+     */
+    String getSections(TaskType type, String taskListGuid);
+
+    /**
+     * 添加任务到任务清单
+     *
+     * @param req 任务清单req
+     */
+    void addTaskToTaskList(TaskListReq req);
+
+    /**
+     * 添加成员到任务清单
+     *
+     * @param taskListGuid 任务清单Guid
+     * @param memberIds    成员ID
+     */
+    void addMemberToTaskList(String taskListGuid, List<String> memberIds);
+
+    /**
+     * 从任务清单中移除成员
+     *
+     * @param taskListGuid 任务清单Guid
+     * @param memberIds    成员ID
+     */
+    void removeMemberFromTaskList(String taskListGuid, List<String> memberIds);
 
     Task findEntityById(@NonNull Long id);
 

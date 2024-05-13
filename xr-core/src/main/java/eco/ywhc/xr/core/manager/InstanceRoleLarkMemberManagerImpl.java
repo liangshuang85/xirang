@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -107,6 +108,16 @@ public class InstanceRoleLarkMemberManagerImpl implements InstanceRoleLarkMember
                     instanceRoleLarkMemberRes.setMemberIds(larkMembers.stream().map(InstanceRoleLarkMember::getMemberId).collect(Collectors.toSet()));
                     return instanceRoleLarkMemberRes;
                 })
+                .toList();
+    }
+
+    @Override
+    public List<String> getMemberIdsByRefId(long refId) {
+        QueryWrapper<InstanceRoleLarkMember> qw = new QueryWrapper<>();
+        qw.lambda().eq(InstanceRoleLarkMember::getDeleted, 0)
+                .eq(InstanceRoleLarkMember::getRefId, refId);
+        return instanceRoleLarkMemberMapper.selectList(qw).stream()
+                .map(InstanceRoleLarkMember::getMemberId)
                 .toList();
     }
 

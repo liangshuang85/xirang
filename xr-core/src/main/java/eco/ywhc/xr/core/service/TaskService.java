@@ -1,5 +1,7 @@
 package eco.ywhc.xr.core.service;
 
+import eco.ywhc.xr.common.event.InstanceRoleLarkMemberInsertedEvent;
+
 public interface TaskService {
 
     /**
@@ -8,5 +10,7 @@ public interface TaskService {
      * @param id 任务ID
      */
     int startLarkTask(long id);
+
+    void InstanceRoleLarkMemberInsertedEvent(InstanceRoleLarkMemberInsertedEvent event);
 
 }

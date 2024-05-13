@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import eco.ywhc.xr.common.constant.*;
 import eco.ywhc.xr.common.converter.*;
 import eco.ywhc.xr.common.event.FrameworkAgreementCreatedEvent;
+import eco.ywhc.xr.common.event.InstanceRoleLarkMemberInsertedEvent;
 import eco.ywhc.xr.common.event.StatusChangedEvent;
 import eco.ywhc.xr.common.model.dto.req.FrameworkAgreementReq;
 import eco.ywhc.xr.common.model.dto.res.*;
@@ -131,7 +132,12 @@ public class FrameworkAgreementServiceImpl implements FrameworkAgreementService 
         basicDataMapper.insert(basicData);
 
         visitManager.createMany(req.getFrameworkVisits(), frameworkAgreement.getId());
-        instanceRoleLarkMemberManager.insertInstanceRoleLarkMember(req, frameworkAgreement.getId());
+
+        if (CollectionUtils.isNotEmpty(req.getInstanceRoleLarkMembers())) {
+            instanceRoleLarkMemberManager.insertInstanceRoleLarkMember(req, frameworkAgreement.getId());
+            List<String> memberIds = instanceRoleLarkMemberManager.getMemberIdsByRefId(frameworkAgreement.getId());
+            applicationEventPublisher.publishEvent(InstanceRoleLarkMemberInsertedEvent.of(frameworkAgreement.getId(), req.getName(), TaskTemplateRefType.FRAMEWORK_AGREEMENT, memberIds));
+        }
 
         applicationEventPublisher.publishEvent(FrameworkAgreementCreatedEvent.of(frameworkAgreement));
 
@@ -349,7 +355,11 @@ public class FrameworkAgreementServiceImpl implements FrameworkAgreementService 
         visitManager.createMany(req.getFrameworkVisits(), id);
 
         instanceRoleLarkMemberManager.deleteInstanceRoleLarkMember(id);
-        instanceRoleLarkMemberManager.insertInstanceRoleLarkMember(req, id);
+        if (CollectionUtils.isNotEmpty(req.getInstanceRoleLarkMembers())) {
+            instanceRoleLarkMemberManager.insertInstanceRoleLarkMember(req, id);
+        }
+        List<String> memberIds = instanceRoleLarkMemberManager.getMemberIdsByRefId(frameworkAgreement.getId());
+        applicationEventPublisher.publishEvent(InstanceRoleLarkMemberInsertedEvent.of(id, req.getName(), TaskTemplateRefType.FRAMEWORK_AGREEMENT, memberIds));
 
         if (frameworkAgreement.getStatus() != req.getStatus()) {
             StatusChangedEvent statusChangedEvent = StatusChangedEvent.builder()

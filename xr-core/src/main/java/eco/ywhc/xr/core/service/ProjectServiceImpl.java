@@ -1,14 +1,12 @@
 package eco.ywhc.xr.core.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import eco.ywhc.xr.common.constant.ApprovalType;
-import eco.ywhc.xr.common.constant.FileOwnerType;
-import eco.ywhc.xr.common.constant.InstanceRefType;
-import eco.ywhc.xr.common.constant.TaskType;
+import eco.ywhc.xr.common.constant.*;
 import eco.ywhc.xr.common.converter.BasicDataConverter;
 import eco.ywhc.xr.common.converter.ProjectConverter;
 import eco.ywhc.xr.common.converter.ProjectInformationConverter;
 import eco.ywhc.xr.common.converter.TaskConverter;
+import eco.ywhc.xr.common.event.InstanceRoleLarkMemberInsertedEvent;
 import eco.ywhc.xr.common.event.ProjectCreatedEvent;
 import eco.ywhc.xr.common.event.StatusChangedEvent;
 import eco.ywhc.xr.common.model.dto.req.ProjectReq;
@@ -110,6 +108,12 @@ public class ProjectServiceImpl implements ProjectService {
         basicDataMapper.insert(basicData);
         // 创建拜访记录
         visitManager.createMany(req.getProjectVisits(), project.getId());
+
+        if (CollectionUtils.isNotEmpty(req.getInstanceRoleLarkMembers())) {
+            instanceRoleLarkMemberManager.insertInstanceRoleLarkMember(req, project.getId());
+            List<String> memberIds = instanceRoleLarkMemberManager.getMemberIdsByRefId(project.getId());
+            applicationEventPublisher.publishEvent(InstanceRoleLarkMemberInsertedEvent.of(project.getId(), req.getName(), TaskTemplateRefType.PROJECT, memberIds));
+        }
 
         applicationEventPublisher.publishEvent(ProjectCreatedEvent.of(project));
 
@@ -280,7 +284,13 @@ public class ProjectServiceImpl implements ProjectService {
         visitManager.createMany(req.getProjectVisits(), id);
 
         instanceRoleLarkMemberManager.deleteInstanceRoleLarkMember(id);
-        instanceRoleLarkMemberManager.insertInstanceRoleLarkMember(req, id);
+        if (CollectionUtils.isNotEmpty(req.getInstanceRoleLarkMembers())) {
+            instanceRoleLarkMemberManager.insertInstanceRoleLarkMember(req, id);
+        }
+        if (CollectionUtils.isNotEmpty(req.getInstanceRoleLarkMembers())) {
+            List<String> memberIds = instanceRoleLarkMemberManager.getMemberIdsByRefId(project.getId());
+            applicationEventPublisher.publishEvent(InstanceRoleLarkMemberInsertedEvent.of(id, req.getName(), TaskTemplateRefType.PROJECT, memberIds));
+        }
 
         if (project.getStatus() != req.getStatus()) {
             StatusChangedEvent statusChangedEvent = StatusChangedEvent.builder()
