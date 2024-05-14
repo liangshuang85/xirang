@@ -78,7 +78,7 @@ public class ApprovalServiceImpl implements ApprovalService {
                                 + "发起的自动审批请求，详情请见https://oa.ywhc.lingycloud.com/ui/frameworkAgreement/detail?id=" + currentApproval.getRefId());
                     } else if (currentApproval.getRefType() == ApprovalTemplateRefType.PROJECT) {
                         pendingCommit.put("value", "此审批为息壤机器人向" + currentApproval.getDepartmentName()
-                                + "发起的自动审批请求，详情请见https://oa.ywhc.lingycloud.com/ui/project/detail?id=" + currentApproval.getRefId());
+                                + "发起的自动审批请求，详情请见https://oa.ywhc.lingycloud.com/ui/projectManagement/detail?id=" + currentApproval.getRefId());
                     }
                     pendingCommits.add(pendingCommit);
                 } else if (FormName2.equals(form.getName())) {
