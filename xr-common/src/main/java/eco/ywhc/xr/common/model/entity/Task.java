@@ -26,14 +26,9 @@ public class Task extends BaseEntity implements IdentifiableEntity<Long> {
     private Long id;
 
     /**
-     * 部门名称
+     * 实例角色ID
      */
-    private String department;
-
-    /**
-     * 部门ID
-     */
-    private String departmentId;
+    private Long instanceRoleId;
 
     /**
      * 任务类型

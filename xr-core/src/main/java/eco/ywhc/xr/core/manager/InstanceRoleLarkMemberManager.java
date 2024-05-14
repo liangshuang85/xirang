@@ -38,4 +38,19 @@ public interface InstanceRoleLarkMemberManager {
      */
     List<String> getMemberIdsByRefId(long refId);
 
+    /**
+     * 根据实例角色ID查询成员ID
+     *
+     * @param instanceRoleId 实例角色ID
+     * @param refId          关联ID
+     */
+    List<String> getMemberIdsByInstanceRoleIdAndRefId(long instanceRoleId, long refId);
+
+    /**
+     * 根据ID查询实例角色
+     *
+     * @param id 实例角色ID
+     */
+    InstanceRole findInstanceRoleById(long id);
+
 }

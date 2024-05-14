@@ -18,7 +18,6 @@ import eco.ywhc.xr.common.model.entity.Task;
 import eco.ywhc.xr.common.model.lark.LarkEmployee;
 import eco.ywhc.xr.common.model.query.ProjectQuery;
 import eco.ywhc.xr.core.manager.*;
-import eco.ywhc.xr.core.manager.lark.LarkDepartmentManager;
 import eco.ywhc.xr.core.manager.lark.LarkEmployeeManager;
 import eco.ywhc.xr.core.mapper.BasicDataMapper;
 import eco.ywhc.xr.core.mapper.ProjectInformationMapper;
@@ -70,8 +69,6 @@ public class ProjectServiceImpl implements ProjectService {
     private final ApprovalManager approvalManager;
 
     private final AttachmentManager attachmentManager;
-
-    private final LarkDepartmentManager larkDepartmentManager;
 
     private final InstanceRoleLarkMemberManager instanceRoleLarkMemberManager;
 
@@ -220,23 +217,26 @@ public class ProjectServiceImpl implements ProjectService {
                 continue;
             }
             TaskRes larkTask = taskManager.getLarkTask(task);
-            DepartmentRes department = larkDepartmentManager.getDepartmentByDepartmentId(task.getDepartmentId());
-            String leaderUserId = department.getLeaderUserId();
-            if (StringUtils.isNotBlank(leaderUserId)) {
-                LarkEmployee larkEmployee = larkEmployeeManager.retrieveLarkEmployee(leaderUserId);
-                AssigneeRes taskAssignee = AssigneeRes.builder()
-                        .assigneeId(leaderUserId)
-                        .assigneeName(larkEmployee.getName())
-                        .avatarInfo(larkEmployee.getAvatarInfo())
-                        .build();
-                larkTask.setAssignee(taskAssignee);
-            }
+            // 获取任务负责人
+            List<String> memberIds = instanceRoleLarkMemberManager.getMemberIdsByInstanceRoleIdAndRefId(task.getInstanceRoleId(),id);
+            // 获取任务负责人信息
+            List<AssigneeRes> assignees = memberIds.stream()
+                    .map(memberId -> {
+                        LarkEmployee larkEmployee1 = larkEmployeeManager.retrieveLarkEmployee(memberId);
+                        return AssigneeRes.builder()
+                                .assigneeId(memberId)
+                                .assigneeName(larkEmployee1.getName())
+                                .avatarInfo(larkEmployee1.getAvatarInfo())
+                                .build();
+                    })
+                    .toList();
+            larkTask.setAssignees(assignees);
             taskResList.add(larkTask);
         }
         Map<TaskType, Map<String, List<TaskRes>>> taskMap = taskResList.stream()
                 .collect(Collectors.groupingBy(
                         TaskRes::getType,
-                        Collectors.groupingBy(TaskRes::getDepartmentName)
+                        Collectors.groupingBy(TaskRes::getInstanceRoleName)
                 ));
         projectRes.setTaskMap(taskMap);
 

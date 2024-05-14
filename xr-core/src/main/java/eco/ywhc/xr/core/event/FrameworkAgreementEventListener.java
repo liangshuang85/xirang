@@ -3,13 +3,10 @@ package eco.ywhc.xr.core.event;
 import eco.ywhc.xr.common.constant.*;
 import eco.ywhc.xr.common.converter.ApprovalConverter;
 import eco.ywhc.xr.common.event.FrameworkAgreementCreatedEvent;
-import eco.ywhc.xr.common.model.dto.res.DepartmentRes;
 import eco.ywhc.xr.common.model.entity.Approval;
 import eco.ywhc.xr.common.model.entity.Task;
 import eco.ywhc.xr.core.manager.ApprovalTemplateManager;
-import eco.ywhc.xr.core.manager.TaskManager;
 import eco.ywhc.xr.core.manager.TaskTemplateManager;
-import eco.ywhc.xr.core.manager.lark.LarkDepartmentManager;
 import eco.ywhc.xr.core.mapper.ApprovalMapper;
 import eco.ywhc.xr.core.mapper.TaskMapper;
 import lombok.RequiredArgsConstructor;
@@ -36,13 +33,9 @@ public class FrameworkAgreementEventListener {
 
     private final ApprovalTemplateManager approvalTemplateManager;
 
-    private final LarkDepartmentManager larkDepartmentManager;
-
     private final TaskMapper taskMapper;
 
     private final ApprovalMapper approvalMapper;
-
-    private final TaskManager taskManager;
 
     @TransactionalEventListener
     public void onApplicationEvent(FrameworkAgreementCreatedEvent event) {
@@ -58,9 +51,7 @@ public class FrameworkAgreementEventListener {
         List<Task> tasks = taskTemplateManager.listByType(TaskTemplateRefType.FRAMEWORK_AGREEMENT, type).stream()
                 .map(i -> {
                     Task task = new Task();
-                    DepartmentRes departmentRes = larkDepartmentManager.getDepartmentByDepartmentId(i.getDepartmentId());
-                    task.setDepartment(departmentRes.getName());
-                    task.setDepartmentId(departmentRes.getDepartmentId());
+                    task.setInstanceRoleId(i.getInstanceRoleId());
                     task.setCompletedAt("0");
                     task.setRefId(id);
                     task.setStatus(TaskStatusType.pending);

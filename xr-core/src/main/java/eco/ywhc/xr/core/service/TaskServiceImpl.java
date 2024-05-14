@@ -12,24 +12,22 @@ import eco.ywhc.xr.common.converter.TaskConverter;
 import eco.ywhc.xr.common.event.InstanceRoleLarkMemberInsertedEvent;
 import eco.ywhc.xr.common.model.TaskListInfo;
 import eco.ywhc.xr.common.model.dto.req.TaskListReq;
-import eco.ywhc.xr.common.model.dto.res.DepartmentRes;
+import eco.ywhc.xr.common.model.entity.InstanceRole;
 import eco.ywhc.xr.common.model.entity.Task;
 import eco.ywhc.xr.common.model.entity.TaskTemplate;
 import eco.ywhc.xr.core.manager.FrameworkAgreementManager;
+import eco.ywhc.xr.core.manager.InstanceRoleLarkMemberManager;
 import eco.ywhc.xr.core.manager.ProjectManager;
 import eco.ywhc.xr.core.manager.TaskManager;
-import eco.ywhc.xr.core.manager.lark.LarkDepartmentManager;
 import eco.ywhc.xr.core.mapper.TaskMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.event.TransactionalEventListener;
 import org.sugar.commons.exception.ConditionNotMetException;
 import org.sugar.commons.exception.InternalErrorException;
 import org.sugar.commons.exception.InvalidInputException;
 
-import java.util.Collections;
 import java.util.List;
 
 @Service
@@ -47,9 +45,9 @@ public class TaskServiceImpl implements TaskService {
 
     private final FrameworkAgreementManager frameworkAgreementManager;
 
-    private final LarkDepartmentManager larkDepartmentManager;
-
     private final ProjectManager projectManager;
+
+    private final InstanceRoleLarkMemberManager instanceRoleLarkMemberManager;
 
     private final TaskConverter taskConverter;
 
@@ -74,29 +72,31 @@ public class TaskServiceImpl implements TaskService {
             summary = "【项目管理任务】" + "【投资协议拟定】" + name;
         }
         // 获取任务清单
-        String taskListGuid = taskManager.getTaskList(taskTemplate.getRefType(),name, currentTask.getRefId()).getTaskListGuid();
+        String taskListGuid = taskManager.getTaskList(taskTemplate.getRefType(), name, currentTask.getRefId()).getTaskListGuid();
         // 获取任务分组
-        String sectionGuid = taskManager.getSections(taskTemplate.getType(),taskListGuid);
-        // 获取部门信息
-        DepartmentRes department = larkDepartmentManager.getDepartmentByDepartmentId(currentTask.getDepartmentId());
-        if (StringUtils.isBlank(department.getLeaderUserId())) {
-            throw new ConditionNotMetException("部分负责人未设置，无法发起任务");
+        String sectionGuid = taskManager.getSections(taskTemplate.getType(), taskListGuid);
+        // 获取实例角色成员
+        List<String> memberIds = instanceRoleLarkMemberManager.getMemberIdsByInstanceRoleIdAndRefId(currentTask.getInstanceRoleId(), currentTask.getRefId());
+        if (memberIds.isEmpty()) {
+            throw new ConditionNotMetException("实例角色成员未设置，无法发起任务");
         }
-
-        String description = "此任务为息壤机器人向" + department.getName() + "发起的自动任务请求，详情请见" + baseUrl + currentTask.getId() + "&edit=1";
+        // 构建任务负责人
+        Member[] members = memberIds.stream()
+                .map(memberId -> Member.newBuilder()
+                        .id(memberId)
+                        .type("user")
+                        .role("assignee")
+                        .build())
+                .toArray(Member[]::new);
+        InstanceRole instanceRole = instanceRoleLarkMemberManager.findInstanceRoleById(currentTask.getInstanceRoleId());
+        String description = "此任务为息壤机器人向" + instanceRole.getName() + "发起的自动任务请求，详情请见" + baseUrl + currentTask.getId() + "&edit=1";
 
         CreateTaskReq req = CreateTaskReq.newBuilder()
                 .userIdType("open_id")
                 .inputTask(InputTask.newBuilder()
                         .summary(summary)
                         .description(description)
-                        .members(new Member[]{
-                                Member.newBuilder()
-                                        .id(department.getLeaderUserId())
-                                        .type("user")
-                                        .role("assignee")
-                                        .build()
-                        })
+                        .members(members)
                         .build())
                 .build();
         CreateTaskResp resp;
@@ -110,7 +110,7 @@ public class TaskServiceImpl implements TaskService {
             // 添加任务到任务清单
             taskManager.addTaskToTaskList(taskListReq);
             // 添加成员到任务清单
-            taskManager.addMemberToTaskList(taskListGuid, Collections.singletonList(department.getLeaderUserId()));
+            taskManager.addMemberToTaskList(taskListGuid, memberIds);
         } catch (Exception e) {
             throw new InternalErrorException("任务发起失败");
         }
@@ -145,14 +145,14 @@ public class TaskServiceImpl implements TaskService {
         // 查找需要移出任务清单的成员
         List<String> removeMembers = taskList.getMembers().stream()
                 .filter(member -> !event.getCurrentMembers().contains(member))
-                        .toList();
+                .toList();
         // 添加成员到任务清单
-        if(!event.getCurrentMembers().isEmpty()){
+        if (!event.getCurrentMembers().isEmpty()) {
             taskManager.addMemberToTaskList(taskList.getTaskListGuid(), event.getCurrentMembers());
         }
         // 移出成员
-        if(!removeMembers.isEmpty()){
-        taskManager.removeMemberFromTaskList(taskList.getTaskListGuid(), removeMembers);
+        if (!removeMembers.isEmpty()) {
+            taskManager.removeMemberFromTaskList(taskList.getTaskListGuid(), removeMembers);
         }
     }
 

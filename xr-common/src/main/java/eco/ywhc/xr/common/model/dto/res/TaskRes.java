@@ -5,6 +5,8 @@ import eco.ywhc.xr.common.constant.TaskType;
 import lombok.Data;
 import org.sugar.crud.model.BaseRestResponse;
 
+import java.util.List;
+
 /**
  * 任务Res
  */
@@ -17,9 +19,9 @@ public class TaskRes implements BaseRestResponse {
     private Long id;
 
     /**
-     * 部门名称
+     * 实例角色名称
      */
-    private String departmentName;
+    private String instanceRoleName;
 
     /**
      * 任务的完成时刻时间戳
@@ -49,6 +51,6 @@ public class TaskRes implements BaseRestResponse {
     /**
      * 负责人信息
      */
-    private AssigneeRes assignee;
+    private List<AssigneeRes> assignees;
 
 }

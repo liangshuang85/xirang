@@ -10,6 +10,7 @@ import eco.ywhc.xr.common.model.TaskListInfo;
 import eco.ywhc.xr.common.model.dto.req.TaskListReq;
 import eco.ywhc.xr.common.model.dto.res.TaskRes;
 import eco.ywhc.xr.common.model.entity.BaseEntity;
+import eco.ywhc.xr.common.model.entity.InstanceRole;
 import eco.ywhc.xr.common.model.entity.Task;
 import eco.ywhc.xr.common.model.entity.TaskTemplate;
 import eco.ywhc.xr.core.mapper.TaskMapper;
@@ -36,6 +37,8 @@ public class TaskMangerImpl implements TaskManager {
     private final TaskTemplateMapper taskTemplateMapper;
 
     private final Client client;
+
+    private final InstanceRoleLarkMemberManager instanceRoleLarkMemberManager;
 
     @Override
     public List<Task> listTasksByRefId(long id) {
@@ -84,7 +87,8 @@ public class TaskMangerImpl implements TaskManager {
         } else {
             res.setStatus(task.getStatus());
         }
-        res.setDepartmentName(task.getDepartment());
+        InstanceRole instanceRole = instanceRoleLarkMemberManager.findInstanceRoleById(task.getInstanceRoleId());
+        res.setInstanceRoleName(instanceRole.getName());
         res.setId(task.getId());
         res.setTaskUrl(taskData.getUrl());
         res.setSummary(taskData.getSummary());
@@ -150,7 +154,7 @@ public class TaskMangerImpl implements TaskManager {
             //查找符合条件的任务清单
             tasklist = Arrays.stream(listTasklistResp.getData().getItems())
                     .filter(item -> item.getCreator().getType().equals("app"))
-                    .filter(item -> item.getName().equals(prefix + translateType + "-" + name + "(" + name + ")"))
+                    .filter(item -> item.getName().equals(prefix + translateType + "-" + name + "(" + id + ")"))
                     .findFirst();
         } while ((pageToken != null && !pageToken.isEmpty()) && tasklist.isEmpty());
         if (tasklist.isEmpty()) {
@@ -158,7 +162,7 @@ public class TaskMangerImpl implements TaskManager {
             CreateTasklistReq createTasklistReq = CreateTasklistReq.newBuilder()
                     .userIdType("open_id")
                     .inputTasklist(InputTasklist.newBuilder()
-                            .name(prefix + translateType + "-" + name)
+                            .name(prefix + translateType + "-" + name + "(" + id + ")")
                             .build())
                     .build();
             CreateTasklistResp createTasklistResp;

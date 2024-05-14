@@ -12,7 +12,6 @@ import eco.ywhc.xr.common.model.entity.*;
 import eco.ywhc.xr.common.model.lark.LarkEmployee;
 import eco.ywhc.xr.common.model.query.FrameworkAgreementQuery;
 import eco.ywhc.xr.core.manager.*;
-import eco.ywhc.xr.core.manager.lark.LarkDepartmentManager;
 import eco.ywhc.xr.core.manager.lark.LarkEmployeeManager;
 import eco.ywhc.xr.core.mapper.*;
 import lombok.RequiredArgsConstructor;
@@ -71,8 +70,6 @@ public class FrameworkAgreementServiceImpl implements FrameworkAgreementService 
     private final VisitManager visitManager;
 
     private final AttachmentManager attachmentManager;
-
-    private final LarkDepartmentManager larkDepartmentManager;
 
     private final InstanceRoleLarkMemberManager instanceRoleLarkMemberManager;
 
@@ -250,23 +247,28 @@ public class FrameworkAgreementServiceImpl implements FrameworkAgreementService 
         List<TaskRes> taskResList = new ArrayList<>();
         for (Task task : tasks) {
             if (task.getTaskGuid() == null) {
+                InstanceRole instanceRole = instanceRoleLarkMemberManager.findInstanceRoleById(task.getInstanceRoleId());
                 TaskRes taskRes = taskConverter.toResponse(task);
+                taskRes.setInstanceRoleName(instanceRole.getName());
                 taskResList.add(taskRes);
                 continue;
             }
             try {
                 TaskRes larkTask = taskManager.getLarkTask(task);
-                DepartmentRes department = larkDepartmentManager.getDepartmentByDepartmentId(task.getDepartmentId());
-                String leaderUserId = department.getLeaderUserId();
-                if (StringUtils.isNotBlank(leaderUserId)) {
-                    LarkEmployee taskLarkEmployee = larkEmployeeManager.retrieveLarkEmployee(leaderUserId);
-                    AssigneeRes taskAssignee = AssigneeRes.builder()
-                            .assigneeId(leaderUserId)
-                            .assigneeName(taskLarkEmployee.getName())
-                            .avatarInfo(taskLarkEmployee.getAvatarInfo())
-                            .build();
-                    larkTask.setAssignee(taskAssignee);
-                }
+                // 获取任务负责人
+                List<String> memberIds = instanceRoleLarkMemberManager.getMemberIdsByInstanceRoleIdAndRefId(task.getInstanceRoleId(), id);
+                // 获取任务负责人信息
+                List<AssigneeRes> assignees = memberIds.stream()
+                        .map(memberId -> {
+                            LarkEmployee larkEmployee1 = larkEmployeeManager.retrieveLarkEmployee(memberId);
+                            return AssigneeRes.builder()
+                                    .assigneeId(memberId)
+                                    .assigneeName(larkEmployee1.getName())
+                                    .avatarInfo(larkEmployee1.getAvatarInfo())
+                                    .build();
+                        })
+                        .toList();
+                larkTask.setAssignees(assignees);
                 taskResList.add(larkTask);
             } catch (Exception e) {
                 throw new InternalErrorException("查询飞书任务失败");
@@ -275,7 +277,7 @@ public class FrameworkAgreementServiceImpl implements FrameworkAgreementService 
         Map<TaskType, Map<String, List<TaskRes>>> taskMap = taskResList.stream()
                 .collect(Collectors.groupingBy(
                         TaskRes::getType,
-                        Collectors.groupingBy(TaskRes::getDepartmentName)
+                        Collectors.groupingBy(TaskRes::getInstanceRoleName)
                 ));
         res.setTaskMap(taskMap);
 
