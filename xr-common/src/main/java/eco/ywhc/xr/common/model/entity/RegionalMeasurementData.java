@@ -35,6 +35,16 @@ public class RegionalMeasurementData extends BaseEntity implements IdentifiableE
     private Long adcode;
 
     /**
+     * 市场充电价格(￥ /kWh)
+     */
+    private BigDecimal marketChargingPrice;
+
+    /**
+     * 固定充电价格(￥ /kWh)
+     */
+    private BigDecimal staticChargingPrice;
+
+    /**
      * 充电价格(￥/kwh)
      */
     private BigDecimal chargingPrice;
@@ -43,6 +53,21 @@ public class RegionalMeasurementData extends BaseEntity implements IdentifiableE
      * 充电补贴(￥/kWh)
      */
     private BigDecimal chargingSubsidy;
+
+    /**
+     * 充电补贴年限(年)
+     */
+    private Integer chargingSubsidyYears;
+
+    /**
+     * 放电补贴(￥/kWh)
+     */
+    private BigDecimal dischargingSubsidy;
+
+    /**
+     * 放电补贴年限(年)
+     */
+    private Integer dischargingSubsidyYears;
 
     /**
      * 放电价格(￥/kwh)
@@ -85,6 +110,11 @@ public class RegionalMeasurementData extends BaseEntity implements IdentifiableE
     private BigDecimal carbonAssetValueAddedTax;
 
     /**
+     * 所得税理由
+     */
+    private String incomeTaxJustification;
+
+    /**
      * 尖峰电价(￥ /kwh)
      */
     private BigDecimal topPrice;
@@ -105,9 +135,14 @@ public class RegionalMeasurementData extends BaseEntity implements IdentifiableE
     private BigDecimal lineLossPrice;
 
     /**
-     * 系统运行费用(￥ /kWh)
+     * 系统运行费折价(￥ /kWh)
      */
-    private BigDecimal systemOperationCost;
+    private BigDecimal operationFeeDiscount;
+
+    /**
+     * 上网环节线损电价(￥ /kWh)
+     */
+    private BigDecimal gridConnectionLineLossPrice;
 
     /**
      * 高峰电价(￥ /kwh)
