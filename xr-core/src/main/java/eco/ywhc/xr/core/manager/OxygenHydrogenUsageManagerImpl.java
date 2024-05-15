@@ -30,7 +30,7 @@ public class OxygenHydrogenUsageManagerImpl implements OxygenHydrogenUsageManage
                 .peek(oxygenHydrogenUsage -> oxygenHydrogenUsage.setRefId(refId))
                 .toList();
         if (oxygenHydrogenUsages.isEmpty()) {
-            throw new IllegalArgumentException("氧氢使用相关信息为空");
+            return;
         }
         oxygenHydrogenUsageMapper.bulkInsert(oxygenHydrogenUsages);
     }

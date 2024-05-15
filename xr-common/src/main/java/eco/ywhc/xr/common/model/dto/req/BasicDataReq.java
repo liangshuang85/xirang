@@ -5,6 +5,8 @@ import lombok.Setter;
 import lombok.ToString;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 @Setter
 @Getter
@@ -180,5 +182,15 @@ public class BasicDataReq {
      * 用水（￥/t)
      */
     private BigDecimal waterPrice;
+
+    /**
+     * 用电企业负荷相关信息
+     */
+    private List<ElectricityLoadReq> electricityLoads = new ArrayList<>();
+
+    /**
+     * 用户企业液氧/绿氢使用量
+     */
+    private List<OxygenHydrogenUsageReq> oxygenHydrogenUsages = new ArrayList<>();
 
 }

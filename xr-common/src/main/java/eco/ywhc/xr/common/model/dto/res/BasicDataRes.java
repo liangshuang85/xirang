@@ -5,6 +5,7 @@ import lombok.Setter;
 import lombok.ToString;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @Setter
 @Getter
@@ -180,5 +181,15 @@ public class BasicDataRes {
      * 用水（￥/t)
      */
     private BigDecimal waterPrice;
+
+    /**
+     * 用电企业负荷相关信息
+     */
+    private List<ElectricityLoadRes> electricityLoads;
+
+    /**
+     * 用户企业液氧/绿氢使用量
+     */
+    private List<OxygenHydrogenUsageRes> oxygenHydrogenUsages;
 
 }

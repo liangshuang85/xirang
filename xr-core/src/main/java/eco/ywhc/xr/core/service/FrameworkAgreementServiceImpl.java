@@ -13,7 +13,10 @@ import eco.ywhc.xr.common.model.lark.LarkEmployee;
 import eco.ywhc.xr.common.model.query.FrameworkAgreementQuery;
 import eco.ywhc.xr.core.manager.*;
 import eco.ywhc.xr.core.manager.lark.LarkEmployeeManager;
-import eco.ywhc.xr.core.mapper.*;
+import eco.ywhc.xr.core.mapper.FrameworkAgreementChannelEntryMapper;
+import eco.ywhc.xr.core.mapper.FrameworkAgreementMapper;
+import eco.ywhc.xr.core.mapper.FrameworkAgreementProjectFundingMapper;
+import eco.ywhc.xr.core.mapper.FrameworkAgreementProjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -43,8 +46,6 @@ public class FrameworkAgreementServiceImpl implements FrameworkAgreementService 
 
     private final FrameworkAgreementChannelEntryMapper frameworkAgreementChannelEntryMapper;
 
-    private final BasicDataMapper basicDataMapper;
-
     private final FrameworkAgreementConverter frameworkAgreementConverter;
 
     private final FrameworkAgreementChannelEntryConverter frameworkAgreementChannelEntryConverter;
@@ -52,8 +53,6 @@ public class FrameworkAgreementServiceImpl implements FrameworkAgreementService 
     private final FrameworkAgreementProjectFundingConverter frameworkAgreementProjectFundingConverter;
 
     private final FrameworkAgreementProjectConverter frameworkAgreementProjectConverter;
-
-    private final BasicDataConverter basicDataConverter;
 
     private final AdministrativeDivisionManager administrativeDivisionManager;
 
@@ -124,9 +123,7 @@ public class FrameworkAgreementServiceImpl implements FrameworkAgreementService 
         frameworkAgreementProject.setFrameworkAgreementId(frameworkAgreement.getId());
         frameworkAgreementProjectMapper.insert(frameworkAgreementProject);
         //插入基本数据
-        BasicData basicData = basicDataConverter.fromRequest(req.getBasicData());
-        basicData.setRefId(frameworkAgreement.getId());
-        basicDataMapper.insert(basicData);
+        basicDataManager.createOne(req.getBasicData(), frameworkAgreement.getId());
 
         visitManager.createMany(req.getFrameworkVisits(), frameworkAgreement.getId());
 
@@ -240,8 +237,7 @@ public class FrameworkAgreementServiceImpl implements FrameworkAgreementService 
         res.setFrameworkAgreementChannelEntry(channelEntry);
 
         // 查询基础数据
-        BasicDataRes basicData = basicDataConverter.toResponse(basicDataManager.findEntityByRefId(id));
-        res.setBasicData(basicData);
+        res.setBasicData(basicDataManager.getBasicData(id));
 
         List<Task> tasks = taskManager.listTasksByRefId(id);
         List<TaskRes> taskResList = new ArrayList<>();
@@ -348,10 +344,7 @@ public class FrameworkAgreementServiceImpl implements FrameworkAgreementService 
         frameworkAgreementProjectFundingMapper.updateById(frameworkAgreementProjectFunding);
 
         //更新基础数据
-        BasicData basicData = basicDataManager.findEntityByRefId(id);
-        basicDataConverter.update(req.getBasicData(), basicData);
-        basicData.setRefId(id);
-        basicDataMapper.updateById(basicData);
+        basicDataManager.updateOne(req.getBasicData(), id);
 
         visitManager.logicDeleteAllEntitiesByRefId(id);
         visitManager.createMany(req.getFrameworkVisits(), id);

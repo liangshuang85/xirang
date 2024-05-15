@@ -2,7 +2,6 @@ package eco.ywhc.xr.core.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import eco.ywhc.xr.common.constant.*;
-import eco.ywhc.xr.common.converter.BasicDataConverter;
 import eco.ywhc.xr.common.converter.ProjectConverter;
 import eco.ywhc.xr.common.converter.ProjectInformationConverter;
 import eco.ywhc.xr.common.converter.TaskConverter;
@@ -11,7 +10,6 @@ import eco.ywhc.xr.common.event.ProjectCreatedEvent;
 import eco.ywhc.xr.common.event.StatusChangedEvent;
 import eco.ywhc.xr.common.model.dto.req.ProjectReq;
 import eco.ywhc.xr.common.model.dto.res.*;
-import eco.ywhc.xr.common.model.entity.BasicData;
 import eco.ywhc.xr.common.model.entity.Project;
 import eco.ywhc.xr.common.model.entity.ProjectInformation;
 import eco.ywhc.xr.common.model.entity.Task;
@@ -19,7 +17,6 @@ import eco.ywhc.xr.common.model.lark.LarkEmployee;
 import eco.ywhc.xr.common.model.query.ProjectQuery;
 import eco.ywhc.xr.core.manager.*;
 import eco.ywhc.xr.core.manager.lark.LarkEmployeeManager;
-import eco.ywhc.xr.core.mapper.BasicDataMapper;
 import eco.ywhc.xr.core.mapper.ProjectInformationMapper;
 import eco.ywhc.xr.core.mapper.ProjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -46,8 +43,6 @@ public class ProjectServiceImpl implements ProjectService {
 
     private final ProjectInformationMapper projectInformationMapper;
 
-    private final BasicDataMapper basicDataMapper;
-
     private final ProjectManager projectManager;
 
     private final LarkEmployeeManager larkEmployeeManager;
@@ -61,8 +56,6 @@ public class ProjectServiceImpl implements ProjectService {
     private final ProjectConverter projectConverter;
 
     private final ProjectInformationConverter projectInformationConverter;
-
-    private final BasicDataConverter basicDataConverter;
 
     private final TaskConverter taskConverter;
 
@@ -100,9 +93,7 @@ public class ProjectServiceImpl implements ProjectService {
         projectInformationMapper.insert(projectInformation);
         instanceRoleLarkMemberManager.insertInstanceRoleLarkMember(req, project.getId());
         // 创建基础信息
-        BasicData basicData = basicDataConverter.fromRequest(req.getBasicData());
-        basicData.setRefId(project.getId());
-        basicDataMapper.insert(basicData);
+        basicDataManager.createOne(req.getBasicData(), project.getId());
         // 创建拜访记录
         visitManager.createMany(req.getProjectVisits(), project.getId());
 
@@ -194,7 +185,7 @@ public class ProjectServiceImpl implements ProjectService {
         projectRes.setProjectInformation(projectInformationRes);
 
         // 获取基础信息
-        projectRes.setBasicData(basicDataConverter.toResponse(basicDataManager.findEntityByRefId(id)));
+        projectRes.setBasicData(basicDataManager.getBasicData(id));
         // 获取拜访记录
         List<VisitRes> visitList = visitManager.findAllByRefId(id);
         projectRes.setProjectVisits(visitList);
@@ -218,7 +209,7 @@ public class ProjectServiceImpl implements ProjectService {
             }
             TaskRes larkTask = taskManager.getLarkTask(task);
             // 获取任务负责人
-            List<String> memberIds = instanceRoleLarkMemberManager.getMemberIdsByInstanceRoleIdAndRefId(task.getInstanceRoleId(),id);
+            List<String> memberIds = instanceRoleLarkMemberManager.getMemberIdsByInstanceRoleIdAndRefId(task.getInstanceRoleId(), id);
             // 获取任务负责人信息
             List<AssigneeRes> assignees = memberIds.stream()
                     .map(memberId -> {
@@ -275,10 +266,7 @@ public class ProjectServiceImpl implements ProjectService {
         projectInformationMapper.updateById(projectInformation);
 
         // 更新基础数据
-        BasicData basicData = basicDataManager.findEntityByRefId(id);
-        basicDataConverter.update(req.getBasicData(), basicData);
-        basicData.setRefId(id);
-        basicDataMapper.updateById(basicData);
+        basicDataManager.updateOne(req.getBasicData(), id);
         // 更新拜访记录
         visitManager.logicDeleteAllEntitiesByRefId(id);
         visitManager.createMany(req.getProjectVisits(), id);

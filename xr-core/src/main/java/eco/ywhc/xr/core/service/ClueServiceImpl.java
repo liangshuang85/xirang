@@ -57,6 +57,8 @@ public class ClueServiceImpl implements ClueService {
 
     private final ChangeManager changeManager;
 
+    private final BasicDataManager basicDataManager;
+
     @Override
     public Long createOne(@NonNull ClueReq req) {
         List<Clue> effectiveEntityByAdcode = clueManager.findEffectiveEntityByAdcode(req.getAdcode());
@@ -72,6 +74,8 @@ public class ClueServiceImpl implements ClueService {
 
         clueMapper.insert(clue);
         Long id = clue.getId();
+
+        basicDataManager.createOne(req.getBasicData(), id);
 
         channelEntryManager.createOne(req.getClueChannelEntry(), id);
         fundingManager.createOne(req.getClueFunding(), id);
@@ -182,6 +186,8 @@ public class ClueServiceImpl implements ClueService {
         List<ChangeRes> changeRes = changes.stream().peek(i -> i.setOperator(assignee)).toList();
         res.setChanges(changeRes);
 
+        res.setBasicData(basicDataManager.getBasicData(id));
+
         return res;
     }
 
@@ -227,6 +233,8 @@ public class ClueServiceImpl implements ClueService {
             applicationEventPublisher.publishEvent(statusChangedEvent);
         }
 
+        basicDataManager.updateOne(req.getBasicData(), id);
+
         return affected;
     }
 
@@ -240,6 +248,7 @@ public class ClueServiceImpl implements ClueService {
         visitManager.logicDeleteAllEntitiesByRefId(id);
         approvalManager.logicDeleteAllEntitiesByRefId(id);
         changeManager.bulkDeleteByRefId(id);
+        basicDataManager.deleteEntityByRefId(id);
         return affected;
     }
 

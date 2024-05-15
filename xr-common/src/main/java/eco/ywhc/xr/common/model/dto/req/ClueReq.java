@@ -72,4 +72,10 @@ public class ClueReq implements BaseRestRequest {
     @NotNull
     private List<InstanceRoleLarkMemberReq> instanceRoleLarkMembers = new ArrayList<>();
 
+    /**
+     * 基础数据
+     */
+    @NotNull
+    private BasicDataReq basicData;
+
 }

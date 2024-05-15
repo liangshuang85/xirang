@@ -31,7 +31,7 @@ public class ElectricityLoadManagerImpl implements ElectricityLoadManager {
                 .peek(electricityLoad -> electricityLoad.setRefId(refId))
                 .toList();
         if (electricityLoads.isEmpty()) {
-            throw new IllegalArgumentException("用电企业负荷相关信息为空");
+            return;
         }
         electricityLoadMapper.bulkInsert(electricityLoads);
     }

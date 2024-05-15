@@ -92,4 +92,9 @@ public class ClueRes implements BaseRestResponse {
      */
     private List<ChangeRes> changes;
 
+    /**
+     * 基础数据
+     */
+    private BasicDataRes basicData;
+
 }
