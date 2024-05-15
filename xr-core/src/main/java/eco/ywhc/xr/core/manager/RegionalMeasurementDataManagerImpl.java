@@ -158,6 +158,9 @@ public class RegionalMeasurementDataManagerImpl implements RegionalMeasurementDa
                 .flatMap(periods -> Arrays.stream(periods.split(",")))
                 .map(timeRange -> {
                     String[] split = timeRange.split("-");
+                    if (split.length == 1) {
+                        return Arrays.asList(Integer.parseInt(split[0]), Integer.parseInt(split[0]));
+                    }
                     return Arrays.asList(Integer.parseInt(split[0]), Integer.parseInt(split[1]));
                 }).toList();
         boolean isLegal = ranges.stream()
