@@ -33,6 +33,7 @@ public class FrameworkAgreementReq implements BaseRestRequest {
     /**
      * 框架协议项目状态
      */
+    @NotNull
     private FrameworkAgreementType status;
 
     /**

@@ -2,6 +2,7 @@ package eco.ywhc.xr.core.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import eco.ywhc.xr.common.constant.ApprovalType;
+import eco.ywhc.xr.common.constant.ClueStatusType;
 import eco.ywhc.xr.common.constant.InstanceRefType;
 import eco.ywhc.xr.common.converter.ClueConverter;
 import eco.ywhc.xr.common.event.ClueCreatedEvent;
@@ -194,6 +195,7 @@ public class ClueServiceImpl implements ClueService {
     @Override
     public int updateOne(@NonNull Long id, @NonNull ClueReq req) {
         Clue clue = clueManager.mustFoundEntityById(id);
+        ClueStatusType currentStatus = clue.getStatus();
         if (!Objects.equals(req.getAdcode(), clue.getAdcode())) {
             List<Clue> effectiveEntityByAdcode = clueManager.findEffectiveEntityByAdcode(req.getAdcode());
             if (CollectionUtils.isNotEmpty(effectiveEntityByAdcode)) {
@@ -221,11 +223,12 @@ public class ClueServiceImpl implements ClueService {
             instanceRoleLarkMemberManager.insertInstanceRoleLarkMember(req, id);
         }
 
-        if (clue.getStatus() != req.getStatus()) {
+        // 发布状态变更事件
+        if (currentStatus != req.getStatus()) {
             StatusChangedEvent statusChangedEvent = StatusChangedEvent.builder()
                     .refId(clue.getId())
                     .refType(InstanceRefType.CLUE)
-                    .before(clue.getStatus().name())
+                    .before(currentStatus.name())
                     .after(req.getStatus().name())
                     .operatorId(clue.getAssigneeId())
                     .lastModifiedAt(clue.getUpdatedAt())

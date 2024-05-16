@@ -256,6 +256,7 @@ public class ProjectServiceImpl implements ProjectService {
     @Override
     public int updateOne(@NonNull Long id, @NonNull ProjectReq req) {
         Project project = projectManager.mustFoundEntityById(id);
+        ProjectStatusType currentStatus = project.getStatus();
         projectConverter.update(req, project);
         projectManager.compareAndUpdateAttachments(req, project.getId());
         int affected = projectMapper.updateById(project);
@@ -280,11 +281,12 @@ public class ProjectServiceImpl implements ProjectService {
             applicationEventPublisher.publishEvent(InstanceRoleLarkMemberInsertedEvent.of(id, req.getName(), TaskTemplateRefType.PROJECT, memberIds));
         }
 
-        if (project.getStatus() != req.getStatus()) {
+        // 发布状态变更事件
+        if (currentStatus != req.getStatus()) {
             StatusChangedEvent statusChangedEvent = StatusChangedEvent.builder()
                     .refId(project.getId())
                     .refType(InstanceRefType.PROJECT)
-                    .before(project.getStatus().name())
+                    .before(currentStatus.name())
                     .after(req.getStatus().name())
                     .operatorId(project.getAssigneeId())
                     .lastModifiedAt(project.getUpdatedAt())

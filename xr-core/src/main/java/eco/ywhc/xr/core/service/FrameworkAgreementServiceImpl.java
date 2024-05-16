@@ -305,10 +305,7 @@ public class FrameworkAgreementServiceImpl implements FrameworkAgreementService 
     @Override
     public int updateOne(@NonNull Long id, @NonNull FrameworkAgreementReq req) {
         FrameworkAgreement frameworkAgreement = frameworkAgreementManager.mustFoundEntityById(id);
-        if (req.getStatus() == null) {
-            req.setStatus(frameworkAgreement.getStatus());
-        }
-
+        FrameworkAgreementType currentStatus = frameworkAgreement.getStatus();
         frameworkAgreementConverter.update(req, frameworkAgreement);
         frameworkAgreementManager.compareAndUpdateAttachments(req, frameworkAgreement.getId());
         int affected = frameworkAgreementMapper.updateById(frameworkAgreement);
@@ -356,11 +353,12 @@ public class FrameworkAgreementServiceImpl implements FrameworkAgreementService 
         List<String> memberIds = instanceRoleLarkMemberManager.getMemberIdsByRefId(frameworkAgreement.getId());
         applicationEventPublisher.publishEvent(InstanceRoleLarkMemberInsertedEvent.of(id, req.getName(), TaskTemplateRefType.FRAMEWORK_AGREEMENT, memberIds));
 
-        if (frameworkAgreement.getStatus() != req.getStatus()) {
+        // 发布状态变更事件
+        if (currentStatus != req.getStatus()) {
             StatusChangedEvent statusChangedEvent = StatusChangedEvent.builder()
                     .refId(frameworkAgreement.getId())
                     .refType(InstanceRefType.FRAMEWORK_AGREEMENT)
-                    .before(frameworkAgreement.getStatus().name())
+                    .before(currentStatus.name())
                     .after(req.getStatus().name())
                     .operatorId(frameworkAgreement.getAssigneeId())
                     .lastModifiedAt(frameworkAgreement.getUpdatedAt())
