@@ -5,6 +5,7 @@ import lombok.Setter;
 import lombok.ToString;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 
 @Setter
@@ -185,11 +186,11 @@ public class BasicDataRes {
     /**
      * 用电企业负荷相关信息
      */
-    private List<ElectricityLoadRes> electricityLoads;
+    private List<ElectricityLoadRes> electricityLoads = new ArrayList<>();
 
     /**
      * 用户企业液氧/绿氢使用量
      */
-    private List<OxygenHydrogenUsageRes> oxygenHydrogenUsages;
+    private List<OxygenHydrogenUsageRes> oxygenHydrogenUsages = new ArrayList<>();
 
 }

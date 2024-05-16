@@ -45,6 +45,9 @@ public class BasicDataManagerImpl implements BasicDataManager {
     @Override
     public BasicDataRes getBasicData(long refId) {
         BasicData basicData = findEntityByRefId(refId);
+        if (basicData == null) {
+            return new BasicDataRes();
+        }
         BasicDataRes res = basicDataConverter.toResponse(basicData);
         res.setElectricityLoads(electricityLoadManager.findManyByRefId(basicData.getId()));
         res.setOxygenHydrogenUsages(oxygenHydrogenUsageManager.findManyByRefId(basicData.getId()));
