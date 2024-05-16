@@ -65,12 +65,6 @@ public class FrameworkAgreementRes implements BaseRestResponse {
      */
     private boolean projectProposalApprovalStatus;
 
-
-    /**
-     * 框架协议项目项目信息Res
-     */
-    FrameworkAgreementProjectRes frameworkAgreementProject;
-
     /**
      * 框架协议项目渠道录入信息Res
      */

@@ -4,21 +4,22 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import eco.ywhc.xr.common.constant.*;
 import eco.ywhc.xr.common.converter.FrameworkAgreementChannelEntryConverter;
 import eco.ywhc.xr.common.converter.FrameworkAgreementConverter;
-import eco.ywhc.xr.common.converter.FrameworkAgreementProjectConverter;
 import eco.ywhc.xr.common.converter.TaskConverter;
 import eco.ywhc.xr.common.event.FrameworkAgreementCreatedEvent;
 import eco.ywhc.xr.common.event.InstanceRoleLarkMemberInsertedEvent;
 import eco.ywhc.xr.common.event.StatusChangedEvent;
 import eco.ywhc.xr.common.model.dto.req.FrameworkAgreementReq;
 import eco.ywhc.xr.common.model.dto.res.*;
-import eco.ywhc.xr.common.model.entity.*;
+import eco.ywhc.xr.common.model.entity.FrameworkAgreement;
+import eco.ywhc.xr.common.model.entity.FrameworkAgreementChannelEntry;
+import eco.ywhc.xr.common.model.entity.InstanceRole;
+import eco.ywhc.xr.common.model.entity.Task;
 import eco.ywhc.xr.common.model.lark.LarkEmployee;
 import eco.ywhc.xr.common.model.query.FrameworkAgreementQuery;
 import eco.ywhc.xr.core.manager.*;
 import eco.ywhc.xr.core.manager.lark.LarkEmployeeManager;
 import eco.ywhc.xr.core.mapper.FrameworkAgreementChannelEntryMapper;
 import eco.ywhc.xr.core.mapper.FrameworkAgreementMapper;
-import eco.ywhc.xr.core.mapper.FrameworkAgreementProjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -42,15 +43,11 @@ public class FrameworkAgreementServiceImpl implements FrameworkAgreementService 
 
     private final FrameworkAgreementMapper frameworkAgreementMapper;
 
-    private final FrameworkAgreementProjectMapper frameworkAgreementProjectMapper;
-
     private final FrameworkAgreementChannelEntryMapper frameworkAgreementChannelEntryMapper;
 
     private final FrameworkAgreementConverter frameworkAgreementConverter;
 
     private final FrameworkAgreementChannelEntryConverter frameworkAgreementChannelEntryConverter;
-
-    private final FrameworkAgreementProjectConverter frameworkAgreementProjectConverter;
 
     private final AdministrativeDivisionManager administrativeDivisionManager;
 
@@ -112,9 +109,6 @@ public class FrameworkAgreementServiceImpl implements FrameworkAgreementService 
         frameworkAgreementChannelEntryMapper.insert(frameworkAgreementChannelEntry);
         frameworkAgreementManager.compareAndUpdateAttachments(req.getFrameworkAgreementChannelEntry(), frameworkAgreementChannelEntry.getId());
 
-        FrameworkAgreementProject frameworkAgreementProject = frameworkAgreementProjectConverter.fromRequest(req.getFrameworkAgreementProject());
-        frameworkAgreementProject.setFrameworkAgreementId(frameworkAgreement.getId());
-        frameworkAgreementProjectMapper.insert(frameworkAgreementProject);
         //插入基本数据
         basicDataManager.createOne(req.getBasicData(), frameworkAgreement.getId());
 
@@ -178,9 +172,6 @@ public class FrameworkAgreementServiceImpl implements FrameworkAgreementService 
                     .build();
             res.setAssignee(assignee);
 
-            FrameworkAgreementProjectRes project = frameworkAgreementManager.getProjectByFrameworkAgreementId(i.getId());
-            res.setFrameworkAgreementProject(project);
-
             FrameworkAgreementChannelEntryRes channelEntry = frameworkAgreementManager.getChannelEntryByFrameworkAgreementId(i.getId());
             res.setFrameworkAgreementChannelEntry(channelEntry);
 
@@ -216,9 +207,6 @@ public class FrameworkAgreementServiceImpl implements FrameworkAgreementService 
                 .avatarInfo(larkEmployee.getAvatarInfo())
                 .build();
         res.setAssignee(assignee);
-
-        FrameworkAgreementProjectRes project = frameworkAgreementManager.getProjectByFrameworkAgreementId(frameworkAgreement.getId());
-        res.setFrameworkAgreementProject(project);
 
         FrameworkAgreementChannelEntryRes channelEntry = frameworkAgreementManager.getChannelEntryByFrameworkAgreementId(frameworkAgreement.getId());
         res.setFrameworkAgreementChannelEntry(channelEntry);
@@ -310,11 +298,6 @@ public class FrameworkAgreementServiceImpl implements FrameworkAgreementService 
             frameworkAgreementMapper.updateById(frameworkAgreement);
         }
 
-        FrameworkAgreementProject frameworkAgreementProject = frameworkAgreementManager.getFrameworkAgreementProjectById(id);
-        frameworkAgreementProjectConverter.update(req.getFrameworkAgreementProject(), frameworkAgreementProject);
-        frameworkAgreementProject.setFrameworkAgreementId(id);
-        frameworkAgreementProjectMapper.updateById(frameworkAgreementProject);
-
         FrameworkAgreementChannelEntry frameworkAgreementChannelEntry = frameworkAgreementManager.getFrameworkAgreementChannelEntryById(id);
         frameworkAgreementChannelEntryConverter.update(req.getFrameworkAgreementChannelEntry(), frameworkAgreementChannelEntry);
         frameworkAgreementChannelEntry.setFrameworkAgreementId(id);
@@ -354,7 +337,6 @@ public class FrameworkAgreementServiceImpl implements FrameworkAgreementService 
     public int logicDeleteOne(@NonNull Long id) {
         attachmentManager.deleteByOwnerId(id);
         attachmentManager.deleteByOwnerId(frameworkAgreementManager.getChannelEntryByFrameworkAgreementId(id).getId());
-        frameworkAgreementProjectMapper.logicDeleteEntityById(frameworkAgreementManager.getFrameworkAgreementProjectById(id).getId());
         frameworkAgreementChannelEntryMapper.logicDeleteEntityById(frameworkAgreementManager.getChannelEntryByFrameworkAgreementId(id).getId());
         taskManager.logicDeleteEntityById(id);
         approvalManager.logicDeleteAllEntitiesByRefId(id);

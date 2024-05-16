@@ -56,11 +56,6 @@ public class FrameworkAgreementReq implements BaseRestRequest {
     private String assigneeId;
 
     /**
-     * 框架协议项目项目信息
-     */
-    FrameworkAgreementProjectReq frameworkAgreementProject;
-
-    /**
      * 框架协议项目渠道录入信息
      */
     FrameworkAgreementChannelEntryReq frameworkAgreementChannelEntry;

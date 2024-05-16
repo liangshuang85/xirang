@@ -3,18 +3,14 @@ package eco.ywhc.xr.core.manager;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import eco.ywhc.xr.common.constant.FileOwnerType;
 import eco.ywhc.xr.common.converter.FrameworkAgreementChannelEntryConverter;
-import eco.ywhc.xr.common.converter.FrameworkAgreementProjectConverter;
 import eco.ywhc.xr.common.model.dto.req.FrameworkAgreementChannelEntryReq;
 import eco.ywhc.xr.common.model.dto.req.FrameworkAgreementReq;
 import eco.ywhc.xr.common.model.dto.res.AttachmentResponse;
 import eco.ywhc.xr.common.model.dto.res.FrameworkAgreementChannelEntryRes;
-import eco.ywhc.xr.common.model.dto.res.FrameworkAgreementProjectRes;
 import eco.ywhc.xr.common.model.entity.FrameworkAgreement;
 import eco.ywhc.xr.common.model.entity.FrameworkAgreementChannelEntry;
-import eco.ywhc.xr.common.model.entity.FrameworkAgreementProject;
 import eco.ywhc.xr.core.mapper.FrameworkAgreementChannelEntryMapper;
 import eco.ywhc.xr.core.mapper.FrameworkAgreementMapper;
-import eco.ywhc.xr.core.mapper.FrameworkAgreementProjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.lang.NonNull;
@@ -31,11 +27,7 @@ public class FrameworkAgreementManagerImpl implements FrameworkAgreementManager 
 
     private final FrameworkAgreementMapper frameworkAgreementMapper;
 
-    private final FrameworkAgreementProjectMapper frameworkAgreementProjectMapper;
-
     private final FrameworkAgreementChannelEntryMapper frameworkAgreementChannelEntryMapper;
-
-    private final FrameworkAgreementProjectConverter frameworkAgreementProjectConverter;
 
     private final FrameworkAgreementChannelEntryConverter frameworkAgreementChannelEntryConverter;
 
@@ -44,20 +36,6 @@ public class FrameworkAgreementManagerImpl implements FrameworkAgreementManager 
     @Override
     public FrameworkAgreement findEntityById(@NonNull Long id) {
         return frameworkAgreementMapper.findEntityById(id);
-    }
-
-    @Override
-    public FrameworkAgreementProject getFrameworkAgreementProjectById(long id) {
-        QueryWrapper<FrameworkAgreementProject> qw = new QueryWrapper<>();
-        qw.lambda().eq(FrameworkAgreementProject::getDeleted, false)
-                .eq(FrameworkAgreementProject::getFrameworkAgreementId, id);
-        return frameworkAgreementProjectMapper.selectOne(qw);
-    }
-
-    @Override
-    public FrameworkAgreementProjectRes getProjectByFrameworkAgreementId(long id) {
-        FrameworkAgreementProject frameworkAgreementProject = getFrameworkAgreementProjectById(id);
-        return frameworkAgreementProjectConverter.toResponse(frameworkAgreementProject);
     }
 
     @Override
