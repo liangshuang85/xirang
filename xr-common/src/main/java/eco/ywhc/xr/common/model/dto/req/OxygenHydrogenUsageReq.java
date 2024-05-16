@@ -17,11 +17,6 @@ public class OxygenHydrogenUsageReq implements BaseRestRequest {
     private Long id;
 
     /**
-     * 关联ID
-     */
-    private Long refId;
-
-    /**
      * 企业名称
      */
     private String name;
