@@ -66,11 +66,6 @@ public class FrameworkAgreementReq implements BaseRestRequest {
     FrameworkAgreementChannelEntryReq frameworkAgreementChannelEntry;
 
     /**
-     * 框架协议项目项目收资信息
-     */
-    FrameworkAgreementProjectFundingReq frameworkAgreementProjectFunding;
-
-    /**
      * 拜访信息
      */
     @Valid

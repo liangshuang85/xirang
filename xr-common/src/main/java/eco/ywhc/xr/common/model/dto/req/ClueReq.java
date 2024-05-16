@@ -45,13 +45,6 @@ public class ClueReq implements BaseRestRequest {
     private ClueLevel level;
 
     /**
-     * 项目收资信息
-     */
-    @Valid
-    @NotNull
-    private FundingReq clueFunding;
-
-    /**
      * 线索渠道录入
      */
     @Valid

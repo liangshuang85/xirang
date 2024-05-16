@@ -48,8 +48,6 @@ public class ClueServiceImpl implements ClueService {
 
     private final ChannelEntryManager channelEntryManager;
 
-    private final FundingManager fundingManager;
-
     private final VisitManager visitManager;
 
     private final LarkEmployeeManager larkEmployeeManager;
@@ -79,7 +77,6 @@ public class ClueServiceImpl implements ClueService {
         basicDataManager.createOne(req.getBasicData(), id);
 
         channelEntryManager.createOne(req.getClueChannelEntry(), id);
-        fundingManager.createOne(req.getClueFunding(), id);
         visitManager.createMany(req.getClueVisits(), id);
 
         if (CollectionUtils.isNotEmpty(req.getInstanceRoleLarkMembers())) {
@@ -159,9 +156,6 @@ public class ClueServiceImpl implements ClueService {
                 .build();
         res.setAssignee(assignee);
 
-        FundingRes funding = fundingManager.findByClueId(id);
-        res.setClueFunding(funding);
-
         ChannelEntryRes channelEntry = channelEntryManager.findByClueId(id);
         res.setClueChannelEntry(channelEntry);
 
@@ -212,9 +206,6 @@ public class ClueServiceImpl implements ClueService {
         channelEntryManager.logicDeleteEntityByClueId(id);
         channelEntryManager.createOne(req.getClueChannelEntry(), id);
 
-        fundingManager.logicDeleteEntityByClueId(id);
-        fundingManager.createOne(req.getClueFunding(), id);
-
         visitManager.logicDeleteAllEntitiesByRefId(id);
         visitManager.createMany(req.getClueVisits(), id);
 
@@ -247,7 +238,6 @@ public class ClueServiceImpl implements ClueService {
         int affected = clueMapper.logicDeleteEntityById(id);
 
         channelEntryManager.logicDeleteEntityByClueId(id);
-        fundingManager.logicDeleteEntityByClueId(id);
         visitManager.logicDeleteAllEntitiesByRefId(id);
         approvalManager.logicDeleteAllEntitiesByRefId(id);
         changeManager.bulkDeleteByRefId(id);

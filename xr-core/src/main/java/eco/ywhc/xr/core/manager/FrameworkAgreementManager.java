@@ -2,13 +2,11 @@ package eco.ywhc.xr.core.manager;
 
 import eco.ywhc.xr.common.model.dto.req.FrameworkAgreementReq;
 import eco.ywhc.xr.common.model.dto.res.FrameworkAgreementChannelEntryRes;
-import eco.ywhc.xr.common.model.dto.res.FrameworkAgreementProjectFundingRes;
 import eco.ywhc.xr.common.model.dto.res.FrameworkAgreementProjectRes;
 import eco.ywhc.xr.common.model.dto.res.FrameworkAgreementRes;
 import eco.ywhc.xr.common.model.entity.FrameworkAgreement;
 import eco.ywhc.xr.common.model.entity.FrameworkAgreementChannelEntry;
 import eco.ywhc.xr.common.model.entity.FrameworkAgreementProject;
-import eco.ywhc.xr.common.model.entity.FrameworkAgreementProjectFunding;
 import eco.ywhc.xr.common.model.query.FrameworkAgreementQuery;
 import org.springframework.lang.NonNull;
 import org.springframework.transaction.annotation.Transactional;
@@ -47,20 +45,6 @@ public interface FrameworkAgreementManager extends BaseManager<Long, FrameworkAg
      * @param id 框架协议ID
      */
     FrameworkAgreementChannelEntryRes getChannelEntryByFrameworkAgreementId(long id);
-
-    /**
-     * 根据框架协议ID查询项目收资信息
-     *
-     * @param id 框架协议ID
-     */
-    FrameworkAgreementProjectFunding getFrameworkAgreementProjectFundingById(long id);
-
-    /**
-     * 根据框架协议ID查询项目收资信息
-     *
-     * @param id 框架协议ID
-     */
-    FrameworkAgreementProjectFundingRes getProjectFundingByFrameworkAgreementId(long id);
 
     /**
      * 比较并更新关联附件信息

@@ -77,11 +77,6 @@ public class FrameworkAgreementRes implements BaseRestResponse {
     FrameworkAgreementChannelEntryRes frameworkAgreementChannelEntry;
 
     /**
-     * 框架协议项目项目收资信息Res
-     */
-    FrameworkAgreementProjectFundingRes frameworkAgreementProjectFunding;
-
-    /**
      * 框架协议关联的任务
      */
     Map<TaskType, Map<String, List<TaskRes>>> taskMap;

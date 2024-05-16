@@ -53,11 +53,6 @@ public class ClueRes implements BaseRestResponse {
     private ChannelEntryRes clueChannelEntry;
 
     /**
-     * 项目收资信息Res
-     */
-    private FundingRes clueFunding;
-
-    /**
      * 拜访信息Res
      */
     private List<VisitRes> clueVisits = new ArrayList<>();
