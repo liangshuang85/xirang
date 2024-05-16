@@ -30,4 +30,11 @@ public interface ProjectManager extends BaseManager<Long, Project, ProjectReq, P
      */
     void compareAndUpdateAttachments(ProjectReq req, long id);
 
+    /**
+     * 设置附件
+     *
+     * @param res 项目RES
+     */
+    void findAndSetAttachments(ProjectRes res);
+
 }

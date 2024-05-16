@@ -92,6 +92,31 @@ public class ProjectRes implements BaseRestResponse {
     private List<AttachmentResponse> enterpriseInvestmentRecordAttachments;
 
     /**
+     * 国土土地使用证附件信息
+     */
+    private List<AttachmentResponse> landUseRightCertificateAttachments;
+
+    /**
+     * 建设用地规划许可证附件信息
+     */
+    private List<AttachmentResponse> planningPermitForConstructionLandAttachments;
+
+    /**
+     * 预可研附件信息
+     */
+    private List<AttachmentResponse> preFeasibilityStudyAttachments;
+
+    /**
+     * 可研附件信息
+     */
+    private List<AttachmentResponse> feasibilityStudyAttachments;
+
+    /**
+     * 初步设计附件信息
+     */
+    private List<AttachmentResponse> preliminaryDesignAttachments;
+
+    /**
      * 创建时间
      */
     private OffsetDateTime createdAt;

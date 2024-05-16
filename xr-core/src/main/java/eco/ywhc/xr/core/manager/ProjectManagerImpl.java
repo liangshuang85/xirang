@@ -3,6 +3,8 @@ package eco.ywhc.xr.core.manager;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import eco.ywhc.xr.common.constant.FileOwnerType;
 import eco.ywhc.xr.common.model.dto.req.ProjectReq;
+import eco.ywhc.xr.common.model.dto.res.AttachmentResponse;
+import eco.ywhc.xr.common.model.dto.res.ProjectRes;
 import eco.ywhc.xr.common.model.entity.Project;
 import eco.ywhc.xr.common.model.entity.ProjectInformation;
 import eco.ywhc.xr.core.mapper.ProjectInformationMapper;
@@ -12,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Set;
 
 @Service
@@ -50,6 +53,41 @@ public class ProjectManagerImpl implements ProjectManager {
         attachmentManager.compareAndUpdate(id, investmentAgreementSigningAttachmentIds, FileOwnerType.INVESTMENT_AGREEMENT_SIGNING);
         Set<Long> enterpriseInvestmentRecordAttachmentIds = req.getEnterpriseInvestmentRecordAttachmentIds();
         attachmentManager.compareAndUpdate(id, enterpriseInvestmentRecordAttachmentIds, FileOwnerType.ENTERPRISE_INVESTMENT_RECORD);
+        Set<Long> landUseRightCertificateAttachmentIds = req.getLandUseRightCertificateAttachmentIds();
+        attachmentManager.compareAndUpdate(id, landUseRightCertificateAttachmentIds, FileOwnerType.LAND_USE_RIGHT_CERTIFICATE);
+        Set<Long> planningPermitForConstructionLandAttachmentIds = req.getPlanningPermitForConstructionLandAttachmentIds();
+        attachmentManager.compareAndUpdate(id, planningPermitForConstructionLandAttachmentIds, FileOwnerType.PLANNING_PERMIT_FOR_CONSTRUCTION_LAND);
+        Set<Long> preFeasibilityStudyAttachmentIds = req.getPreFeasibilityStudyAttachmentIds();
+        attachmentManager.compareAndUpdate(id, preFeasibilityStudyAttachmentIds, FileOwnerType.PRE_FEASIBILITY_STUDY);
+        Set<Long> feasibilityStudyAttachmentIds = req.getFeasibilityStudyAttachmentIds();
+        attachmentManager.compareAndUpdate(id, feasibilityStudyAttachmentIds, FileOwnerType.FEASIBILITY_STUDY);
+        Set<Long> preliminaryDesigneAttachmentIds = req.getPreliminaryDesignAttachmentIds();
+        attachmentManager.compareAndUpdate(id, preliminaryDesigneAttachmentIds, FileOwnerType.PRELIMINARY_DESIGN);
+    }
+
+    @Override
+    public void findAndSetAttachments(ProjectRes res) {
+        long id = res.getId();
+        List<AttachmentResponse> meetingResolutionAttachments = attachmentManager.findManyByOwnerId(id, FileOwnerType.MEETING_RESOLUTION);
+        res.setMeetingResolutionAttachments(meetingResolutionAttachments);
+        List<AttachmentResponse> meetingMinutesAttachments = attachmentManager.findManyByOwnerId(id, FileOwnerType.MEETING_MINUTES);
+        res.setMeetingMinutesAttachments(meetingMinutesAttachments);
+        List<AttachmentResponse> investmentAgreementAttachments = attachmentManager.findManyByOwnerId(id, FileOwnerType.INVESTMENT_AGREEMENT);
+        res.setInvestmentAgreementAttachments(investmentAgreementAttachments);
+        List<AttachmentResponse> investmentAgreementSigningAttachments = attachmentManager.findManyByOwnerId(id, FileOwnerType.INVESTMENT_AGREEMENT_SIGNING);
+        res.setInvestmentAgreementSigningAttachments(investmentAgreementSigningAttachments);
+        List<AttachmentResponse> enterpriseInvestmentRecordAttachments = attachmentManager.findManyByOwnerId(id, FileOwnerType.ENTERPRISE_INVESTMENT_RECORD);
+        res.setEnterpriseInvestmentRecordAttachments(enterpriseInvestmentRecordAttachments);
+        List<AttachmentResponse> landUseRightCertificateAttachments = attachmentManager.findManyByOwnerId(id, FileOwnerType.LAND_USE_RIGHT_CERTIFICATE);
+        res.setLandUseRightCertificateAttachments(landUseRightCertificateAttachments);
+        List<AttachmentResponse> planningPermitForConstructionLandAttachments = attachmentManager.findManyByOwnerId(id, FileOwnerType.PLANNING_PERMIT_FOR_CONSTRUCTION_LAND);
+        res.setPlanningPermitForConstructionLandAttachments(planningPermitForConstructionLandAttachments);
+        List<AttachmentResponse> preFeasibilityStudyAttachments = attachmentManager.findManyByOwnerId(id, FileOwnerType.PRE_FEASIBILITY_STUDY);
+        res.setPreFeasibilityStudyAttachments(preFeasibilityStudyAttachments);
+        List<AttachmentResponse> feasibilityStudyAttachments = attachmentManager.findManyByOwnerId(id, FileOwnerType.FEASIBILITY_STUDY);
+        res.setFeasibilityStudyAttachments(feasibilityStudyAttachments);
+        List<AttachmentResponse> preliminaryDesigneAttachments = attachmentManager.findManyByOwnerId(id, FileOwnerType.PRELIMINARY_DESIGN);
+        res.setPreliminaryDesignAttachments(preliminaryDesigneAttachments);
     }
 
 }

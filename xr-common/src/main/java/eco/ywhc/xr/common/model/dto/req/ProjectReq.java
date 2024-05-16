@@ -87,6 +87,36 @@ public class ProjectReq implements BaseRestRequest {
     private Set<Long> enterpriseInvestmentRecordAttachmentIds = new HashSet<>();
 
     /**
+     * 国土土地使用证附件ID
+     */
+    @NotNull
+    private Set<Long> landUseRightCertificateAttachmentIds = new HashSet<>();
+
+    /**
+     * 建设用地规划许可证附件ID
+     */
+    @NotNull
+    private Set<Long> planningPermitForConstructionLandAttachmentIds = new HashSet<>();
+
+    /**
+     * 预可研附件ID
+     */
+    @NotNull
+    private Set<Long> preFeasibilityStudyAttachmentIds = new HashSet<>();
+
+    /**
+     * 可研附件ID
+     */
+    @NotNull
+    private Set<Long> feasibilityStudyAttachmentIds = new HashSet<>();
+
+    /**
+     * 初步设计附件ID
+     */
+    @NotNull
+    private Set<Long> preliminaryDesignAttachmentIds = new HashSet<>();
+
+    /**
      * 实例角色成员
      */
     @Valid

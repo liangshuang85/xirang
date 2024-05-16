@@ -75,4 +75,29 @@ public enum FileOwnerType {
      */
     ENTERPRISE_INVESTMENT_RECORD,
 
+    /**
+     * 国土土地使用证
+     */
+    LAND_USE_RIGHT_CERTIFICATE,
+
+    /**
+     * 建设用地规划许可证
+     */
+    PLANNING_PERMIT_FOR_CONSTRUCTION_LAND,
+
+    /**
+     * 预可研
+     */
+    PRE_FEASIBILITY_STUDY,
+
+    /**
+     * 可研
+     */
+    FEASIBILITY_STUDY,
+
+    /**
+     * 初步设计
+     */
+    PRELIMINARY_DESIGN,
+
 }

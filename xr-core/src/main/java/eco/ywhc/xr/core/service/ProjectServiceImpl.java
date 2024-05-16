@@ -165,30 +165,21 @@ public class ProjectServiceImpl implements ProjectService {
     @Override
     public ProjectRes findOne(@NonNull Long id) {
         Project project = projectManager.mustFoundEntityById(id);
-        ProjectRes projectRes = projectConverter.toResponse(project);
-        List<AttachmentResponse> meetingResolutionAttachments = attachmentManager.findManyByOwnerId(id, FileOwnerType.MEETING_RESOLUTION);
-        projectRes.setMeetingResolutionAttachments(meetingResolutionAttachments);
-        List<AttachmentResponse> meetingMinutesAttachments = attachmentManager.findManyByOwnerId(id, FileOwnerType.MEETING_MINUTES);
-        projectRes.setMeetingMinutesAttachments(meetingMinutesAttachments);
-        List<AttachmentResponse> investmentAgreementAttachments = attachmentManager.findManyByOwnerId(id, FileOwnerType.INVESTMENT_AGREEMENT);
-        projectRes.setInvestmentAgreementAttachments(investmentAgreementAttachments);
-        List<AttachmentResponse> investmentAgreementSigningAttachments = attachmentManager.findManyByOwnerId(id, FileOwnerType.INVESTMENT_AGREEMENT_SIGNING);
-        projectRes.setInvestmentAgreementSigningAttachments(investmentAgreementSigningAttachments);
-        List<AttachmentResponse> enterpriseInvestmentRecordAttachments = attachmentManager.findManyByOwnerId(id, FileOwnerType.ENTERPRISE_INVESTMENT_RECORD);
-        projectRes.setEnterpriseInvestmentRecordAttachments(enterpriseInvestmentRecordAttachments);
+        ProjectRes res = projectConverter.toResponse(project);
+        projectManager.findAndSetAttachments(res);
 
         AdministrativeDivisionRes administrativeDivision = administrativeDivisionManager.findByAdcodeSurely(project.getAdcode());
-        projectRes.setAdministrativeDivision(administrativeDivision);
+        res.setAdministrativeDivision(administrativeDivision);
 
         ProjectInformation projectInformation = projectManager.getProjectInformationByProjectId(id);
         ProjectInformationRes projectInformationRes = projectInformationConverter.toResponse(projectInformation);
-        projectRes.setProjectInformation(projectInformationRes);
+        res.setProjectInformation(projectInformationRes);
 
         // 获取基础信息
-        projectRes.setBasicData(basicDataManager.getBasicData(id));
+        res.setBasicData(basicDataManager.getBasicData(id));
         // 获取拜访记录
         List<VisitRes> visitList = visitManager.findAllByRefId(id);
-        projectRes.setProjectVisits(visitList);
+        res.setProjectVisits(visitList);
 
         LarkEmployee projectLarkEmployee = larkEmployeeManager.retrieveLarkEmployee(project.getAssigneeId());
         AssigneeRes assignee = AssigneeRes.builder()
@@ -196,7 +187,7 @@ public class ProjectServiceImpl implements ProjectService {
                 .assigneeName(projectLarkEmployee.getName())
                 .avatarInfo(projectLarkEmployee.getAvatarInfo())
                 .build();
-        projectRes.setAssignee(assignee);
+        res.setAssignee(assignee);
 
         List<Task> tasks = taskManager.listTasksByRefId(id);
         List<TaskRes> taskResList = new ArrayList<>();
@@ -229,7 +220,7 @@ public class ProjectServiceImpl implements ProjectService {
                         TaskRes::getType,
                         Collectors.groupingBy(TaskRes::getInstanceRoleName)
                 ));
-        projectRes.setTaskMap(taskMap);
+        res.setTaskMap(taskMap);
 
         Map<ApprovalType, Map<String, List<ApprovalRes>>> approvalResMaps = approvalManager.listApprovalsByRefId(id).stream()
                 .peek(i -> {
@@ -241,16 +232,16 @@ public class ProjectServiceImpl implements ProjectService {
                         ApprovalRes::getType,
                         Collectors.groupingBy(ApprovalRes::getDepartmentName)
                 ));
-        projectRes.setApprovalMap(approvalResMaps);
+        res.setApprovalMap(approvalResMaps);
 
         List<InstanceRoleLarkMemberRes> instanceRoleLarkMemberRes = instanceRoleLarkMemberManager.findInstanceRoleLarkMemberByRefId(id);
-        projectRes.setInstanceRoleLarkMembers(instanceRoleLarkMemberRes);
+        res.setInstanceRoleLarkMembers(instanceRoleLarkMemberRes);
 
         List<ChangeRes> changes = changeManager.findAllByRefId(id);
         List<ChangeRes> changeRes = changes.stream().peek(i -> i.setOperator(assignee)).toList();
-        projectRes.setChanges(changeRes);
+        res.setChanges(changeRes);
 
-        return projectRes;
+        return res;
     }
 
     @Override
