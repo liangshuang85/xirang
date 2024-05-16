@@ -23,6 +23,8 @@ import org.springframework.stereotype.Service;
 import org.sugar.commons.exception.InternalErrorException;
 import org.sugar.commons.exception.ResourceNotFoundException;
 
+import java.time.Instant;
+import java.time.ZoneOffset;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -121,10 +123,17 @@ public class ApprovalManagerImpl implements ApprovalManager {
         }
 
         InstanceTask[] taskList = approvalData.getTaskList();
+
         List<String> assigneeIds = Arrays.stream(taskList)
-                .filter(instanceTask -> ApprovalStatusType.PENDING.name().equals(instanceTask.getStatus()))
+                .filter(instanceTask -> res.getApprovalStatus().name().equals(instanceTask.getStatus()))
                 .map(InstanceTask::getOpenId)
                 .toList();
+
+        Instant startTime = Instant.ofEpochMilli(Long.parseLong(approvalData.getStartTime()));
+        res.setStartTime(startTime.atOffset(ZoneOffset.ofHours(8)));
+        Instant endTime = Instant.ofEpochMilli(Long.parseLong(approvalData.getEndTime()));
+        res.setEndTime(endTime.atOffset(ZoneOffset.ofHours(8)));
+
         List<AssigneeRes> assignees = assigneeIds.stream()
                 .map(assigneeId -> {
                     LarkEmployee approvalLarkEmployee = larkEmployeeManager.retrieveLarkEmployee(assigneeId);
@@ -138,7 +147,7 @@ public class ApprovalManagerImpl implements ApprovalManager {
         res.setAssignees(assignees);
 
         List<String> appLinks = Arrays.stream(taskList)
-                .filter(instanceTask -> ApprovalStatusType.PENDING.name().equals(instanceTask.getStatus()))
+                .filter(instanceTask -> res.getApprovalStatus().name().equals(instanceTask.getStatus()))
                 .map(instanceTask ->
                         "https://applink.feishu.cn/client/mini_program/open?appId=cli_9cb844403dbb9108&mode=appCenter&path=pc/pages/in-process/index?enableTrusteeship=true&instanceId="
                                 + instanceTask.getId() + "&source=approval_bot&relaunch=true")

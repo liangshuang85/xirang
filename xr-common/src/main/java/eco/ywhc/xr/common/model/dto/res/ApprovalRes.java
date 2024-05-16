@@ -5,6 +5,7 @@ import eco.ywhc.xr.common.constant.ApprovalType;
 import lombok.Data;
 import org.sugar.crud.model.BaseRestResponse;
 
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -53,5 +54,15 @@ public class ApprovalRes implements BaseRestResponse {
      * 审批单跳转地址
      */
     private List<String> appLinks = new ArrayList<>();
+
+    /**
+     * 审批发起时间
+     */
+    private OffsetDateTime startTime;
+
+    /**
+     * 审批结束时间
+     */
+    private OffsetDateTime endTime;
 
 }
