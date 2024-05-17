@@ -7,9 +7,9 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import org.sugar.commons.exception.InvalidInputException;
 
 import java.net.URLEncoder;
@@ -18,7 +18,7 @@ import java.nio.charset.StandardCharsets;
 /**
  * 文档模板接口
  */
-@Controller
+@RestController
 public class TemplateController {
 
     private static final String projectInfoStatisticsTemplate = "项目基本情况统计表模板.docx";
