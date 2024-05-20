@@ -20,10 +20,10 @@ public class MyselfController {
     private final UserService userService;
 
     /**
-     * 获取当前登录用户的权限
+     * 获取当前登录用户已被授予的权限的编码
      */
-    @GetMapping("/me/permissions")
-    public Set<String> changePassword(HttpServletRequest httpServletRequest) {
+    @GetMapping("/me/permissionCodes")
+    public Set<String> listMyPermissionCodes(HttpServletRequest httpServletRequest) {
         return userService.listMyPermissionCodes(httpServletRequest);
     }
 
