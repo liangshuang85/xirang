@@ -4,6 +4,8 @@ import eco.ywhc.xr.common.model.PasswordChangeRequest;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Set;
+
 /**
  * 用户
  */
@@ -31,5 +33,10 @@ public interface UserService {
      * 修改当前登录用户的密码
      */
     boolean changePassword(HttpServletRequest httpServletRequest, PasswordChangeRequest req);
+
+    /**
+     * 列出当前用户所获得的全部权限的权限编码
+     */
+    Set<String> listMyPermissionCodes(HttpServletRequest httpServletRequest);
 
 }

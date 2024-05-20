@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.sugar.commons.exception.InternalErrorException;
 import org.sugar.commons.exception.InvalidInputException;
 
+import java.util.Collections;
 import java.util.Set;
 
 @Slf4j
@@ -76,6 +77,19 @@ public class UserServiceImpl implements UserService {
             return false;
         }
         return userManager.changePassword(requestContextUser.getId(), req);
+    }
+
+    @Override
+    public Set<String> listMyPermissionCodes(HttpServletRequest httpServletRequest) {
+        HttpSession session = httpServletRequest.getSession(false);
+        if (session == null) {
+            return Collections.emptySet();
+        }
+        Object permissions = session.getAttribute(SESSION_ATTRIBUTE_PERMISSION);
+        if (permissions == null) {
+            return Collections.emptySet();
+        }
+        return (Set<String>) permissions;
     }
 
 }
