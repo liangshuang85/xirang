@@ -7,9 +7,7 @@ import lombok.Data;
 import org.sugar.crud.model.BaseRestResponse;
 
 import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * 基础线索信息Res
@@ -91,5 +89,10 @@ public class ClueRes implements BaseRestResponse {
      * 基础数据
      */
     private BasicDataRes basicData;
+
+    /**
+     * 实例权限编码列表
+     */
+    private Set<String> permissionCodes = new HashSet<>();
 
 }

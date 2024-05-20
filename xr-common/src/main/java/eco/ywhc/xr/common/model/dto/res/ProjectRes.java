@@ -7,8 +7,10 @@ import lombok.Data;
 import org.sugar.crud.model.BaseRestResponse;
 
 import java.time.OffsetDateTime;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * 项目Res
@@ -145,5 +147,10 @@ public class ProjectRes implements BaseRestResponse {
      * 拜访信息Res
      */
     private List<VisitRes> projectVisits;
+
+    /**
+     * 实例权限编码列表
+     */
+    private Set<String> permissionCodes = new HashSet<>();
 
 }

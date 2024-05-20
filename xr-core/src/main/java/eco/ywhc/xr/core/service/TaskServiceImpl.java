@@ -15,10 +15,7 @@ import eco.ywhc.xr.common.model.dto.req.TaskListReq;
 import eco.ywhc.xr.common.model.entity.InstanceRole;
 import eco.ywhc.xr.common.model.entity.Task;
 import eco.ywhc.xr.common.model.entity.TaskTemplate;
-import eco.ywhc.xr.core.manager.FrameworkAgreementManager;
-import eco.ywhc.xr.core.manager.InstanceRoleLarkMemberManager;
-import eco.ywhc.xr.core.manager.ProjectManager;
-import eco.ywhc.xr.core.manager.TaskManager;
+import eco.ywhc.xr.core.manager.*;
 import eco.ywhc.xr.core.mapper.TaskMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -48,6 +45,8 @@ public class TaskServiceImpl implements TaskService {
     private final ProjectManager projectManager;
 
     private final InstanceRoleLarkMemberManager instanceRoleLarkMemberManager;
+
+    private final InstanceRoleManager instanceRoleManager;
 
     private final TaskConverter taskConverter;
 
@@ -88,7 +87,7 @@ public class TaskServiceImpl implements TaskService {
                         .role("assignee")
                         .build())
                 .toArray(Member[]::new);
-        InstanceRole instanceRole = instanceRoleLarkMemberManager.findInstanceRoleById(currentTask.getInstanceRoleId());
+        InstanceRole instanceRole = instanceRoleManager.findEntityById(currentTask.getInstanceRoleId());
         String description = "此任务为息壤机器人向" + instanceRole.getName() + "发起的自动任务请求，详情请见" + baseUrl + currentTask.getId() + "&edit=1";
 
         CreateTaskReq req = CreateTaskReq.newBuilder()

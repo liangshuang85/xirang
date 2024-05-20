@@ -7,7 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Set;
+import java.util.List;
 
 /**
  * 当前登录用户管理接口
@@ -23,8 +23,8 @@ public class MyselfController {
      * 获取当前登录用户已被授予的权限的编码
      */
     @GetMapping("/me/permissionCodes")
-    public Set<String> listMyPermissionCodes(HttpServletRequest httpServletRequest) {
-        return userService.listMyPermissionCodes(httpServletRequest);
+    public List<String> listMyPermissionCodes(HttpServletRequest httpServletRequest) {
+        return userService.listMyPermissionCodes();
     }
 
 }

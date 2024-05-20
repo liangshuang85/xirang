@@ -10,11 +10,6 @@ import java.util.List;
 public interface InstanceRoleLarkMemberManager {
 
     /**
-     * 查询所有启用的实例角色
-     */
-    List<InstanceRole> findAllInstanceRoles();
-
-    /**
      * 插入角色成员
      */
     void insertInstanceRoleLarkMember(Object req, long refId);

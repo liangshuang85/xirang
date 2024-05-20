@@ -8,8 +8,10 @@ import eco.ywhc.xr.common.converter.TaskConverter;
 import eco.ywhc.xr.common.event.InstanceRoleLarkMemberInsertedEvent;
 import eco.ywhc.xr.common.event.ProjectCreatedEvent;
 import eco.ywhc.xr.common.event.StatusChangedEvent;
+import eco.ywhc.xr.common.model.RequestContextUser;
 import eco.ywhc.xr.common.model.dto.req.ProjectReq;
 import eco.ywhc.xr.common.model.dto.res.*;
+import eco.ywhc.xr.common.model.entity.Clue;
 import eco.ywhc.xr.common.model.entity.Project;
 import eco.ywhc.xr.common.model.entity.ProjectInformation;
 import eco.ywhc.xr.common.model.entity.Task;
@@ -19,6 +21,7 @@ import eco.ywhc.xr.core.manager.*;
 import eco.ywhc.xr.core.manager.lark.LarkEmployeeManager;
 import eco.ywhc.xr.core.mapper.ProjectInformationMapper;
 import eco.ywhc.xr.core.mapper.ProjectMapper;
+import eco.ywhc.xr.core.util.SessionUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -64,6 +67,8 @@ public class ProjectServiceImpl implements ProjectService {
     private final AttachmentManager attachmentManager;
 
     private final InstanceRoleLarkMemberManager instanceRoleLarkMemberManager;
+
+    private final InstanceRoleManager instanceRoleManager;
 
     private final ChangeManager changeManager;
 
@@ -120,6 +125,8 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     public PageableModelSet<ProjectRes> findMany(@NonNull ProjectQuery query) {
+        RequestContextUser requestContextUser = SessionUtils.currentUser();
+
         List<Long> adIds = new ArrayList<>();
         if (query.getAdcode() != null) {
             adIds = administrativeDivisionManager.findAllEntityIdsSince(query.getAdcode());
@@ -134,6 +141,15 @@ public class ProjectServiceImpl implements ProjectService {
                 .in(CollectionUtils.isNotEmpty(adIds), Project::getAdcode, adIds)
                 .orderByDesc(Project::getId);
 
+        // 如果没有全局 PROJECT:VIEW 权限，则检查实例权限
+        if (!SessionUtils.currentUserPermissionCodes().contains("PROJECT:VIEW")) {
+            String existsStatement = "SELECT 1 FROM `s_instance_role_lark_member` WHERE `deleted`=0 " +
+                    " AND `member_id`='" + requestContextUser.getLarkOpenId() + "' " +
+                    " AND `ref_type`='PROJECT' " +
+                    " AND `ref_id`=`b_project`.id";
+            qw.exists(existsStatement);
+        }
+
         var rows = projectMapper.selectPage(query.paging(true), qw);
         if (CollectionUtils.isEmpty(rows.getRecords())) {
             return PageableModelSet.from(query.paging());
@@ -141,6 +157,9 @@ public class ProjectServiceImpl implements ProjectService {
 
         Set<Long> adcodes = rows.getRecords().stream().map(Project::getAdcode).collect(Collectors.toSet());
         Map<Long, AdministrativeDivisionRes> administrativeDivisionMap = administrativeDivisionManager.findAllAsMapByAdcodesSurely(adcodes);
+
+        List<Long> clueIds = rows.getRecords().stream().map(Project::getId).toList();
+        Map<Long, Set<String>> permissionMap = instanceRoleManager.listPermissionCodesByRefIdsAndMemberId(clueIds, requestContextUser.getLarkOpenId());
 
         var results = rows.convert(i -> {
             ProjectRes res = projectConverter.toResponse(i);
@@ -157,6 +176,8 @@ public class ProjectServiceImpl implements ProjectService {
             res.setAssignee(projectAssignee);
             res.setProjectInformation(projectRes);
 
+            res.setPermissionCodes(permissionMap.getOrDefault(i.getId(), Collections.emptySet()));
+
             return res;
         });
         return PageableModelSet.from(results);
@@ -164,6 +185,8 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     public ProjectRes findOne(@NonNull Long id) {
+        RequestContextUser requestContextUser = SessionUtils.currentUser();
+
         Project project = projectManager.mustFoundEntityById(id);
         ProjectRes res = projectConverter.toResponse(project);
         projectManager.findAndSetAttachments(res);
@@ -240,6 +263,8 @@ public class ProjectServiceImpl implements ProjectService {
         List<ChangeRes> changes = changeManager.findAllByRefId(id);
         List<ChangeRes> changeRes = changes.stream().peek(i -> i.setOperator(assignee)).toList();
         res.setChanges(changeRes);
+
+        res.setPermissionCodes(instanceRoleManager.listPermissionCodesByRefIdAndMemberId(id, requestContextUser.getLarkOpenId()));
 
         return res;
     }

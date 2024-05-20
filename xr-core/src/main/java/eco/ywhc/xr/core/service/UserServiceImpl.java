@@ -1,10 +1,12 @@
 package eco.ywhc.xr.core.service;
 
+import eco.ywhc.xr.common.constant.SessionAttribute;
 import eco.ywhc.xr.common.model.PasswordChangeRequest;
 import eco.ywhc.xr.common.model.RequestContextUser;
 import eco.ywhc.xr.core.manager.OAuth2Manager;
 import eco.ywhc.xr.core.manager.RoleManager;
 import eco.ywhc.xr.core.manager.UserManager;
+import eco.ywhc.xr.core.util.SessionUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -14,17 +16,13 @@ import org.springframework.stereotype.Service;
 import org.sugar.commons.exception.InternalErrorException;
 import org.sugar.commons.exception.InvalidInputException;
 
-import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
-
-    public static final String SESSION_ATTRIBUTE_USER = "user";
-
-    public static final String SESSION_ATTRIBUTE_PERMISSION = "permission";
 
     private final UserManager userManager;
 
@@ -36,7 +34,7 @@ public class UserServiceImpl implements UserService {
     public String usernamePasswordAuthenticate(HttpServletRequest httpServletRequest, String username, String rawPassword) {
         RequestContextUser user = userManager.usernamePasswordAuthenticate(username, rawPassword);
         HttpSession session = httpServletRequest.getSession(true);
-        session.setAttribute(SESSION_ATTRIBUTE_USER, user);
+        session.setAttribute(SessionAttribute.SESSION_ATTR_USER, user);
         return session.getId();
     }
 
@@ -61,18 +59,14 @@ public class UserServiceImpl implements UserService {
         Set<String> permissionCodes = roleManager.listGrantedPermissionCodes(roleIds);
 
         HttpSession session = httpServletRequest.getSession(true);
-        session.setAttribute(SESSION_ATTRIBUTE_USER, user);
-        session.setAttribute(SESSION_ATTRIBUTE_PERMISSION, permissionCodes);
+        session.setAttribute(SessionAttribute.SESSION_ATTR_USER, user);
+        session.setAttribute(SessionAttribute.SESSION_ATTR_PERMISSION, permissionCodes);
         return session.getId();
     }
 
     @Override
-    public boolean changePassword(HttpServletRequest httpServletRequest, PasswordChangeRequest req) {
-        HttpSession session = httpServletRequest.getSession(false);
-        if (session == null) {
-            return false;
-        }
-        RequestContextUser requestContextUser = (RequestContextUser) session.getAttribute(SESSION_ATTRIBUTE_USER);
+    public boolean changePassword(PasswordChangeRequest req) {
+        RequestContextUser requestContextUser = SessionUtils.currentUser();
         if (requestContextUser == null) {
             return false;
         }
@@ -80,16 +74,8 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Set<String> listMyPermissionCodes(HttpServletRequest httpServletRequest) {
-        HttpSession session = httpServletRequest.getSession(false);
-        if (session == null) {
-            return Collections.emptySet();
-        }
-        Object permissions = session.getAttribute(SESSION_ATTRIBUTE_PERMISSION);
-        if (permissions == null) {
-            return Collections.emptySet();
-        }
-        return (Set<String>) permissions;
+    public List<String> listMyPermissionCodes() {
+        return SessionUtils.currentUserPermissionCodes().stream().sorted().toList();
     }
 
 }

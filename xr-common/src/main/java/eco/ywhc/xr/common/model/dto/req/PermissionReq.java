@@ -38,7 +38,7 @@ public class PermissionReq implements BaseRestRequest {
     /**
      * 级别
      */
-    private String level;
+    private String level = "";
 
 }
 

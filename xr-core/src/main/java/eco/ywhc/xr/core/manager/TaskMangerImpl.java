@@ -40,6 +40,8 @@ public class TaskMangerImpl implements TaskManager {
 
     private final InstanceRoleLarkMemberManager instanceRoleLarkMemberManager;
 
+    private final InstanceRoleManager instanceRoleManager;
+
     @Override
     public List<Task> listTasksByRefId(long id) {
         QueryWrapper<Task> qw = new QueryWrapper<>();
@@ -87,7 +89,7 @@ public class TaskMangerImpl implements TaskManager {
         } else {
             res.setStatus(task.getStatus());
         }
-        InstanceRole instanceRole = instanceRoleLarkMemberManager.findInstanceRoleById(task.getInstanceRoleId());
+        InstanceRole instanceRole = instanceRoleManager.findEntityById(task.getInstanceRoleId());
         res.setInstanceRoleName(instanceRole.getName());
         res.setId(task.getId());
         res.setTaskUrl(taskData.getUrl());

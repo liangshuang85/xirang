@@ -8,18 +8,17 @@ import eco.ywhc.xr.common.converter.TaskConverter;
 import eco.ywhc.xr.common.event.FrameworkAgreementCreatedEvent;
 import eco.ywhc.xr.common.event.InstanceRoleLarkMemberInsertedEvent;
 import eco.ywhc.xr.common.event.StatusChangedEvent;
+import eco.ywhc.xr.common.model.RequestContextUser;
 import eco.ywhc.xr.common.model.dto.req.FrameworkAgreementReq;
 import eco.ywhc.xr.common.model.dto.res.*;
-import eco.ywhc.xr.common.model.entity.FrameworkAgreement;
-import eco.ywhc.xr.common.model.entity.FrameworkAgreementChannelEntry;
-import eco.ywhc.xr.common.model.entity.InstanceRole;
-import eco.ywhc.xr.common.model.entity.Task;
+import eco.ywhc.xr.common.model.entity.*;
 import eco.ywhc.xr.common.model.lark.LarkEmployee;
 import eco.ywhc.xr.common.model.query.FrameworkAgreementQuery;
 import eco.ywhc.xr.core.manager.*;
 import eco.ywhc.xr.core.manager.lark.LarkEmployeeManager;
 import eco.ywhc.xr.core.mapper.FrameworkAgreementChannelEntryMapper;
 import eco.ywhc.xr.core.mapper.FrameworkAgreementMapper;
+import eco.ywhc.xr.core.util.SessionUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -66,6 +65,8 @@ public class FrameworkAgreementServiceImpl implements FrameworkAgreementService 
     private final AttachmentManager attachmentManager;
 
     private final InstanceRoleLarkMemberManager instanceRoleLarkMemberManager;
+
+    private final InstanceRoleManager instanceRoleManager;
 
     private final ChangeManager changeManager;
 
@@ -137,6 +138,8 @@ public class FrameworkAgreementServiceImpl implements FrameworkAgreementService 
 
     @Override
     public PageableModelSet<FrameworkAgreementRes> findMany(@NonNull FrameworkAgreementQuery query) {
+        RequestContextUser requestContextUser = SessionUtils.currentUser();
+
         List<Long> adIds = new ArrayList<>();
         if (query.getAdcode() != null) {
             adIds = administrativeDivisionManager.findAllEntityIdsSince(query.getAdcode());
@@ -152,6 +155,15 @@ public class FrameworkAgreementServiceImpl implements FrameworkAgreementService 
                 .in(CollectionUtils.isNotEmpty(adIds), FrameworkAgreement::getAdcode, adIds)
                 .orderByDesc(FrameworkAgreement::getId);
 
+        // 如果没有全局 FRAMEWORK_AGREEMENT:VIEW 权限，则检查实例权限
+        if (!SessionUtils.currentUserPermissionCodes().contains("FRAMEWORK_AGREEMENT:VIEW")) {
+            String existsStatement = "SELECT 1 FROM `s_instance_role_lark_member` WHERE `deleted`=0 " +
+                    " AND `member_id`='" + requestContextUser.getLarkOpenId() + "' " +
+                    " AND `ref_type`='FRAMEWORK_AGREEMENT' " +
+                    " AND `ref_id`=`b_framework_agreement`.id";
+            qw.exists(existsStatement);
+        }
+
         var rows = frameworkAgreementMapper.selectPage(query.paging(true), qw);
         if (CollectionUtils.isEmpty(rows.getRecords())) {
             return PageableModelSet.from(query.paging());
@@ -159,6 +171,9 @@ public class FrameworkAgreementServiceImpl implements FrameworkAgreementService 
 
         Set<Long> adcodes = rows.getRecords().stream().map(FrameworkAgreement::getAdcode).collect(Collectors.toSet());
         Map<Long, AdministrativeDivisionRes> administrativeDivisionMap = administrativeDivisionManager.findAllAsMapByAdcodesSurely(adcodes);
+
+        List<Long> clueIds = rows.getRecords().stream().map(FrameworkAgreement::getId).toList();
+        Map<Long, Set<String>> permissionMap = instanceRoleManager.listPermissionCodesByRefIdsAndMemberId(clueIds, requestContextUser.getLarkOpenId());
 
         var results = rows.convert(i -> {
             FrameworkAgreementRes res = frameworkAgreementConverter.toResponse(i);
@@ -175,6 +190,8 @@ public class FrameworkAgreementServiceImpl implements FrameworkAgreementService 
             FrameworkAgreementChannelEntryRes channelEntry = frameworkAgreementManager.getChannelEntryByFrameworkAgreementId(i.getId());
             res.setFrameworkAgreementChannelEntry(channelEntry);
 
+            res.setPermissionCodes(permissionMap.getOrDefault(i.getId(), Collections.emptySet()));
+
             return res;
         });
         return PageableModelSet.from(results);
@@ -182,6 +199,8 @@ public class FrameworkAgreementServiceImpl implements FrameworkAgreementService 
 
     @Override
     public FrameworkAgreementRes findOne(@NonNull Long id) {
+        RequestContextUser requestContextUser = SessionUtils.currentUser();
+
         FrameworkAgreement frameworkAgreement = frameworkAgreementManager.mustFoundEntityById(id);
         FrameworkAgreementRes res = frameworkAgreementConverter.toResponse(frameworkAgreement);
         List<AttachmentResponse> projectProposalAttachments = attachmentManager.findManyByOwnerId(id, FileOwnerType.PROJECT_PROPOSAL);
@@ -218,7 +237,7 @@ public class FrameworkAgreementServiceImpl implements FrameworkAgreementService 
         List<TaskRes> taskResList = new ArrayList<>();
         for (Task task : tasks) {
             if (task.getTaskGuid() == null) {
-                InstanceRole instanceRole = instanceRoleLarkMemberManager.findInstanceRoleById(task.getInstanceRoleId());
+                InstanceRole instanceRole = instanceRoleManager.findEntityById(task.getInstanceRoleId());
                 TaskRes taskRes = taskConverter.toResponse(task);
                 taskRes.setInstanceRoleName(instanceRole.getName());
                 taskResList.add(taskRes);
@@ -273,6 +292,8 @@ public class FrameworkAgreementServiceImpl implements FrameworkAgreementService 
         List<ChangeRes> changes = changeManager.findAllByRefId(id);
         List<ChangeRes> changeRes = changes.stream().peek(i -> i.setOperator(assignee)).toList();
         res.setChanges(changeRes);
+
+        res.setPermissionCodes(instanceRoleManager.listPermissionCodesByRefIdAndMemberId(id, requestContextUser.getLarkOpenId()));
 
         return res;
     }

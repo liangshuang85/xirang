@@ -27,7 +27,7 @@ public class MeController {
     @PostMapping("/admin/rest/me:changePassword")
     public OperationResult changePassword(HttpServletRequest httpServletRequest,
                                           @Valid @RequestBody PasswordChangeRequest req) {
-        boolean ok = userService.changePassword(httpServletRequest, req);
+        boolean ok = userService.changePassword(req);
         int affected = ok ? 1 : 0;
         return OperationResult.of(affected);
     }

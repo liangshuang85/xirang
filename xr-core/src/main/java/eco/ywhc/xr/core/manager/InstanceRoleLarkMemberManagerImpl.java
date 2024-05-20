@@ -28,13 +28,6 @@ public class InstanceRoleLarkMemberManagerImpl implements InstanceRoleLarkMember
     private final InstanceRoleLarkMemberMapper instanceRoleLarkMemberMapper;
 
     @Override
-    public List<InstanceRole> findAllInstanceRoles() {
-        QueryWrapper<InstanceRole> qw = new QueryWrapper<>();
-        qw.lambda().eq(InstanceRole::getEnabled, 1);
-        return instanceRoleMapper.selectList(qw);
-    }
-
-    @Override
     public void insertInstanceRoleLarkMember(Object req, long refId) {
         if (req instanceof ClueReq clueReq) {
             List<InstanceRoleLarkMember> instanceRoleLarkMembers = clueReq.getInstanceRoleLarkMembers().stream()
