@@ -1,5 +1,7 @@
 package eco.ywhc.xr.common.model.dto.res;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -7,6 +9,7 @@ import org.sugar.crud.model.IdentifiableResponse;
 
 import java.io.Serial;
 import java.io.Serializable;
+import java.time.OffsetDateTime;
 
 /**
  * 权限
@@ -22,17 +25,13 @@ public class PermissionRes implements IdentifiableResponse<Long>, Serializable {
     /**
      * ID
      */
+    @JsonIgnore
     private Long id;
 
     /**
      * 名称
      */
     private String name;
-
-    /**
-     * 资源编码
-     */
-    private String resourceCode;
 
     /**
      * 编码
@@ -45,9 +44,35 @@ public class PermissionRes implements IdentifiableResponse<Long>, Serializable {
     private String description;
 
     /**
+     * 资源编码
+     */
+    private String resourceCode;
+
+    /**
+     * 资源名称
+     */
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private String resourceName;
+
+    /**
      * 级别
      */
     private String level;
+
+    /**
+     * 是否内置
+     */
+    private Boolean builtIn;
+
+    /**
+     * 创建时间
+     */
+    private OffsetDateTime createdAt;
+
+    /**
+     * 最后修改时间
+     */
+    private OffsetDateTime updatedAt;
 
 }
 

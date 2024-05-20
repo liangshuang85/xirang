@@ -2,6 +2,7 @@ package eco.ywhc.xr.core.manager;
 
 import eco.ywhc.xr.common.model.dto.res.PermissionRes;
 import eco.ywhc.xr.common.model.entity.Permission;
+import org.springframework.lang.Nullable;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collection;
@@ -20,7 +21,7 @@ public interface PermissionManager {
     List<Permission> findAllEntities();
 
     /**
-     * 获取全部权限资源代码
+     * 获取全部权限资源编码
      */
     Set<String> findAllPermissionCodes();
 
@@ -33,5 +34,30 @@ public interface PermissionManager {
      * 获取权限编码列表中的全部权限
      */
     List<PermissionRes> findAllByPermissionCodes(Collection<String> permissionCodes);
+
+    /**
+     * 获取全部权限
+     *
+     * @param resourceCode 权限资源编码
+     */
+    List<Permission> findAllEntitiesByResourceCode(String resourceCode);
+
+    /**
+     * 查找指定权限
+     */
+    Permission findEntityById(long id);
+
+    /**
+     * 查找指定权限，未找到则抛出异常
+     */
+    Permission mustFoundEntityById(long id);
+
+    /**
+     * 查找指定权限
+     *
+     * @param code 权限编码
+     */
+    @Nullable
+    Permission findEntityByCode(String code);
 
 }

@@ -1,5 +1,6 @@
 package eco.ywhc.xr.core.manager.lark;
 
+import com.lark.oapi.service.contact.v3.model.Department;
 import eco.ywhc.xr.common.model.dto.res.DepartmentRes;
 import eco.ywhc.xr.common.model.entity.LarkDepartment;
 import org.springframework.lang.NonNull;
@@ -12,6 +13,13 @@ import java.util.List;
  */
 @Transactional(rollbackFor = {Exception.class})
 public interface LarkDepartmentManager {
+
+    /**
+     * 根据部门ID从飞书获取部门信息
+     *
+     * @param departmentId 部门ID
+     */
+    Department getLarkDepartmentByDepartmentId(String departmentId);
 
     /**
      * 根据部门ID从飞书获取部门信息

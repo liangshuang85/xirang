@@ -40,7 +40,9 @@ public class RoleServiceImpl implements RoleService {
     public Long createOne(@NonNull RoleReq req) {
         var entity = roleConverter.fromRequest(req);
         roleMapper.insert(entity);
-        return entity.getId();
+        long id = entity.getId();
+        configurePermissionsInternal(id, req.getPermissionCodes());
+        return id;
     }
 
     @Override
@@ -58,19 +60,30 @@ public class RoleServiceImpl implements RoleService {
     @Override
     public RoleRes findOne(@NonNull Long id) {
         var entity = roleManager.mustFindEntityById(id);
-        return roleConverter.toResponse(entity);
+        var response = roleConverter.toResponse(entity);
+        List<PermissionRes> permissions = listPermissions(id);
+        response.setPermissions(permissions);
+        return response;
     }
 
     @Override
     public int updateOne(@NonNull Long id, @NonNull RoleReq req) {
         var entity = roleManager.mustFindEntityById(id);
+        if (entity.getBuiltIn()) {
+            throw new InvalidInputException("不能修改内置角色");
+        }
         roleConverter.update(req, entity);
-        return roleMapper.updateById(entity);
+        int affected = roleMapper.updateById(entity);
+        configurePermissionsInternal(entity.getId(), req.getPermissionCodes());
+        return affected;
     }
 
     @Override
     public int deleteOne(@NonNull Long id, boolean logical) {
-        roleManager.mustFindEntityById(id);
+        var entity = roleManager.mustFindEntityById(id);
+        if (entity.getBuiltIn()) {
+            throw new InvalidInputException("不能删除内置角色");
+        }
         // 检查角色是否被赋予给用户
         if (roleManager.isRoleAssigned(id)) {
             throw new ConditionNotMetException("该角色已经分配给用户，不能直接删除");
@@ -104,18 +117,7 @@ public class RoleServiceImpl implements RoleService {
     @Override
     public void configurePermissions(long id, Collection<String> permissionCodes) {
         roleManager.mustFindEntityById(id);
-        validatePermissionCodes(permissionCodes);
-        Set<String> currentPermissionCodes = roleManager.findCurrentPermissionCodes(id);
-        // 撤销
-        Set<String> pendingToRevoke = new HashSet<>(currentPermissionCodes);
-        pendingToRevoke.removeAll(permissionCodes);
-        if (CollectionUtils.isNotEmpty(pendingToRevoke)) {
-            roleManager.revokePermissions(id, pendingToRevoke);
-        }
-        // 授予
-        if (CollectionUtils.isNotEmpty(permissionCodes)) {
-            roleManager.grantPermissions(id, permissionCodes);
-        }
+        configurePermissionsInternal(id, permissionCodes);
     }
 
     @Override
@@ -127,11 +129,26 @@ public class RoleServiceImpl implements RoleService {
     private void validatePermissionCodes(Collection<String> permissionCodes) {
         // 检查权限编码集合是否合法
         if (CollectionUtils.isEmpty(permissionCodes)) {
-            throw new InvalidInputException("权限编码列表错误");
+            return;
         }
         Set<String> allPermissionCodes = permissionManager.findAllPermissionCodes();
         if (!allPermissionCodes.containsAll(permissionCodes)) {
             throw new InvalidInputException("权限编码列表错误");
+        }
+    }
+
+    private void configurePermissionsInternal(long id, Collection<String> permissionCodes) {
+        validatePermissionCodes(permissionCodes);
+        Set<String> currentPermissionCodes = roleManager.findCurrentPermissionCodes(id);
+        // 撤销
+        Set<String> pendingToRevoke = new HashSet<>(currentPermissionCodes);
+        pendingToRevoke.removeAll(permissionCodes);
+        if (CollectionUtils.isNotEmpty(pendingToRevoke)) {
+            roleManager.revokePermissions(id, pendingToRevoke);
+        }
+        // 授予
+        if (CollectionUtils.isNotEmpty(permissionCodes)) {
+            roleManager.grantPermissions(id, permissionCodes);
         }
     }
 

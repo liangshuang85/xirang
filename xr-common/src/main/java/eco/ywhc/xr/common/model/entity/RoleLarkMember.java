@@ -34,16 +34,11 @@ public class RoleLarkMember extends BaseEntity implements IdentifiableEntity<Lon
     /**
      * 用户ID
      */
-    private Long memberId;
+    private String memberId;
 
     /**
      * 角色成员类型
      */
     private RoleMemberType memberType;
-
-    /**
-     * 项目ID
-     */
-    private Long projectId;
 
 }

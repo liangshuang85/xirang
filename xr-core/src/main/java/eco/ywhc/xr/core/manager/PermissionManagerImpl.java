@@ -7,12 +7,11 @@ import eco.ywhc.xr.common.model.entity.Permission;
 import eco.ywhc.xr.core.mapper.PermissionMapper;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
+import org.sugar.commons.exception.ResourceNotFoundException;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -53,6 +52,35 @@ public class PermissionManagerImpl implements PermissionManager {
         return findAllEntitiesByPermissionCodes(permissionCodes).stream()
                 .map(permissionConverter::toResponse)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<Permission> findAllEntitiesByResourceCode(String resourceCode) {
+        if (StringUtils.isBlank(resourceCode)) {
+            return Collections.emptyList();
+        }
+        QueryWrapper<Permission> qw = new QueryWrapper<>();
+        qw.lambda().eq(Permission::getDeleted, 0).eq(Permission::getResourceCode, resourceCode);
+        return permissionMapper.selectList(qw);
+    }
+
+    @Override
+    public Permission findEntityById(long id) {
+        return permissionMapper.findEntityById(id);
+    }
+
+    @Override
+    public Permission mustFoundEntityById(long id) {
+        Permission permission = findEntityById(id);
+        return Optional.ofNullable(permission).orElseThrow(ResourceNotFoundException::new);
+    }
+
+    @Override
+    public Permission findEntityByCode(String code) {
+        QueryWrapper<Permission> qw = new QueryWrapper<>();
+        qw.lambda().eq(Permission::getDeleted, 0)
+                .eq(Permission::getCode, code);
+        return permissionMapper.selectOne(qw);
     }
 
 }

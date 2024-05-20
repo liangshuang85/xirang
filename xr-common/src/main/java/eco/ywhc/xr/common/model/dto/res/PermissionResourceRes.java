@@ -8,19 +8,17 @@ import org.sugar.crud.model.IdentifiableResponse;
 import java.io.Serial;
 import java.io.Serializable;
 import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
- * 角色Response
+ * 权限资源
  */
 @Getter
 @Setter
 @ToString
-public class RoleRes implements IdentifiableResponse<Long>, Serializable {
+public class PermissionResourceRes implements IdentifiableResponse<Long>, Serializable {
 
     @Serial
-    private static final long serialVersionUID = 1495441032375830151L;
+    private static final long serialVersionUID = -6561632325487575617L;
 
     /**
      * ID
@@ -33,19 +31,14 @@ public class RoleRes implements IdentifiableResponse<Long>, Serializable {
     private String name;
 
     /**
+     * 编码
+     */
+    private String code;
+
+    /**
      * 描述
      */
     private String description;
-
-    /**
-     * 启用状态
-     */
-    private Boolean enabled;
-
-    /**
-     * 权限编码集合
-     */
-    private List<PermissionRes> permissions = new ArrayList<>();
 
     /**
      * 是否内置

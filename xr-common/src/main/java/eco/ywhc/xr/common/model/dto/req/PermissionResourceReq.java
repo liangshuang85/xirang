@@ -1,40 +1,35 @@
 package eco.ywhc.xr.common.model.dto.req;
 
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import org.sugar.crud.model.BaseRestRequest;
 
-import java.util.HashSet;
-import java.util.Set;
-
 /**
- * 角色Request
+ * 权限资源Request
  */
 @Getter
 @Setter
 @ToString
-public class RoleReq implements BaseRestRequest {
+public class PermissionResourceReq implements BaseRestRequest {
 
     /**
      * 名称
      */
     @NotBlank
-    @Size(max = 64)
     private String name;
+
+    /**
+     * 编码。如果未填写编码，则由系统自动生成
+     */
+    @NotBlank
+    private String code;
 
     /**
      * 描述
      */
-    @Size(max = 128)
     private String description;
-
-    /**
-     * 权限编码集合
-     */
-    private Set<String> permissionCodes = new HashSet<>();
 
 }
 

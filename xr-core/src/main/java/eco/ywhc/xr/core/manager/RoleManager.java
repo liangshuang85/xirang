@@ -4,6 +4,7 @@ import eco.ywhc.xr.common.model.entity.Role;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -34,7 +35,7 @@ public interface RoleManager {
     boolean isRoleAssigned(long id);
 
     /**
-     * 获取指定角色当前被授予的全部权限资源代码
+     * 获取指定角色当前被授予的全部权限资源的编码
      *
      * @param id 角色ID
      */
@@ -55,5 +56,26 @@ public interface RoleManager {
      * @param permissionCodes 权限编码集合
      */
     void revokePermissions(long id, Collection<String> permissionCodes);
+
+    /**
+     * 列出指定飞书用户所分配的全部角色的ID
+     *
+     * @param larkUserOpenId 飞书用户的OpenID
+     */
+    Set<Long> listAssignedRoleIds(String larkUserOpenId);
+
+    /**
+     * 列出列表中所有角色所获得的全部权限的权限编码
+     *
+     * @param ids 角色ID列表
+     */
+    Set<String> listGrantedPermissionCodes(Collection<Long> ids);
+
+    /**
+     * 获取全部角色
+     *
+     * @param permissionCode 权限编码
+     */
+    List<Long> findAllEntitiesByPermissionCode(String permissionCode);
 
 }

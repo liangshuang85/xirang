@@ -38,4 +38,9 @@ public class InstanceRole extends BaseEntity implements IdentifiableEntity<Long>
      */
     private Boolean enabled;
 
+    /**
+     * 是否内置
+     */
+    private Boolean builtIn = false;
+
 }

@@ -31,7 +31,7 @@ public class LarkDepartmentManagerImpl implements LarkDepartmentManager {
     private final LarkDepartmentMapper larkDepartmentMapper;
 
     @Override
-    public DepartmentRes getDepartmentByDepartmentId(@NonNull String departmentId) {
+    public Department getLarkDepartmentByDepartmentId(String departmentId) {
         GetDepartmentReq req = GetDepartmentReq.newBuilder()
                 .departmentId(departmentId)
                 .userIdType(GetDepartmentUserIdTypeEnum.OPEN_ID)
@@ -48,7 +48,12 @@ public class LarkDepartmentManagerImpl implements LarkDepartmentManager {
             log.error("获取部门信息失败：{}", resp.getMsg());
             throw new InternalErrorException();
         }
-        Department department = resp.getData().getDepartment();
+        return resp.getData().getDepartment();
+    }
+
+    @Override
+    public DepartmentRes getDepartmentByDepartmentId(@NonNull String departmentId) {
+        Department department = getLarkDepartmentByDepartmentId(departmentId);
         return DepartmentRes.of(department.getName(), department.getDepartmentId(), department.getLeaderUserId());
     }
 

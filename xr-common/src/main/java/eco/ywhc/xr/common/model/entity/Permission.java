@@ -53,5 +53,10 @@ public class Permission extends BaseEntity implements IdentifiableEntity<Long> {
      */
     private String level;
 
+    /**
+     * 是否内置
+     */
+    private Boolean builtIn = false;
+
 }
 

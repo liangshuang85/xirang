@@ -3,6 +3,7 @@ package eco.ywhc.xr.core.service;
 import eco.ywhc.xr.common.model.PasswordChangeRequest;
 import eco.ywhc.xr.common.model.RequestContextUser;
 import eco.ywhc.xr.core.manager.OAuth2Manager;
+import eco.ywhc.xr.core.manager.RoleManager;
 import eco.ywhc.xr.core.manager.UserManager;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
@@ -13,6 +14,8 @@ import org.springframework.stereotype.Service;
 import org.sugar.commons.exception.InternalErrorException;
 import org.sugar.commons.exception.InvalidInputException;
 
+import java.util.Set;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -20,9 +23,13 @@ public class UserServiceImpl implements UserService {
 
     public static final String SESSION_ATTRIBUTE_USER = "user";
 
+    public static final String SESSION_ATTRIBUTE_PERMISSION = "permission";
+
     private final UserManager userManager;
 
     private final OAuth2Manager oauth2Manager;
+
+    private final RoleManager roleManager;
 
     @Override
     public String usernamePasswordAuthenticate(HttpServletRequest httpServletRequest, String username, String rawPassword) {
@@ -46,9 +53,15 @@ public class UserServiceImpl implements UserService {
         if (StringUtils.isBlank(userOpenId)) {
             throw new InternalErrorException("获取Access Token失败");
         }
+
         RequestContextUser user = userManager.authWithUserOpenId(userOpenId);
+        // 获取用户的角色和权限
+        Set<Long> roleIds = roleManager.listAssignedRoleIds(userOpenId);
+        Set<String> permissionCodes = roleManager.listGrantedPermissionCodes(roleIds);
+
         HttpSession session = httpServletRequest.getSession(true);
         session.setAttribute(SESSION_ATTRIBUTE_USER, user);
+        session.setAttribute(SESSION_ATTRIBUTE_PERMISSION, permissionCodes);
         return session.getId();
     }
 
