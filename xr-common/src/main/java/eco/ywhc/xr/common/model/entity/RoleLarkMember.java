@@ -17,6 +17,7 @@ import java.io.Serial;
 @ToString
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 @TableName(value = "s_role_lark_member")
 public class RoleLarkMember extends BaseEntity implements IdentifiableEntity<Long> {
 
@@ -32,7 +33,7 @@ public class RoleLarkMember extends BaseEntity implements IdentifiableEntity<Lon
     private Long roleId;
 
     /**
-     * 用户ID
+     * 成员在飞书中的ID
      */
     private String memberId;
 

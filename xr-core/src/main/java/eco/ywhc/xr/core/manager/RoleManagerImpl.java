@@ -2,6 +2,8 @@ package eco.ywhc.xr.core.manager;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
+import eco.ywhc.xr.common.converter.RoleConverter;
+import eco.ywhc.xr.common.model.dto.res.RoleRes;
 import eco.ywhc.xr.common.model.entity.PermissionAssignment;
 import eco.ywhc.xr.common.model.entity.Role;
 import eco.ywhc.xr.common.model.entity.RoleLarkMember;
@@ -28,11 +30,23 @@ public class RoleManagerImpl implements RoleManager {
 
     private final LarkDepartmentManager larkDepartmentManager;
 
+    private final RoleConverter roleConverter;
+
     private final RoleMapper roleMapper;
 
     private final RoleLarkMemberMapper roleLarkMemberMapper;
 
     private final PermissionAssignmentMapper permissionAssignmentMapper;
+
+    @Override
+    public List<Role> findAllEntitiesByIds(Collection<Long> ids) {
+        return roleMapper.findAllByIds(ids);
+    }
+
+    @Override
+    public List<RoleRes> findAllByIds(Collection<Long> ids) {
+        return findAllEntitiesByIds(ids).stream().map(roleConverter::toResponse).toList();
+    }
 
     @Override
     public Role findEntityById(long id) {

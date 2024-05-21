@@ -1,5 +1,6 @@
 package eco.ywhc.xr.core.manager;
 
+import eco.ywhc.xr.common.model.dto.res.RoleRes;
 import eco.ywhc.xr.common.model.entity.Role;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -12,6 +13,20 @@ import java.util.Set;
  */
 @Transactional(rollbackFor = {Exception.class})
 public interface RoleManager {
+
+    /**
+     * 查找ID列表中的角色
+     *
+     * @param ids 角色ID列表
+     */
+    List<Role> findAllEntitiesByIds(Collection<Long> ids);
+
+    /**
+     * 查找ID列表中的角色
+     *
+     * @param ids 角色ID列表
+     */
+    List<RoleRes> findAllByIds(Collection<Long> ids);
 
     /**
      * 查找指定角色

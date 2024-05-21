@@ -5,13 +5,11 @@ import com.lark.oapi.Client;
 import com.lark.oapi.service.contact.v3.enums.GetDepartmentDepartmentIdTypeEnum;
 import com.lark.oapi.service.contact.v3.enums.GetDepartmentUserIdTypeEnum;
 import com.lark.oapi.service.contact.v3.model.*;
-import eco.ywhc.xr.common.model.dto.res.DepartmentRes;
 import eco.ywhc.xr.common.model.entity.LarkDepartment;
 import eco.ywhc.xr.core.mapper.LarkDepartmentMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import org.sugar.commons.exception.InternalErrorException;
 
@@ -49,12 +47,6 @@ public class LarkDepartmentManagerImpl implements LarkDepartmentManager {
             throw new InternalErrorException();
         }
         return resp.getData().getDepartment();
-    }
-
-    @Override
-    public DepartmentRes getDepartmentByDepartmentId(@NonNull String departmentId) {
-        Department department = getLarkDepartmentByDepartmentId(departmentId);
-        return DepartmentRes.of(department.getName(), department.getDepartmentId(), department.getLeaderUserId());
     }
 
     @Override
