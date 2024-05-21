@@ -7,11 +7,11 @@ import eco.ywhc.xr.common.converter.ProjectInformationConverter;
 import eco.ywhc.xr.common.converter.TaskConverter;
 import eco.ywhc.xr.common.event.InstanceRoleLarkMemberInsertedEvent;
 import eco.ywhc.xr.common.event.ProjectCreatedEvent;
+import eco.ywhc.xr.common.event.ProjectUpdatedEvent;
 import eco.ywhc.xr.common.event.StatusChangedEvent;
 import eco.ywhc.xr.common.model.RequestContextUser;
 import eco.ywhc.xr.common.model.dto.req.ProjectReq;
 import eco.ywhc.xr.common.model.dto.res.*;
-import eco.ywhc.xr.common.model.entity.Clue;
 import eco.ywhc.xr.common.model.entity.Project;
 import eco.ywhc.xr.common.model.entity.ProjectInformation;
 import eco.ywhc.xr.common.model.entity.Task;
@@ -296,6 +296,9 @@ public class ProjectServiceImpl implements ProjectService {
             List<String> memberIds = instanceRoleLarkMemberManager.getMemberIdsByRefId(project.getId());
             applicationEventPublisher.publishEvent(InstanceRoleLarkMemberInsertedEvent.of(id, req.getName(), TaskTemplateRefType.PROJECT, memberIds));
         }
+
+        // 发布项目已更新事件
+        applicationEventPublisher.publishEvent(ProjectUpdatedEvent.of(project));
 
         // 发布状态变更事件
         if (currentStatus != req.getStatus()) {

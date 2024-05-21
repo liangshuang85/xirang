@@ -6,6 +6,7 @@ import eco.ywhc.xr.common.constant.ClueStatusType;
 import eco.ywhc.xr.common.constant.InstanceRefType;
 import eco.ywhc.xr.common.converter.ClueConverter;
 import eco.ywhc.xr.common.event.ClueCreatedEvent;
+import eco.ywhc.xr.common.event.ClueUpdatedEvent;
 import eco.ywhc.xr.common.event.StatusChangedEvent;
 import eco.ywhc.xr.common.model.RequestContextUser;
 import eco.ywhc.xr.common.model.dto.req.ClueReq;
@@ -235,6 +236,9 @@ public class ClueServiceImpl implements ClueService {
         if (CollectionUtils.isNotEmpty(req.getInstanceRoleLarkMembers())) {
             instanceRoleLarkMemberManager.insertInstanceRoleLarkMember(req, id);
         }
+
+        // 发布线索已更新事件
+        applicationEventPublisher.publishEvent(ClueUpdatedEvent.of(clue));
 
         // 发布状态变更事件
         if (currentStatus != req.getStatus()) {

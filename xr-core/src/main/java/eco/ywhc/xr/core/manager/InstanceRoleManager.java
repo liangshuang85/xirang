@@ -1,7 +1,8 @@
 package eco.ywhc.xr.core.manager;
 
+import eco.ywhc.xr.common.constant.InstanceRefType;
+import eco.ywhc.xr.common.model.dto.req.InstanceRoleLarkMemberReq;
 import eco.ywhc.xr.common.model.entity.InstanceRole;
-import eco.ywhc.xr.common.model.entity.Role;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collection;
@@ -14,6 +15,11 @@ import java.util.Set;
  */
 @Transactional(rollbackFor = {Exception.class})
 public interface InstanceRoleManager {
+
+    /**
+     * 配置实例角色和成员的关系
+     */
+    void configureInstanceRoleMembers(InstanceRefType refType, long refId, List<InstanceRoleLarkMemberReq> reqs);
 
     /**
      * 查找所有的实例角色
@@ -110,5 +116,49 @@ public interface InstanceRoleManager {
      * @param memberId 实例角色成员的飞书OpenID
      */
     Set<String> listPermissionCodesByRefIdAndMemberId(long refId, String memberId);
+
+    /**
+     * 查找实例负责人所归属唯一实例角色
+     *
+     * @param refType 实例关联类型
+     */
+    InstanceRole findInstanceRoleForAssignee(InstanceRefType refType);
+
+    /**
+     * 检查实例角色是否已分配给指定成员
+     *
+     * @param instanceRoleId 实例角色ID
+     * @param refId          关联对象ID
+     * @param memberId       成员在飞书中的ID
+     */
+    boolean isInstanceRoleAssigned(long instanceRoleId, long refId, String memberId);
+
+    /**
+     * 分配实例角色
+     *
+     * @param instanceRoleId 实例角色ID
+     * @param refId          关联对象ID
+     * @param refType        关联对象类型
+     * @param memberId       成员在飞书中的ID
+     */
+    void assignInstanceRole(long instanceRoleId, long refId, InstanceRefType refType, String memberId);
+
+    /**
+     * 分配实例负责人角色
+     *
+     * @param refId    关联对象ID
+     * @param refType  关联对象类型
+     * @param memberId 成员在飞书中的ID
+     */
+    void assignInstanceRoleToAssignee(long refId, InstanceRefType refType, String memberId);
+
+    /**
+     * 重新分配实例负责人角色
+     *
+     * @param refId    关联对象ID
+     * @param refType  关联对象类型
+     * @param memberId 成员在飞书中的ID
+     */
+    void reAssignInstanceRoleToAssignee(long refId, InstanceRefType refType, String memberId);
 
 }

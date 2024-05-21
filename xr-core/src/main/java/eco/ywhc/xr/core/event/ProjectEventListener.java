@@ -3,9 +3,12 @@ package eco.ywhc.xr.core.event;
 import eco.ywhc.xr.common.constant.*;
 import eco.ywhc.xr.common.converter.ApprovalConverter;
 import eco.ywhc.xr.common.event.ProjectCreatedEvent;
+import eco.ywhc.xr.common.event.ProjectUpdatedEvent;
 import eco.ywhc.xr.common.model.entity.Approval;
+import eco.ywhc.xr.common.model.entity.Project;
 import eco.ywhc.xr.common.model.entity.Task;
 import eco.ywhc.xr.core.manager.ApprovalTemplateManager;
+import eco.ywhc.xr.core.manager.InstanceRoleManager;
 import eco.ywhc.xr.core.manager.TaskTemplateManager;
 import eco.ywhc.xr.core.mapper.ApprovalMapper;
 import eco.ywhc.xr.core.mapper.TaskMapper;
@@ -37,13 +40,25 @@ public class ProjectEventListener {
 
     private final ApprovalMapper approvalMapper;
 
+    private final InstanceRoleManager instanceRoleManager;
+
     @TransactionalEventListener
     public void onApplicationEvent(ProjectCreatedEvent event) {
         log.debug("处理项目已创建事件：{}", event);
-        createTasks(event.getProject().getId(), TaskType.INVESTMENT_AGREEMENT_PREPARATION);
+        final Project project = event.getProject();
+        createTasks(project.getId(), TaskType.INVESTMENT_AGREEMENT_PREPARATION);
 
-        createApprovals(event.getProject().getId(), ApprovalType.INVESTMENT_AGREEMENT_APPROVAL);
-        createApprovals(event.getProject().getId(), ApprovalType.INVESTMENT_AGREEMENT_SIGN_APPROVAL);
+        createApprovals(project.getId(), ApprovalType.INVESTMENT_AGREEMENT_APPROVAL);
+        createApprovals(project.getId(), ApprovalType.INVESTMENT_AGREEMENT_SIGN_APPROVAL);
+
+        instanceRoleManager.assignInstanceRoleToAssignee(project.getId(), InstanceRefType.PROJECT, project.getAssigneeId());
+    }
+
+    @TransactionalEventListener
+    public void onApplicationEvent(ProjectUpdatedEvent event) {
+        log.debug("处理项目已更新事件：{}", event);
+        final Project project = event.getProject();
+        instanceRoleManager.reAssignInstanceRoleToAssignee(project.getId(), InstanceRefType.PROJECT, project.getAssigneeId());
     }
 
     public void createTasks(long id, TaskType type) {

@@ -2,6 +2,8 @@ package eco.ywhc.xr.core.manager;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
+import eco.ywhc.xr.common.constant.InstanceRefType;
+import eco.ywhc.xr.common.model.dto.req.InstanceRoleLarkMemberReq;
 import eco.ywhc.xr.common.model.entity.InstanceRole;
 import eco.ywhc.xr.common.model.entity.InstanceRoleLarkMember;
 import eco.ywhc.xr.common.model.entity.PermissionAssignment;
@@ -25,6 +27,53 @@ public class InstanceRoleManagerImpl implements InstanceRoleManager {
     private final InstanceRoleLarkMemberMapper instanceRoleLarkMemberMapper;
 
     private final PermissionAssignmentMapper permissionAssignmentMapper;
+
+    @Override
+    public void configureInstanceRoleMembers(InstanceRefType refType, long refId, List<InstanceRoleLarkMemberReq> reqs) {
+        QueryWrapper<InstanceRoleLarkMember> qw = new QueryWrapper<>();
+        qw.lambda().eq(InstanceRoleLarkMember::getDeleted, 0)
+                .eq(InstanceRoleLarkMember::getRefType, refType)
+                .eq(InstanceRoleLarkMember::getRefId, refId);
+        List<InstanceRoleLarkMember> current = instanceRoleLarkMemberMapper.selectList(qw);
+        // 待删除
+        List<Long> pendingDelete = new ArrayList<>();
+        for (InstanceRoleLarkMember item : current) {
+            boolean found = reqs.stream().parallel()
+                    .anyMatch(i -> i.getInstanceRoleId().equals(item.getInstanceRoleId()) && i.getMemberIds().contains(item.getMemberId()));
+            if (!found) {
+                pendingDelete.add(item.getId());
+            }
+        }
+        if (CollectionUtils.isNotEmpty(pendingDelete)) {
+            UpdateWrapper<InstanceRoleLarkMember> uw = new UpdateWrapper<>();
+            uw.lambda().eq(InstanceRoleLarkMember::getDeleted, 0)
+                    .in(InstanceRoleLarkMember::getId, pendingDelete)
+                    .set(InstanceRoleLarkMember::getDeleted, 1);
+            instanceRoleLarkMemberMapper.update(uw);
+        }
+
+        // 待新增
+        List<InstanceRoleLarkMember> pendingAdd = new ArrayList<>();
+        for (InstanceRoleLarkMemberReq item : reqs) {
+            for (String memberId : item.getMemberIds()) {
+                boolean found = current.stream().parallel()
+                        .anyMatch(i -> item.getInstanceRoleId().equals(i.getInstanceRoleId()) && memberId.equals(i.getMemberId()));
+                if (!found) {
+                    InstanceRoleLarkMember instanceRoleLarkMember = InstanceRoleLarkMember.builder()
+                            .instanceRoleId(item.getInstanceRoleId())
+                            .refId(refId)
+                            .refType(refType)
+                            .memberId(memberId)
+                            .memberType("")
+                            .build();
+                    pendingAdd.add(instanceRoleLarkMember);
+                }
+            }
+        }
+        if (CollectionUtils.isNotEmpty(pendingAdd)) {
+            instanceRoleLarkMemberMapper.bulkInsert(pendingAdd);
+        }
+    }
 
     @Override
     public List<InstanceRole> findAllEntities() {
@@ -168,6 +217,72 @@ public class InstanceRoleManagerImpl implements InstanceRoleManager {
     public Set<String> listPermissionCodesByRefIdAndMemberId(long refId, String memberId) {
         Set<Long> instanceRoleIds = findAllInstanceRoleIdsByRefIdAndMemberId(refId, memberId);
         return listPermissionCodes(instanceRoleIds);
+    }
+
+    @Override
+    public InstanceRole findInstanceRoleForAssignee(InstanceRefType refType) {
+        QueryWrapper<InstanceRole> qw = new QueryWrapper<>();
+        qw.lambda().eq(InstanceRole::getDeleted, 0)
+                .eq(InstanceRole::getRefType, refType)
+                .eq(InstanceRole::getAssignee, 1);
+        return instanceRoleMapper.selectOne(qw);
+    }
+
+    @Override
+    public boolean isInstanceRoleAssigned(long instanceRoleId, long refId, String memberId) {
+        QueryWrapper<InstanceRoleLarkMember> qw = new QueryWrapper<>();
+        qw.lambda().eq(InstanceRoleLarkMember::getDeleted, 0)
+                .eq(InstanceRoleLarkMember::getInstanceRoleId, instanceRoleId)
+                .eq(InstanceRoleLarkMember::getRefId, refId)
+                .eq(InstanceRoleLarkMember::getMemberId, memberId);
+        return instanceRoleLarkMemberMapper.exists(qw);
+    }
+
+    @Override
+    public void assignInstanceRole(long instanceRoleId, long refId, InstanceRefType refType, String memberId) {
+        boolean assigned = isInstanceRoleAssigned(instanceRoleId, refId, memberId);
+        if (assigned) {
+            return;
+        }
+        InstanceRoleLarkMember instanceRoleLarkMember = InstanceRoleLarkMember.builder()
+                .instanceRoleId(instanceRoleId)
+                .refId(refId)
+                .refType(refType)
+                .memberId(memberId)
+                .memberType("")
+                .build();
+        instanceRoleLarkMemberMapper.insert(instanceRoleLarkMember);
+    }
+
+    @Override
+    public void assignInstanceRoleToAssignee(long refId, InstanceRefType refType, String memberId) {
+        InstanceRole instanceRole = findInstanceRoleForAssignee(refType);
+        if (instanceRole == null) {
+            return;
+        }
+        assignInstanceRole(instanceRole.getId(), refId, refType, memberId);
+    }
+
+    @Override
+    public void reAssignInstanceRoleToAssignee(long refId, InstanceRefType refType, String memberId) {
+        InstanceRole instanceRole = findInstanceRoleForAssignee(refType);
+        if (instanceRole == null) {
+            return;
+        }
+        QueryWrapper<InstanceRoleLarkMember> qw = new QueryWrapper<>();
+        qw.lambda().eq(InstanceRoleLarkMember::getDeleted, 0)
+                .eq(InstanceRoleLarkMember::getRefId, refId)
+                .eq(InstanceRoleLarkMember::getRefType, refType)
+                .eq(InstanceRoleLarkMember::getInstanceRoleId, instanceRole.getId());
+        InstanceRoleLarkMember instanceRoleLarkMember = instanceRoleLarkMemberMapper.selectOne(qw);
+        if (instanceRoleLarkMember != null) {
+            if (!instanceRoleLarkMember.getMemberId().equals(memberId)) {
+                instanceRoleLarkMember.setMemberId(memberId);
+                instanceRoleLarkMemberMapper.updateById(instanceRoleLarkMember);
+            }
+        } else {
+            assignInstanceRole(instanceRole.getId(), refId, refType, memberId);
+        }
     }
 
 }

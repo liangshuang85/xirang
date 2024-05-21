@@ -14,9 +14,11 @@ import eco.ywhc.xr.core.mapper.InstanceRoleMapper;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.lang.NonNull;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 import org.sugar.commons.exception.ConditionNotMetException;
 import org.sugar.commons.exception.InvalidInputException;
+import org.sugar.commons.exception.UniqueViolationException;
 import org.sugar.crud.model.PageableModelSet;
 
 import java.util.Collection;
@@ -38,6 +40,7 @@ public class InstanceRoleServiceImpl implements InstanceRoleService {
 
     @Override
     public Long createOne(@NonNull InstanceRoleReq req) {
+        validateRequest(req, null);
         var entity = instanceRoleConverter.fromRequest(req);
         instanceRoleMapper.insert(entity);
         long id = entity.getId();
@@ -51,6 +54,7 @@ public class InstanceRoleServiceImpl implements InstanceRoleService {
         qw.lambda().eq(InstanceRole::getDeleted, 0)
                 .eq(query.getInstanceRefType() != null, InstanceRole::getRefType, query.getInstanceRefType())
                 .eq(query.getEnabled() != null, InstanceRole::getEnabled, query.getEnabled())
+                .eq(query.getIncludeAssignee() != null, InstanceRole::getAssignee, query.getIncludeAssignee())
                 .orderByAsc(InstanceRole::getId);
         var rst = instanceRoleMapper.selectPage(query.paging(true), qw)
                 .convert(instanceRoleConverter::toResponse);
@@ -71,6 +75,7 @@ public class InstanceRoleServiceImpl implements InstanceRoleService {
 
     @Override
     public int updateOne(@NonNull Long id, @NonNull InstanceRoleReq req) {
+        validateRequest(req, id);
         var entity = instanceRoleManager.mustFindEntityById(id);
         if (entity.getBuiltIn()) {
             throw new InvalidInputException("不能修改内置实例角色");
@@ -130,6 +135,16 @@ public class InstanceRoleServiceImpl implements InstanceRoleService {
     public List<PermissionRes> listPermissions(long id) {
         Set<String> currentPermissionCodes = instanceRoleManager.listPermissionCodesById(id);
         return permissionManager.findAllByPermissionCodes(currentPermissionCodes);
+    }
+
+    private void validateRequest(InstanceRoleReq req, @Nullable Long id) {
+        // 实例负责人角色只能配置一个
+        if (req.getAssignee()) {
+            InstanceRole found = instanceRoleManager.findInstanceRoleForAssignee(req.getRefType());
+            if (found != null && !found.getId().equals(id)) {
+                throw new UniqueViolationException("实例负责人角色已经配置过了");
+            }
+        }
     }
 
     private void validatePermissionCodes(Collection<String> permissionCodes) {

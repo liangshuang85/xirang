@@ -3,9 +3,12 @@ package eco.ywhc.xr.core.event;
 import eco.ywhc.xr.common.constant.*;
 import eco.ywhc.xr.common.converter.ApprovalConverter;
 import eco.ywhc.xr.common.event.FrameworkAgreementCreatedEvent;
+import eco.ywhc.xr.common.event.FrameworkAgreementUpdatedEvent;
 import eco.ywhc.xr.common.model.entity.Approval;
+import eco.ywhc.xr.common.model.entity.FrameworkAgreement;
 import eco.ywhc.xr.common.model.entity.Task;
 import eco.ywhc.xr.core.manager.ApprovalTemplateManager;
+import eco.ywhc.xr.core.manager.InstanceRoleManager;
 import eco.ywhc.xr.core.manager.TaskTemplateManager;
 import eco.ywhc.xr.core.mapper.ApprovalMapper;
 import eco.ywhc.xr.core.mapper.TaskMapper;
@@ -37,14 +40,27 @@ public class FrameworkAgreementEventListener {
 
     private final ApprovalMapper approvalMapper;
 
+    private final InstanceRoleManager instanceRoleManager;
+
     @TransactionalEventListener
     public void onApplicationEvent(FrameworkAgreementCreatedEvent event) {
         log.debug("处理框架协议已创建事件：{}", event);
-        createTasks(event.getFrameworkAgreement().getId(), TaskType.PROJECT_PROPOSAL_PREPARATION);
-        createTasks(event.getFrameworkAgreement().getId(), TaskType.FRAMEWORK_AGREEMENT_PREPARATION);
+        final FrameworkAgreement frameworkAgreement = event.getFrameworkAgreement();
 
-        createApprovals(event.getFrameworkAgreement().getId(), ApprovalType.PROJECT_PROPOSAL_APPROVAL);
-        createApprovals(event.getFrameworkAgreement().getId(), ApprovalType.FRAMEWORK_AGREEMENT_APPROVAL);
+        createTasks(frameworkAgreement.getId(), TaskType.PROJECT_PROPOSAL_PREPARATION);
+        createTasks(frameworkAgreement.getId(), TaskType.FRAMEWORK_AGREEMENT_PREPARATION);
+
+        createApprovals(frameworkAgreement.getId(), ApprovalType.PROJECT_PROPOSAL_APPROVAL);
+        createApprovals(frameworkAgreement.getId(), ApprovalType.FRAMEWORK_AGREEMENT_APPROVAL);
+
+        instanceRoleManager.assignInstanceRoleToAssignee(frameworkAgreement.getId(), InstanceRefType.FRAMEWORK_AGREEMENT, frameworkAgreement.getAssigneeId());
+    }
+
+    @TransactionalEventListener
+    public void onApplicationEvent(FrameworkAgreementUpdatedEvent event) {
+        log.debug("处理框架协议已更新事件：{}", event);
+        final FrameworkAgreement frameworkAgreement = event.getFrameworkAgreement();
+        instanceRoleManager.reAssignInstanceRoleToAssignee(frameworkAgreement.getId(), InstanceRefType.FRAMEWORK_AGREEMENT, frameworkAgreement.getAssigneeId());
     }
 
     public void createTasks(long id, TaskType type) {

@@ -23,7 +23,7 @@ public class InstanceRoleLarkMemberReq {
      * 成员在飞书中的ID
      */
     @NotNull
-    @Size(min = 1, max = 100)
+    @Size(max = 100)
     private Set<String> memberIds = new HashSet<>();
 
 }

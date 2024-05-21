@@ -7,13 +7,13 @@ import lombok.Setter;
 import lombok.ToString;
 
 /**
- * 事件：线索已创建
+ * 事件：线索已更新
  */
 @Getter
 @Setter
 @ToString
 @RequiredArgsConstructor(staticName = "of")
-public class ClueCreatedEvent {
+public class ClueUpdatedEvent {
 
     /**
      * 线索

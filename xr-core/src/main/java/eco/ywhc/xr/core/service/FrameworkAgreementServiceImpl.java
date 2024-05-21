@@ -6,12 +6,16 @@ import eco.ywhc.xr.common.converter.FrameworkAgreementChannelEntryConverter;
 import eco.ywhc.xr.common.converter.FrameworkAgreementConverter;
 import eco.ywhc.xr.common.converter.TaskConverter;
 import eco.ywhc.xr.common.event.FrameworkAgreementCreatedEvent;
+import eco.ywhc.xr.common.event.FrameworkAgreementUpdatedEvent;
 import eco.ywhc.xr.common.event.InstanceRoleLarkMemberInsertedEvent;
 import eco.ywhc.xr.common.event.StatusChangedEvent;
 import eco.ywhc.xr.common.model.RequestContextUser;
 import eco.ywhc.xr.common.model.dto.req.FrameworkAgreementReq;
 import eco.ywhc.xr.common.model.dto.res.*;
-import eco.ywhc.xr.common.model.entity.*;
+import eco.ywhc.xr.common.model.entity.FrameworkAgreement;
+import eco.ywhc.xr.common.model.entity.FrameworkAgreementChannelEntry;
+import eco.ywhc.xr.common.model.entity.InstanceRole;
+import eco.ywhc.xr.common.model.entity.Task;
 import eco.ywhc.xr.common.model.lark.LarkEmployee;
 import eco.ywhc.xr.common.model.query.FrameworkAgreementQuery;
 import eco.ywhc.xr.core.manager.*;
@@ -337,6 +341,9 @@ public class FrameworkAgreementServiceImpl implements FrameworkAgreementService 
         }
         List<String> memberIds = instanceRoleLarkMemberManager.getMemberIdsByRefId(frameworkAgreement.getId());
         applicationEventPublisher.publishEvent(InstanceRoleLarkMemberInsertedEvent.of(id, req.getName(), TaskTemplateRefType.FRAMEWORK_AGREEMENT, memberIds));
+
+        // 发布框架协议已更新事件
+        applicationEventPublisher.publishEvent(FrameworkAgreementUpdatedEvent.of(frameworkAgreement));
 
         // 发布状态变更事件
         if (currentStatus != req.getStatus()) {

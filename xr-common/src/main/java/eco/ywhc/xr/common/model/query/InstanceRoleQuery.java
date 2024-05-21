@@ -22,4 +22,9 @@ public class InstanceRoleQuery extends BasePageQuery {
      */
     private Boolean enabled = true;
 
+    /**
+     * 包括负责人实例角色
+     */
+    private Boolean includeAssignee = false;
+
 }

@@ -4,8 +4,7 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import eco.ywhc.xr.common.constant.InstanceRefType;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import org.sugar.crud.entity.IdentifiableEntity;
 
 import java.io.Serial;
@@ -16,6 +15,9 @@ import java.io.Serial;
 @Getter
 @Setter
 @TableName("s_instance_role_lark_member")
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
 public class InstanceRoleLarkMember extends BaseEntity implements IdentifiableEntity<Long> {
 
     @Serial

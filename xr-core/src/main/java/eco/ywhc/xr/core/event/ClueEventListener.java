@@ -3,10 +3,14 @@ package eco.ywhc.xr.core.event;
 import eco.ywhc.xr.common.constant.ApprovalStatusType;
 import eco.ywhc.xr.common.constant.ApprovalTemplateRefType;
 import eco.ywhc.xr.common.constant.ApprovalType;
+import eco.ywhc.xr.common.constant.InstanceRefType;
 import eco.ywhc.xr.common.converter.ApprovalConverter;
 import eco.ywhc.xr.common.event.ClueCreatedEvent;
+import eco.ywhc.xr.common.event.ClueUpdatedEvent;
 import eco.ywhc.xr.common.model.entity.Approval;
+import eco.ywhc.xr.common.model.entity.Clue;
 import eco.ywhc.xr.core.manager.ApprovalTemplateManager;
+import eco.ywhc.xr.core.manager.InstanceRoleManager;
 import eco.ywhc.xr.core.mapper.ApprovalMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -32,10 +36,21 @@ public class ClueEventListener {
 
     private final ApprovalConverter approvalConverter;
 
+    private final InstanceRoleManager instanceRoleManager;
+
     @TransactionalEventListener
     public void onApplicationEvent(ClueCreatedEvent event) {
         log.debug("处理线索已创建事件：{}", event);
-        createApprovals(event.getClue().getId(), ApprovalType.CLUE_APPROVAL);
+        final Clue clue = event.getClue();
+        createApprovals(clue.getId(), ApprovalType.CLUE_APPROVAL);
+        instanceRoleManager.assignInstanceRoleToAssignee(clue.getId(), InstanceRefType.CLUE, clue.getAssigneeId());
+    }
+
+    @TransactionalEventListener
+    public void onApplicationEvent(ClueUpdatedEvent event) {
+        log.debug("处理线索已更新事件：{}", event);
+        final Clue clue = event.getClue();
+        instanceRoleManager.reAssignInstanceRoleToAssignee(clue.getId(), InstanceRefType.CLUE, clue.getAssigneeId());
     }
 
     public void createApprovals(long id, ApprovalType type) {

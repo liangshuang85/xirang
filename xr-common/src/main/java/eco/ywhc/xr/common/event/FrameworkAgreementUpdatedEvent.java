@@ -1,23 +1,23 @@
 package eco.ywhc.xr.common.event;
 
-import eco.ywhc.xr.common.model.entity.Clue;
+import eco.ywhc.xr.common.model.entity.FrameworkAgreement;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
 /**
- * 事件：线索已创建
+ * 事件：框架协议已更新
  */
 @Getter
 @Setter
 @ToString
 @RequiredArgsConstructor(staticName = "of")
-public class ClueCreatedEvent {
+public class FrameworkAgreementUpdatedEvent {
 
     /**
-     * 线索
+     * 框架协议
      */
-    private final Clue clue;
+    private final FrameworkAgreement frameworkAgreement;
 
 }
