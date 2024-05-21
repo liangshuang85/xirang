@@ -25,7 +25,7 @@ public class Role extends BaseEntity implements IdentifiableEntity<Long> {
     /**
      * ID
      */
-    @TableId(type = IdType.AUTO)
+    @TableId(type = IdType.ASSIGN_ID)
     private Long id;
 
     /**
