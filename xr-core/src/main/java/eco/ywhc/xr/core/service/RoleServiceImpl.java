@@ -48,7 +48,10 @@ public class RoleServiceImpl implements RoleService {
     @Override
     public PageableModelSet<RoleRes> findMany(@NonNull RoleQuery query) {
         QueryWrapper<Role> qw = new QueryWrapper<>();
-        qw.lambda().eq(Role::getDeleted, 0).orderByAsc(Role::getId);
+        qw.lambda().eq(Role::getDeleted, 0)
+                .eq(query.getEnabled() != null, Role::getEnabled, query.getEnabled())
+                .eq(query.getIncludeBasic() != null, Role::getBasic, query.getIncludeBasic())
+                .orderByAsc(Role::getId);
         var rst = roleMapper.selectPage(query.paging(true), qw)
                 .convert(roleConverter::toResponse);
         if (query.isNoPaging()) {

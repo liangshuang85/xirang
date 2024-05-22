@@ -51,7 +51,7 @@ public class LarkEmployee implements Serializable {
     private String mobile;
 
     /**
-     * 部门的飞书open_department_id
+     * 部门的飞书department_id
      */
     private String[] departmentIds;
 

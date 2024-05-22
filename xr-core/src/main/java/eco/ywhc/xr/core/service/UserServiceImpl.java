@@ -58,12 +58,16 @@ public class UserServiceImpl implements UserService {
         RequestContextUser user = userManager.authWithUserOpenId(userOpenId);
         // 获取基本角色权限
         Set<String> basicPermissionCodes = roleManager.listBasicPermissionCodes();
+        log.trace("用户所分配的基本权限有：{}", basicPermissionCodes);
         // 获取用户的角色和权限
         Set<Long> roleIds = roleManager.listAssignedRoleIds(userOpenId);
+        log.trace("用户所分配的角色有：{}", roleIds);
         Set<String> permissionCodes = roleManager.listGrantedPermissionCodes(roleIds);
+        log.trace("用户所分配的角色对应的权限有：{}", permissionCodes);
         // 得到当前用户的最终权限
         Set<String> combinedPermissionCodes = Stream.concat(basicPermissionCodes.stream(), permissionCodes.stream())
                 .collect(Collectors.toSet());
+        log.trace("用户所分配的最终权限是：{}", combinedPermissionCodes);
 
         HttpSession session = httpServletRequest.getSession(true);
         session.setAttribute(SessionAttribute.SESSION_ATTR_USER, user);

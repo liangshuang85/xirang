@@ -114,7 +114,7 @@ public class RoleManagerImpl implements RoleManager {
 
     @Override
     public Set<Long> listAssignedRoleIds(String larkUserOpenId) {
-        LarkEmployee larkEmployee = larkEmployeeManager.retrieveLarkEmployee(larkUserOpenId);
+        LarkEmployee larkEmployee = larkEmployeeManager.retrieveLarkEmployeeSync(larkUserOpenId);
         Set<String> departmentIds = Set.of(larkEmployee.getDepartmentIds());
         Set<String> memberIds = new HashSet<>(departmentIds);
         memberIds.add(larkUserOpenId);

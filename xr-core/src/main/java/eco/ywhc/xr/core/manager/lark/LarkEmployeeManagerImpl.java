@@ -84,7 +84,7 @@ public class LarkEmployeeManagerImpl implements LarkEmployeeManager {
         GetUserReq req = GetUserReq.newBuilder()
                 .userId(userId)
                 .userIdType(GetUserUserIdTypeEnum.OPEN_ID)
-                .departmentIdType(GetUserDepartmentIdTypeEnum.OPEN_DEPARTMENT_ID)
+                .departmentIdType(GetUserDepartmentIdTypeEnum.DEPARTMENT_ID)
                 .build();
         try {
             GetUserResp resp = larkClient.contact().user().get(req, RequestOptions.newBuilder().build());
