@@ -53,6 +53,11 @@ public class RoleRes implements IdentifiableResponse<Long>, Serializable {
     private Boolean builtIn;
 
     /**
+     * 是否为基本角色
+     */
+    private Boolean basic = false;
+
+    /**
      * 创建时间
      */
     private OffsetDateTime createdAt;

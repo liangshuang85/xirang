@@ -48,5 +48,10 @@ public class Role extends BaseEntity implements IdentifiableEntity<Long> {
      */
     private Boolean builtIn = false;
 
+    /**
+     * 是否为基本角色
+     */
+    private Boolean basic = false;
+
 }
 

@@ -137,6 +137,14 @@ public class RoleManagerImpl implements RoleManager {
     }
 
     @Override
+    public Set<String> listBasicPermissionCodes() {
+        QueryWrapper<Role> qw = new QueryWrapper<>();
+        qw.lambda().eq(Role::getDeleted, 0).eq(Role::getBasic, 1);
+        List<Long> basicRoleIds = roleMapper.selectList(qw).stream().map(Role::getId).toList();
+        return listGrantedPermissionCodes(basicRoleIds);
+    }
+
+    @Override
     public Set<String> listGrantedPermissionCodes(Collection<Long> ids) {
         if (CollectionUtils.isEmpty(ids)) {
             return Collections.emptySet();

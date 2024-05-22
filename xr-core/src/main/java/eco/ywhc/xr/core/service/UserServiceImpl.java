@@ -18,6 +18,8 @@ import org.sugar.commons.exception.InvalidInputException;
 
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Slf4j
 @Service
@@ -54,13 +56,18 @@ public class UserServiceImpl implements UserService {
         }
 
         RequestContextUser user = userManager.authWithUserOpenId(userOpenId);
+        // 获取基本角色权限
+        Set<String> basicPermissionCodes = roleManager.listBasicPermissionCodes();
         // 获取用户的角色和权限
         Set<Long> roleIds = roleManager.listAssignedRoleIds(userOpenId);
         Set<String> permissionCodes = roleManager.listGrantedPermissionCodes(roleIds);
+        // 得到当前用户的最终权限
+        Set<String> combinedPermissionCodes = Stream.concat(basicPermissionCodes.stream(), permissionCodes.stream())
+                .collect(Collectors.toSet());
 
         HttpSession session = httpServletRequest.getSession(true);
         session.setAttribute(SessionAttribute.SESSION_ATTR_USER, user);
-        session.setAttribute(SessionAttribute.SESSION_ATTR_PERMISSION, permissionCodes);
+        session.setAttribute(SessionAttribute.SESSION_ATTR_PERMISSION, combinedPermissionCodes);
         return session.getId();
     }
 

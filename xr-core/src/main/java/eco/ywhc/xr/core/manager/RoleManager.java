@@ -80,6 +80,11 @@ public interface RoleManager {
     Set<Long> listAssignedRoleIds(String larkUserOpenId);
 
     /**
+     * 列出所有基本角色所拥有的全部权限的权限编码
+     */
+    Set<String> listBasicPermissionCodes();
+
+    /**
      * 列出列表中所有角色所获得的全部权限的权限编码
      *
      * @param ids 角色ID列表

@@ -12,7 +12,7 @@ import lombok.Data;
 @TableName(value = "s_lark_department_member")
 public class LarkDepartmentMember {
 
-    @TableId(type = IdType.AUTO)
+    @TableId(type = IdType.ASSIGN_ID)
     private Long id;
 
     /**
