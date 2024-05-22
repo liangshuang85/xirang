@@ -85,7 +85,7 @@ public class ClueServiceImpl implements ClueService {
         visitManager.createMany(req.getClueVisits(), id);
 
         if (CollectionUtils.isNotEmpty(req.getInstanceRoleLarkMembers())) {
-            instanceRoleLarkMemberManager.insertInstanceRoleLarkMember(req, id);
+            instanceRoleLarkMemberManager.insertInstanceRoleLarkMember(req.getInstanceRoleLarkMembers(), id, InstanceRefType.CLUE);
         }
 
         applicationEventPublisher.publishEvent(ClueCreatedEvent.of(clue));
@@ -234,7 +234,7 @@ public class ClueServiceImpl implements ClueService {
 
         instanceRoleLarkMemberManager.deleteInstanceRoleLarkMember(id);
         if (CollectionUtils.isNotEmpty(req.getInstanceRoleLarkMembers())) {
-            instanceRoleLarkMemberManager.insertInstanceRoleLarkMember(req, id);
+            instanceRoleLarkMemberManager.insertInstanceRoleLarkMember(req.getInstanceRoleLarkMembers(), id, InstanceRefType.CLUE);
         }
 
         // 发布线索已更新事件

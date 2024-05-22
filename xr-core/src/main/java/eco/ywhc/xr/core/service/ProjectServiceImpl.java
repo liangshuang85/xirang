@@ -96,14 +96,14 @@ public class ProjectServiceImpl implements ProjectService {
         ProjectInformation projectInformation = projectInformationConverter.fromRequest(req.getProjectInformation());
         projectInformation.setProjectId(project.getId());
         projectInformationMapper.insert(projectInformation);
-        instanceRoleLarkMemberManager.insertInstanceRoleLarkMember(req, project.getId());
+
         // 创建基础信息
         basicDataManager.createOne(req.getBasicData(), project.getId());
         // 创建拜访记录
         visitManager.createMany(req.getProjectVisits(), project.getId());
 
         if (CollectionUtils.isNotEmpty(req.getInstanceRoleLarkMembers())) {
-            instanceRoleLarkMemberManager.insertInstanceRoleLarkMember(req, project.getId());
+            instanceRoleLarkMemberManager.insertInstanceRoleLarkMember(req.getInstanceRoleLarkMembers(), project.getId(), InstanceRefType.PROJECT);
             List<String> memberIds = instanceRoleLarkMemberManager.getMemberIdsByRefId(project.getId());
             applicationEventPublisher.publishEvent(InstanceRoleLarkMemberInsertedEvent.of(project.getId(), req.getName(), TaskTemplateRefType.PROJECT, memberIds));
         }
@@ -290,7 +290,7 @@ public class ProjectServiceImpl implements ProjectService {
 
         instanceRoleLarkMemberManager.deleteInstanceRoleLarkMember(id);
         if (CollectionUtils.isNotEmpty(req.getInstanceRoleLarkMembers())) {
-            instanceRoleLarkMemberManager.insertInstanceRoleLarkMember(req, id);
+            instanceRoleLarkMemberManager.insertInstanceRoleLarkMember(req.getInstanceRoleLarkMembers(), id, InstanceRefType.PROJECT);
         }
         if (CollectionUtils.isNotEmpty(req.getInstanceRoleLarkMembers())) {
             List<String> memberIds = instanceRoleLarkMemberManager.getMemberIdsByRefId(project.getId());

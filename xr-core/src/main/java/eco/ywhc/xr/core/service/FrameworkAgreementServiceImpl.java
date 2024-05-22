@@ -120,7 +120,7 @@ public class FrameworkAgreementServiceImpl implements FrameworkAgreementService 
         visitManager.createMany(req.getFrameworkVisits(), frameworkAgreement.getId());
 
         if (CollectionUtils.isNotEmpty(req.getInstanceRoleLarkMembers())) {
-            instanceRoleLarkMemberManager.insertInstanceRoleLarkMember(req, frameworkAgreement.getId());
+            instanceRoleLarkMemberManager.insertInstanceRoleLarkMember(req.getInstanceRoleLarkMembers(), frameworkAgreement.getId(), InstanceRefType.FRAMEWORK_AGREEMENT);
             List<String> memberIds = instanceRoleLarkMemberManager.getMemberIdsByRefId(frameworkAgreement.getId());
             applicationEventPublisher.publishEvent(InstanceRoleLarkMemberInsertedEvent.of(frameworkAgreement.getId(), req.getName(), TaskTemplateRefType.FRAMEWORK_AGREEMENT, memberIds));
         }
@@ -337,7 +337,7 @@ public class FrameworkAgreementServiceImpl implements FrameworkAgreementService 
 
         instanceRoleLarkMemberManager.deleteInstanceRoleLarkMember(id);
         if (CollectionUtils.isNotEmpty(req.getInstanceRoleLarkMembers())) {
-            instanceRoleLarkMemberManager.insertInstanceRoleLarkMember(req, id);
+            instanceRoleLarkMemberManager.insertInstanceRoleLarkMember(req.getInstanceRoleLarkMembers(), id, InstanceRefType.FRAMEWORK_AGREEMENT);
         }
         List<String> memberIds = instanceRoleLarkMemberManager.getMemberIdsByRefId(frameworkAgreement.getId());
         applicationEventPublisher.publishEvent(InstanceRoleLarkMemberInsertedEvent.of(id, req.getName(), TaskTemplateRefType.FRAMEWORK_AGREEMENT, memberIds));

@@ -3,9 +3,7 @@ package eco.ywhc.xr.core.manager;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import eco.ywhc.xr.common.constant.InstanceRefType;
-import eco.ywhc.xr.common.model.dto.req.ClueReq;
-import eco.ywhc.xr.common.model.dto.req.FrameworkAgreementReq;
-import eco.ywhc.xr.common.model.dto.req.ProjectReq;
+import eco.ywhc.xr.common.model.dto.req.InstanceRoleLarkMemberReq;
 import eco.ywhc.xr.common.model.dto.res.InstanceRoleLarkMemberRes;
 import eco.ywhc.xr.common.model.entity.BaseEntity;
 import eco.ywhc.xr.common.model.entity.InstanceRole;
@@ -15,6 +13,7 @@ import eco.ywhc.xr.core.mapper.InstanceRoleMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -28,50 +27,21 @@ public class InstanceRoleLarkMemberManagerImpl implements InstanceRoleLarkMember
     private final InstanceRoleLarkMemberMapper instanceRoleLarkMemberMapper;
 
     @Override
-    public void insertInstanceRoleLarkMember(Object req, long refId) {
-        if (req instanceof ClueReq clueReq) {
-            List<InstanceRoleLarkMember> instanceRoleLarkMembers = clueReq.getInstanceRoleLarkMembers().stream()
-                    .flatMap(instanceRoleLarkMemberReq -> instanceRoleLarkMemberReq.getMemberIds().stream()
-                            .map(memberId -> {
-                                InstanceRoleLarkMember instanceRoleLarkMember = new InstanceRoleLarkMember();
-                                instanceRoleLarkMember.setInstanceRoleId(instanceRoleLarkMemberReq.getInstanceRoleId());
-                                instanceRoleLarkMember.setMemberId(memberId);
-                                instanceRoleLarkMember.setMemberType("");
-                                instanceRoleLarkMember.setRefType(InstanceRefType.CLUE);
-                                instanceRoleLarkMember.setRefId(refId);
-                                return instanceRoleLarkMember;
-                            }))
-                    .toList();
-            instanceRoleLarkMemberMapper.bulkInsert(instanceRoleLarkMembers);
-        } else if (req instanceof FrameworkAgreementReq frameworkAgreementReq) {
-            List<InstanceRoleLarkMember> frameworkAgreementInstanceRoleLarkMembers = frameworkAgreementReq.getInstanceRoleLarkMembers().stream()
-                    .flatMap(instanceRoleLarkMemberReq -> instanceRoleLarkMemberReq.getMemberIds().stream()
-                            .map(memberId -> {
-                                InstanceRoleLarkMember instanceRoleLarkMember = new InstanceRoleLarkMember();
-                                instanceRoleLarkMember.setInstanceRoleId(instanceRoleLarkMemberReq.getInstanceRoleId());
-                                instanceRoleLarkMember.setMemberId(memberId);
-                                instanceRoleLarkMember.setMemberType("");
-                                instanceRoleLarkMember.setRefType(InstanceRefType.FRAMEWORK_AGREEMENT);
-                                instanceRoleLarkMember.setRefId(refId);
-                                return instanceRoleLarkMember;
-                            }))
-                    .toList();
-            instanceRoleLarkMemberMapper.bulkInsert(frameworkAgreementInstanceRoleLarkMembers);
-        } else if (req instanceof ProjectReq projectReq) {
-            List<InstanceRoleLarkMember> projectInstanceRoleLarkMembers = projectReq.getInstanceRoleLarkMembers().stream()
-                    .flatMap(instanceRoleLarkMemberReq -> instanceRoleLarkMemberReq.getMemberIds().stream()
-                            .map(memberId -> {
-                                InstanceRoleLarkMember instanceRoleLarkMember = new InstanceRoleLarkMember();
-                                instanceRoleLarkMember.setInstanceRoleId(instanceRoleLarkMemberReq.getInstanceRoleId());
-                                instanceRoleLarkMember.setMemberId(memberId);
-                                instanceRoleLarkMember.setMemberType("");
-                                instanceRoleLarkMember.setRefType(InstanceRefType.PROJECT);
-                                instanceRoleLarkMember.setRefId(refId);
-                                return instanceRoleLarkMember;
-                            }))
-                    .toList();
-            instanceRoleLarkMemberMapper.bulkInsert(projectInstanceRoleLarkMembers);
-        }
+    public void insertInstanceRoleLarkMember(Collection<InstanceRoleLarkMemberReq> reqs, long refId, InstanceRefType type) {
+        List<InstanceRoleLarkMember> instanceRoleLarkMembers = reqs.stream()
+                .flatMap(req -> req.getMemberIds().stream()
+                        .map(memberId -> {
+                            InstanceRoleLarkMember instanceRoleLarkMember = new InstanceRoleLarkMember();
+                            instanceRoleLarkMember.setInstanceRoleId(req.getInstanceRoleId());
+                            instanceRoleLarkMember.setMemberId(memberId);
+                            instanceRoleLarkMember.setMemberType("");
+                            instanceRoleLarkMember.setRefType(type);
+                            instanceRoleLarkMember.setRefId(refId);
+                            return instanceRoleLarkMember;
+                        })
+                )
+                .toList();
+        instanceRoleLarkMemberMapper.bulkInsert(instanceRoleLarkMembers);
     }
 
     @Override

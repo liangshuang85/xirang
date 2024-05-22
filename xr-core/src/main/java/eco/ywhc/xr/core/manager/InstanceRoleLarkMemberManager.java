@@ -1,9 +1,12 @@
 package eco.ywhc.xr.core.manager;
 
+import eco.ywhc.xr.common.constant.InstanceRefType;
+import eco.ywhc.xr.common.model.dto.req.InstanceRoleLarkMemberReq;
 import eco.ywhc.xr.common.model.dto.res.InstanceRoleLarkMemberRes;
 import eco.ywhc.xr.common.model.entity.InstanceRole;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collection;
 import java.util.List;
 
 @Transactional(rollbackFor = {Exception.class})
@@ -12,7 +15,7 @@ public interface InstanceRoleLarkMemberManager {
     /**
      * 插入角色成员
      */
-    void insertInstanceRoleLarkMember(Object req, long refId);
+    void insertInstanceRoleLarkMember(Collection<InstanceRoleLarkMemberReq> reqs, long refId, InstanceRefType type);
 
     /**
      * 删除角色成员
