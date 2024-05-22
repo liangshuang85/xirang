@@ -35,8 +35,11 @@ public class BasicDataManagerImpl implements BasicDataManager {
     @Override
     public void updateOne(BasicDataReq req, long refId) {
         BasicData basicData = findEntityByRefId(refId);
+        if (basicData == null) {
+            createOne(req, refId);
+            return;
+        }
         basicDataConverter.update(req, basicData);
-        basicData.setRefId(refId);
         basicDataMapper.updateById(basicData);
         electricityLoadManager.compareAndUpdate(req.getElectricityLoads(), basicData.getId());
         oxygenHydrogenUsageManager.compareAndUpdate(req.getOxygenHydrogenUsages(), basicData.getId());
