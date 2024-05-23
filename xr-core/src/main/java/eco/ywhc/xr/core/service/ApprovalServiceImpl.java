@@ -17,7 +17,9 @@ import eco.ywhc.xr.core.manager.*;
 import eco.ywhc.xr.core.mapper.ApprovalMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.util.UriComponentsBuilder;
 import org.sugar.commons.exception.InternalErrorException;
 import org.sugar.commons.exception.InvalidInputException;
 
@@ -54,6 +56,8 @@ public class ApprovalServiceImpl implements ApprovalService {
 
     private final ObjectMapper objectMapper;
 
+    @Value("${vendor.base-url}")
+    private String baseUrl;
 
     @Override
     public int startLarkApproval(long id) {
@@ -70,16 +74,18 @@ public class ApprovalServiceImpl implements ApprovalService {
                 pendingCommit.put("id", form.getId());
                 pendingCommit.put("type", form.getType());
                 if (FormName1.equals(form.getName())) {
-                    if (currentApproval.getRefType() == ApprovalTemplateRefType.CLUE) {
-                        pendingCommit.put("value", "此审批为息壤机器人向" + currentApproval.getDepartmentName()
-                                + "发起的自动审批请求，详情请见https://oa.ywhc.lingycloud.com/ui/leadManagement/detail?id=" + currentApproval.getRefId());
-                    } else if (currentApproval.getRefType() == ApprovalTemplateRefType.FRAMEWORK_AGREEMENT) {
-                        pendingCommit.put("value", "此审批为息壤机器人向" + currentApproval.getDepartmentName()
-                                + "发起的自动审批请求，详情请见https://oa.ywhc.lingycloud.com/ui/frameworkAgreement/detail?id=" + currentApproval.getRefId());
-                    } else if (currentApproval.getRefType() == ApprovalTemplateRefType.PROJECT) {
-                        pendingCommit.put("value", "此审批为息壤机器人向" + currentApproval.getDepartmentName()
-                                + "发起的自动审批请求，详情请见https://oa.ywhc.lingycloud.com/ui/projectManagement/detail?id=" + currentApproval.getRefId());
-                    }
+                    String path = switch (currentApproval.getRefType()) {
+                        case CLUE -> "/ui/leadManagement/detail";
+                        case FRAMEWORK_AGREEMENT -> "/ui/frameworkAgreement/detail";
+                        case PROJECT -> "/ui/projectManagement/detail";
+                    };
+                    String url = UriComponentsBuilder.fromHttpUrl(baseUrl)
+                            .replacePath(path)
+                            .queryParam("id", currentApproval.getRefId())
+                            .build()
+                            .toUriString();
+                    pendingCommit.put("value", "此审批为息壤机器人向" + currentApproval.getDepartmentName()
+                            + "发起的自动审批请求，详情请见：" + url);
                     pendingCommits.add(pendingCommit);
                 } else if (FormName2.equals(form.getName())) {
                     if (currentApproval.getRefType() == ApprovalTemplateRefType.CLUE) {

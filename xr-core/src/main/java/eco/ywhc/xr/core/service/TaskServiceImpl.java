@@ -19,8 +19,10 @@ import eco.ywhc.xr.core.manager.*;
 import eco.ywhc.xr.core.mapper.TaskMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.event.TransactionalEventListener;
+import org.springframework.web.util.UriComponentsBuilder;
 import org.sugar.commons.exception.ConditionNotMetException;
 import org.sugar.commons.exception.InternalErrorException;
 import org.sugar.commons.exception.InvalidInputException;
@@ -31,8 +33,6 @@ import java.util.List;
 @Slf4j
 @RequiredArgsConstructor
 public class TaskServiceImpl implements TaskService {
-
-    private static final String baseUrl = "https://oa.ywhc.lingycloud.com/ui/projectManagement/detail?id=";
 
     private final Client client;
 
@@ -49,6 +49,9 @@ public class TaskServiceImpl implements TaskService {
     private final InstanceRoleManager instanceRoleManager;
 
     private final TaskConverter taskConverter;
+
+    @Value("${vendor.base-url}")
+    private String baseUrl;
 
     @Override
     public int startLarkTask(long id) {
@@ -88,7 +91,18 @@ public class TaskServiceImpl implements TaskService {
                         .build())
                 .toArray(Member[]::new);
         InstanceRole instanceRole = instanceRoleManager.findEntityById(currentTask.getInstanceRoleId());
-        String description = "此任务为息壤机器人向" + instanceRole.getName() + "发起的自动任务请求，详情请见" + baseUrl + currentTask.getId() + "&edit=1";
+
+        String path = switch (taskTemplate.getRefType()) {
+            case FRAMEWORK_AGREEMENT -> "/ui/frameworkAgreement/detail";
+            case PROJECT -> "/ui/projectManagement/detail";
+        };
+        String url = UriComponentsBuilder.fromHttpUrl(baseUrl)
+                .replacePath(path)
+                .queryParam("id", currentTask.getId())
+                .queryParam("edit", 0)
+                .build()
+                .toUriString();
+        String description = "此任务为息壤机器人向" + instanceRole.getName() + "发起的自动任务请求，详情请见：" + url;
 
         CreateTaskReq req = CreateTaskReq.newBuilder()
                 .userIdType("open_id")
