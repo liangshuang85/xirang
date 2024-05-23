@@ -60,12 +60,12 @@ public class FrameworkAgreementRes implements BaseRestResponse {
     /**
      * 是否已签署框架协议书
      */
-    private boolean documentSigningStatus;
+    private boolean frameworkAgreementSigned;
 
     /**
      * 是否已批复项目建议书
      */
-    private boolean projectProposalApprovalStatus;
+    private boolean projectProposalApproved;
 
     /**
      * 框架协议项目渠道录入信息Res
