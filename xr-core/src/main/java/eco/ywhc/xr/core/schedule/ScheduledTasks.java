@@ -2,7 +2,9 @@ package eco.ywhc.xr.core.schedule;
 
 import com.lark.oapi.service.ehr.v1.model.Employee;
 import com.lark.oapi.service.ehr.v1.model.ListEmployeeRespBody;
+import eco.ywhc.xr.common.constant.TaskStatusType;
 import eco.ywhc.xr.common.converter.ApprovalConverter;
+import eco.ywhc.xr.common.exception.LarkTaskNotFoundException;
 import eco.ywhc.xr.common.model.entity.Approval;
 import eco.ywhc.xr.common.model.entity.Task;
 import eco.ywhc.xr.common.model.lark.LarkEmployee;
@@ -78,7 +80,13 @@ public class ScheduledTasks {
             }
             for (Task task : tasks) {
                 log.debug("开始同步飞书任务信息，任务ID: {}", task.getId());
-                taskManager.getLarkTask(task);
+                try {
+                    taskManager.getLarkTask(task);
+                } catch (LarkTaskNotFoundException ignored) {
+                    task.setTaskGuid(null);
+                    task.setStatus(TaskStatusType.deleted);
+                    taskManager.updateById(task);
+                }
             }
             prevTaskId = tasks.get(tasks.size() - 1).getId();
         }

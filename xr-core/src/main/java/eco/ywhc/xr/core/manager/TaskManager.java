@@ -86,6 +86,13 @@ public interface TaskManager {
      */
     void removeMemberFromTaskList(String taskListGuid, List<String> memberIds);
 
+    /**
+     * 根据ID更新任务
+     *
+     * @param task 任务
+     */
+    void updateById(Task task);
+
     Task findEntityById(@NonNull Long id);
 
 }

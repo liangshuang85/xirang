@@ -6,6 +6,7 @@ import com.lark.oapi.service.task.v2.model.*;
 import eco.ywhc.xr.common.constant.TaskStatusType;
 import eco.ywhc.xr.common.constant.TaskTemplateRefType;
 import eco.ywhc.xr.common.constant.TaskType;
+import eco.ywhc.xr.common.exception.LarkTaskNotFoundException;
 import eco.ywhc.xr.common.model.TaskListInfo;
 import eco.ywhc.xr.common.model.dto.req.TaskListReq;
 import eco.ywhc.xr.common.model.dto.res.TaskRes;
@@ -67,11 +68,17 @@ public class TaskMangerImpl implements TaskManager {
         GetTaskResp resp;
         try {
             resp = client.task().v2().task().get(req);
-            if (!resp.success()) {
-                throw new InternalErrorException();
-            }
         } catch (Exception e) {
+            log.error("获取飞书任务失败：{}", e.getMessage());
             throw new InternalErrorException(e);
+        }
+        if (!resp.success()) {
+            // 错误码1470404代表任务不存在或已删除
+            // Ref: https://open.feishu.cn/document/uAjLw4CM/ukTMukTMukTM/task-v2/task/get
+            if (resp.getCode() == 1470404) {
+                throw new LarkTaskNotFoundException("任务不存在");
+            }
+            throw new InternalErrorException();
         }
 
         // 业务数据处理
@@ -311,6 +318,11 @@ public class TaskMangerImpl implements TaskManager {
             log.error("成员移出出错：{}", e.getMessage());
             throw new RuntimeException(e);
         }
+    }
+
+    @Override
+    public void updateById(Task task) {
+        taskMapper.updateById(task);
     }
 
     @Override

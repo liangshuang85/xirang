@@ -9,6 +9,7 @@ import eco.ywhc.xr.common.event.FrameworkAgreementCreatedEvent;
 import eco.ywhc.xr.common.event.FrameworkAgreementUpdatedEvent;
 import eco.ywhc.xr.common.event.InstanceRoleLarkMemberInsertedEvent;
 import eco.ywhc.xr.common.event.StatusChangedEvent;
+import eco.ywhc.xr.common.exception.LarkTaskNotFoundException;
 import eco.ywhc.xr.common.model.RequestContextUser;
 import eco.ywhc.xr.common.model.dto.req.FrameworkAgreementReq;
 import eco.ywhc.xr.common.model.dto.res.*;
@@ -264,6 +265,10 @@ public class FrameworkAgreementServiceImpl implements FrameworkAgreementService 
                         .toList();
                 larkTask.setAssignees(assignees);
                 taskResList.add(larkTask);
+            } catch (LarkTaskNotFoundException ignored) {
+                task.setTaskGuid(null);
+                task.setStatus(TaskStatusType.deleted);
+                taskManager.updateById(task);
             } catch (Exception e) {
                 throw new InternalErrorException("查询飞书任务失败");
             }
