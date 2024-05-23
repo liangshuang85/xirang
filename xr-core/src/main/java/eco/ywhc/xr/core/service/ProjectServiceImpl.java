@@ -12,6 +12,7 @@ import eco.ywhc.xr.common.event.StatusChangedEvent;
 import eco.ywhc.xr.common.model.RequestContextUser;
 import eco.ywhc.xr.common.model.dto.req.ProjectReq;
 import eco.ywhc.xr.common.model.dto.res.*;
+import eco.ywhc.xr.common.model.entity.InstanceRole;
 import eco.ywhc.xr.common.model.entity.Project;
 import eco.ywhc.xr.common.model.entity.ProjectInformation;
 import eco.ywhc.xr.common.model.entity.Task;
@@ -218,6 +219,8 @@ public class ProjectServiceImpl implements ProjectService {
         for (Task task : tasks) {
             if (task.getTaskGuid() == null) {
                 TaskRes taskRes = taskConverter.toResponse(task);
+                InstanceRole instanceRole = instanceRoleManager.findEntityById(task.getInstanceRoleId());
+                taskRes.setInstanceRoleName(instanceRole.getName());
                 taskResList.add(taskRes);
                 continue;
             }
