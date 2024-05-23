@@ -1,7 +1,6 @@
 package eco.ywhc.xr.core.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
 import eco.ywhc.xr.common.converter.TaskTemplateConverter;
 import eco.ywhc.xr.common.model.dto.req.TaskTemplateReq;
 import eco.ywhc.xr.common.model.dto.res.TaskTemplateRes;
@@ -10,10 +9,10 @@ import eco.ywhc.xr.core.manager.TaskTemplateManager;
 import eco.ywhc.xr.core.mapper.TaskTemplateMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 import org.sugar.crud.model.PageableModelSet;
-import org.sugar.crud.query.BasePageQuery;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -37,13 +36,9 @@ public class TaskTemplateServiceImpl implements TaskTemplateService {
     public PageableModelSet<TaskTemplateRes> findMany() {
         QueryWrapper<TaskTemplate> qw = new QueryWrapper<>();
         qw.lambda().eq(TaskTemplate::getDeleted, 0);
-        BasePageQuery query = new BasePageQuery();
-        IPage<TaskTemplate> rows = taskTemplateMapper.selectPage(query.paging(true), qw);
-        if (CollectionUtils.isEmpty(rows.getRecords())) {
-            return PageableModelSet.from(query.paging());
-        }
-        var results = rows.convert(taskTemplateConverter::toResponse);
-        return PageableModelSet.from(results);
+        List<TaskTemplate> rows = taskTemplateMapper.selectList(qw);
+        List<TaskTemplateRes> results = rows.stream().map(taskTemplateConverter::toResponse).toList();
+        return PageableModelSet.of(results);
     }
 
     @Override

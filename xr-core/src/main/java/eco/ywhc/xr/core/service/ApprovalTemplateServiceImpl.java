@@ -1,7 +1,6 @@
 package eco.ywhc.xr.core.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
 import eco.ywhc.xr.common.converter.ApprovalTemplateConverter;
 import eco.ywhc.xr.common.model.dto.req.ApprovalTemplateReq;
 import eco.ywhc.xr.common.model.dto.res.ApprovalTemplateRes;
@@ -11,9 +10,9 @@ import eco.ywhc.xr.core.mapper.ApprovalTemplateMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
 import org.sugar.crud.model.PageableModelSet;
-import org.sugar.crud.query.BasePageQuery;
+
+import java.util.List;
 
 @Service
 @Slf4j
@@ -37,13 +36,9 @@ public class ApprovalTemplateServiceImpl implements ApprovalTemplateService {
     public PageableModelSet<ApprovalTemplateRes> findMany() {
         QueryWrapper<ApprovalTemplate> qw = new QueryWrapper<>();
         qw.lambda().eq(ApprovalTemplate::getDeleted, 0);
-        BasePageQuery query = new BasePageQuery();
-        IPage<ApprovalTemplate> rows = approvalTemplateMapper.selectPage(query.paging(true), qw);
-        if (CollectionUtils.isEmpty(rows.getRecords())) {
-            return PageableModelSet.from(query.paging());
-        }
-        var results = rows.convert(approvalTemplateConverter::toResponse);
-        return PageableModelSet.from(results);
+        List<ApprovalTemplate> rows = approvalTemplateMapper.selectList(qw);
+        List<ApprovalTemplateRes> results = rows.stream().map(approvalTemplateConverter::toResponse).toList();
+        return PageableModelSet.of(results);
     }
 
     @Override
