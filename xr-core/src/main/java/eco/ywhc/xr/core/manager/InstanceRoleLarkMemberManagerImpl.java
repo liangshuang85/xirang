@@ -11,6 +11,7 @@ import eco.ywhc.xr.common.model.entity.InstanceRoleLarkMember;
 import eco.ywhc.xr.core.mapper.InstanceRoleLarkMemberMapper;
 import eco.ywhc.xr.core.mapper.InstanceRoleMapper;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
@@ -29,6 +30,7 @@ public class InstanceRoleLarkMemberManagerImpl implements InstanceRoleLarkMember
     @Override
     public void insertInstanceRoleLarkMember(Collection<InstanceRoleLarkMemberReq> reqs, long refId, InstanceRefType type) {
         List<InstanceRoleLarkMember> instanceRoleLarkMembers = reqs.stream()
+                .filter(req -> CollectionUtils.isNotEmpty(req.getMemberIds()))
                 .flatMap(req -> req.getMemberIds().stream()
                         .map(memberId -> {
                             InstanceRoleLarkMember instanceRoleLarkMember = new InstanceRoleLarkMember();
@@ -41,6 +43,9 @@ public class InstanceRoleLarkMemberManagerImpl implements InstanceRoleLarkMember
                         })
                 )
                 .toList();
+        if (instanceRoleLarkMembers.isEmpty()) {
+            return;
+        }
         instanceRoleLarkMemberMapper.bulkInsert(instanceRoleLarkMembers);
     }
 
