@@ -30,6 +30,11 @@ public enum ClueStatusType {
     CLUE_FOLLOW,
 
     /**
+     * 可派生
+     */
+    CLUE_DERIVABLE,
+
+    /**
      * 关闭
      */
     CLUE_CLOSE,
@@ -42,6 +47,6 @@ public enum ClueStatusType {
     /**
      * 审批通过
      */
-    CLUE_APPROVE;
+    CLUE_APPROVE,
 
 }
