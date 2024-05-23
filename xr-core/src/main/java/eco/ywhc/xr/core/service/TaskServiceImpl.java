@@ -98,7 +98,7 @@ public class TaskServiceImpl implements TaskService {
         };
         String url = UriComponentsBuilder.fromHttpUrl(baseUrl)
                 .replacePath(path)
-                .queryParam("id", currentTask.getId())
+                .queryParam("id", currentTask.getRefId())
                 .queryParam("edit", 0)
                 .build()
                 .toUriString();
