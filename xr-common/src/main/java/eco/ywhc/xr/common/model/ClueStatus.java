@@ -20,6 +20,7 @@ public class ClueStatus {
         map.put(ClueStatusType.CLUE_STORAGE_EVALUATION, List.of(ClueStatusType.CLUE_EVALUATION));
         map.put(ClueStatusType.CLUE_EVALUATION, List.of(ClueStatusType.CLUE_FOLLOW, ClueStatusType.CLUE_CLOSE));
         map.put(ClueStatusType.CLUE_FOLLOW, List.of(ClueStatusType.CLUE_DERIVABLE, ClueStatusType.CLUE_PROPOSABLE, ClueStatusType.CLUE_CLOSE));
+        map.put(ClueStatusType.CLUE_DERIVABLE, List.of());
         map.put(ClueStatusType.CLUE_PROPOSABLE, List.of(ClueStatusType.CLUE_APPROVE));
         map.put(ClueStatusType.CLUE_APPROVE, List.of());
         map.put(ClueStatusType.CLUE_CLOSE, List.of());
