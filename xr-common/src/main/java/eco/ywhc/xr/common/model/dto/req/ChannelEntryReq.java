@@ -17,7 +17,7 @@ public class ChannelEntryReq implements BaseRestRequest {
     /**
      * 合伙人姓名
      */
-    @Size(max = 10)
+    @Size(max = 100)
     private String partnerName;
 
     /**
@@ -35,25 +35,25 @@ public class ChannelEntryReq implements BaseRestRequest {
     /**
      * 联系人姓名
      */
-    @Size(max = 10)
+    @Size(max = 100)
     private String contactName;
 
     /**
      * 对接人姓名
      */
-    @Size(max = 10)
+    @Size(max = 100)
     private String counterpartName;
 
     /**
      * 联系人职务
      */
-    @Size(max = 20)
+    @Size(max = 200)
     private String contactPosition;
 
     /**
      * 对接人姓名
      */
-    @Size(max = 20)
+    @Size(max = 200)
     private String counterpartPosition;
 
     /**
