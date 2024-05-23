@@ -18,6 +18,7 @@ import eco.ywhc.xr.core.mapper.TaskMapper;
 import eco.ywhc.xr.core.mapper.TaskTemplateMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import org.sugar.commons.exception.InternalErrorException;
@@ -140,11 +141,13 @@ public class TaskMangerImpl implements TaskManager {
         TaskListInfo taskListInfo = new TaskListInfo();
         String translateType = translateType(refType.toString());
         //查找任务清单
-        String pageToken;
+        String pageToken = null;
         Optional<Tasklist> tasklist;
+        Boolean hasMore;
         do {
             ListTasklistReq listTasklistReq = ListTasklistReq.newBuilder()
                     .pageSize(50)
+                    .pageToken(pageToken)
                     .userIdType("open_id")
                     .build();
             ListTasklistResp listTasklistResp;
@@ -158,12 +161,14 @@ public class TaskMangerImpl implements TaskManager {
                 throw new InternalErrorException(e);
             }
             pageToken = listTasklistResp.getData().getPageToken();
+            hasMore = listTasklistResp.getData().getHasMore();
+            Tasklist[] items = listTasklistResp.getData().getItems();
             //查找符合条件的任务清单
-            tasklist = Arrays.stream(listTasklistResp.getData().getItems())
+            tasklist = Arrays.stream(items)
                     .filter(item -> item.getCreator().getType().equals("app"))
                     .filter(item -> item.getName().equals(prefix + translateType + "-" + name + "(" + id + ")"))
                     .findFirst();
-        } while ((pageToken != null && !pageToken.isEmpty()) && tasklist.isEmpty());
+        } while (Boolean.TRUE.equals(hasMore) && StringUtils.isNotBlank(pageToken) && tasklist.isEmpty());
         if (tasklist.isEmpty()) {
             //创建任务清单
             CreateTasklistReq createTasklistReq = CreateTasklistReq.newBuilder()
