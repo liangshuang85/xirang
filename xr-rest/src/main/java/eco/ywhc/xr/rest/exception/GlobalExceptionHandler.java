@@ -1,5 +1,6 @@
 package eco.ywhc.xr.rest.exception;
 
+import eco.ywhc.xr.common.exception.AccessDeniedException;
 import eco.ywhc.xr.common.exception.ErrorMessage;
 import eco.ywhc.xr.common.exception.InvalidCredentialException;
 import io.swagger.v3.oas.annotations.Hidden;
@@ -134,6 +135,22 @@ public class GlobalExceptionHandler {
         }
         return ErrorMessage.builder()
                 .code(ErrorMessage.ErrorCode.InvalidAuthenticationInfo.name())
+                .message(ErrorMessage.Message.of(messageStr, request.getRequestURI()))
+                .build();
+    }
+
+    /**
+     * 403错误
+     */
+    @ExceptionHandler({AccessDeniedException.class})
+    @ResponseStatus(code = HttpStatus.FORBIDDEN)
+    public ErrorMessage handle403Forbidden(Exception ex, HttpServletRequest request) {
+        String messageStr = ex.getMessage();
+        if (StringUtils.isBlank(messageStr)) {
+            messageStr = "当前用户没有足够的权限执行此操作";
+        }
+        return ErrorMessage.builder()
+                .code(ErrorMessage.ErrorCode.InsufficientAccountPermissions.name())
                 .message(ErrorMessage.Message.of(messageStr, request.getRequestURI()))
                 .build();
     }
