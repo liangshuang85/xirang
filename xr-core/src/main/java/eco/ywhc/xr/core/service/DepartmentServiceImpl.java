@@ -85,9 +85,7 @@ public class DepartmentServiceImpl implements DepartmentService {
         if (CollectionUtils.isNotEmpty(pendingDelete)) {
             UpdateWrapper<RoleLarkMember> uw = new UpdateWrapper<>();
             uw.lambda().eq(RoleLarkMember::getDeleted, 0)
-                    .eq(RoleLarkMember::getId, id)
-                    .in(RoleLarkMember::getMemberType, List.of(RoleMemberType.DEPARTMENT_STAFF, RoleMemberType.DEPARTMENT_LEADER))
-                    .in(RoleLarkMember::getRoleId, pendingDelete)
+                    .in(RoleLarkMember::getId, pendingDelete)
                     .set(RoleLarkMember::getDeleted, 1);
             roleLarkMemberMapper.update(uw);
         }
