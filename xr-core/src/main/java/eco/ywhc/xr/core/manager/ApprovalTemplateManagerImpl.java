@@ -8,8 +8,10 @@ import eco.ywhc.xr.core.mapper.ApprovalTemplateMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
+import org.sugar.commons.exception.ResourceNotFoundException;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -24,6 +26,17 @@ public class ApprovalTemplateManagerImpl implements ApprovalTemplateManager {
                 .eq(ApprovalTemplate::getRefType, refType)
                 .eq(ApprovalTemplate::getType, type);
         return approvalTemplateMapper.selectList(qw);
+    }
+
+    @Override
+    public ApprovalTemplate findEntityById(long id) {
+        return approvalTemplateMapper.findEntityById(id);
+    }
+
+    @Override
+    public ApprovalTemplate mustFindEntityById(long id) {
+        ApprovalTemplate approvalTemplate = findEntityById(id);
+        return Optional.ofNullable(approvalTemplate).orElseThrow(ResourceNotFoundException::new);
     }
 
 }

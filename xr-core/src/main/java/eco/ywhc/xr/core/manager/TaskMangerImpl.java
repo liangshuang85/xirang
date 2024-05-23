@@ -38,8 +38,6 @@ public class TaskMangerImpl implements TaskManager {
 
     private final Client client;
 
-    private final InstanceRoleLarkMemberManager instanceRoleLarkMemberManager;
-
     private final InstanceRoleManager instanceRoleManager;
 
     @Override

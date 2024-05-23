@@ -14,4 +14,18 @@ public interface ApprovalTemplateManager {
      */
     List<ApprovalTemplate> listByType(@NonNull ApprovalTemplateRefType refType, @NonNull ApprovalType type);
 
+    /**
+     * 查找指定审批模板
+     *
+     * @param id 审批模板ID
+     */
+    ApprovalTemplate findEntityById(long id);
+
+    /**
+     * 查找指定审批模板，没有找到则抛出异常
+     *
+     * @param id 审批模板ID
+     */
+    ApprovalTemplate mustFindEntityById(long id);
+
 }
