@@ -53,16 +53,4 @@ public enum FrameworkAgreementType {
      */
     FRAMEWORK_AGREEMENT_SIGNING,
 
-    /**
-     * 暂缓
-     */
-    @Deprecated
-    POSTPONED,
-
-    /**
-     * 关闭
-     */
-    @Deprecated
-    CLOSED,
-
 }
