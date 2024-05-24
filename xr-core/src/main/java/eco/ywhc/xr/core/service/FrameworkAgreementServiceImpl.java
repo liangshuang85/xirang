@@ -96,19 +96,10 @@ public class FrameworkAgreementServiceImpl implements FrameworkAgreementService 
         frameworkAgreement.setCode(generateUniqueId());
         frameworkAgreement.setStatus(FrameworkAgreementType.PRE_PROJECT);
         frameworkAgreementMapper.insert(frameworkAgreement);
+        // 比较并更新附件
         frameworkAgreementManager.compareAndUpdateAttachments(req, frameworkAgreement.getId());
-        // 判断项目建议书批复状态
-        boolean projectProposalApproved = !attachmentManager.findManyEntitiesByOwnerId(frameworkAgreement.getId(), FileOwnerType.PROJECT_PROPOSAL_APPROVAL).isEmpty();
-        if (projectProposalApproved) {
-            frameworkAgreement.setProjectProposalApproved(true);
-            frameworkAgreementMapper.updateById(frameworkAgreement);
-        }
-        // 判断框架协议书签署状态
-        boolean frameworkAgreementSigned = !attachmentManager.findManyEntitiesByOwnerId(frameworkAgreement.getId(), FileOwnerType.FRAMEWORK_AGREEMENT_SIGNING).isEmpty();
-        if (frameworkAgreementSigned) {
-            frameworkAgreement.setFrameworkAgreementSigned(true);
-            frameworkAgreementMapper.updateById(frameworkAgreement);
-        }
+        // 判断项目建议书批复状态和框架协议书签署状态
+        frameworkAgreementManager.compareAndUpdateStatus(frameworkAgreement);
 
         FrameworkAgreementChannelEntry frameworkAgreementChannelEntry = frameworkAgreementChannelEntryConverter.fromRequest(req.getFrameworkAgreementChannelEntry());
         frameworkAgreementChannelEntry.setFrameworkAgreementId(frameworkAgreement.getId());
@@ -331,7 +322,10 @@ public class FrameworkAgreementServiceImpl implements FrameworkAgreementService 
         FrameworkAgreementChannelEntry frameworkAgreementChannelEntry = frameworkAgreementManager.getFrameworkAgreementChannelEntryById(id);
         frameworkAgreementChannelEntryConverter.update(req.getFrameworkAgreementChannelEntry(), frameworkAgreementChannelEntry);
         frameworkAgreementChannelEntry.setFrameworkAgreementId(id);
+        // 比较并更新附件
         frameworkAgreementManager.compareAndUpdateAttachments(req.getFrameworkAgreementChannelEntry(), frameworkAgreementChannelEntry.getId());
+        // 判断项目建议书批复状态和框架协议书签署状态
+        frameworkAgreementManager.compareAndUpdateStatus(frameworkAgreement);
         frameworkAgreementChannelEntryMapper.updateById(frameworkAgreementChannelEntry);
 
         //更新基础数据

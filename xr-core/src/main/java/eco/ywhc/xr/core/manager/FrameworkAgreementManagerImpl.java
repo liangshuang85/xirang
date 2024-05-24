@@ -81,7 +81,26 @@ public class FrameworkAgreementManagerImpl implements FrameworkAgreementManager 
             log.error("Unknown req type: {}", req.getClass());
             throw new InternalErrorException("不支持该类型");
         }
+    }
 
+    @Override
+    public void compareAndUpdateStatus(FrameworkAgreement frameworkAgreement) {
+        int count = 0;
+        // 判断项目建议书批复状态
+        boolean projectProposalApproved = !attachmentManager.findManyEntitiesByOwnerId(frameworkAgreement.getId(), FileOwnerType.PROJECT_PROPOSAL_APPROVAL).isEmpty();
+        if (projectProposalApproved != frameworkAgreement.isProjectProposalApproved()) {
+            frameworkAgreement.setProjectProposalApproved(projectProposalApproved);
+            count++;
+        }
+        // 判断框架协议书签署状态
+        boolean frameworkAgreementSigned = !attachmentManager.findManyEntitiesByOwnerId(frameworkAgreement.getId(), FileOwnerType.FRAMEWORK_AGREEMENT_SIGNING).isEmpty();
+        if (frameworkAgreementSigned != frameworkAgreement.isFrameworkAgreementSigned()) {
+            frameworkAgreement.setFrameworkAgreementSigned(frameworkAgreementSigned);
+            count++;
+        }
+        if (count > 0) {
+            frameworkAgreementMapper.updateById(frameworkAgreement);
+        }
     }
 
 }

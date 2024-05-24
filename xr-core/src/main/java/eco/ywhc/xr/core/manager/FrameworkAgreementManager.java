@@ -38,4 +38,9 @@ public interface FrameworkAgreementManager extends BaseManager<Long, FrameworkAg
      */
     void compareAndUpdateAttachments(Object req, long id);
 
+    /**
+     * 比较然后更新项目建议书批复状态和框架协议书签署状态
+     */
+    void compareAndUpdateStatus(FrameworkAgreement frameworkAgreement);
+
 }
