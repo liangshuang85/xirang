@@ -34,6 +34,7 @@ import org.springframework.stereotype.Service;
 import org.sugar.commons.exception.InternalErrorException;
 import org.sugar.crud.model.PageableModelSet;
 
+import java.time.OffsetDateTime;
 import java.time.Year;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -301,6 +302,7 @@ public class FrameworkAgreementServiceImpl implements FrameworkAgreementService 
     @Override
     public int updateOne(@NonNull Long id, @NonNull FrameworkAgreementReq req) {
         FrameworkAgreement frameworkAgreement = frameworkAgreementManager.mustFoundEntityById(id);
+        OffsetDateTime updatedAt = frameworkAgreement.getUpdatedAt();
         FrameworkAgreementType currentStatus = frameworkAgreement.getStatus();
         frameworkAgreementConverter.update(req, frameworkAgreement);
         frameworkAgreementManager.compareAndUpdateAttachments(req, frameworkAgreement.getId());
@@ -352,7 +354,7 @@ public class FrameworkAgreementServiceImpl implements FrameworkAgreementService 
                     .before(currentStatus.name())
                     .after(req.getStatus().name())
                     .operatorId(frameworkAgreement.getAssigneeId())
-                    .lastModifiedAt(frameworkAgreement.getUpdatedAt())
+                    .lastModifiedAt(updatedAt)
                     .build();
             applicationEventPublisher.publishEvent(statusChangedEvent);
         }

@@ -33,6 +33,7 @@ import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import org.sugar.crud.model.PageableModelSet;
 
+import java.time.OffsetDateTime;
 import java.time.Year;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -282,6 +283,7 @@ public class ProjectServiceImpl implements ProjectService {
     @Override
     public int updateOne(@NonNull Long id, @NonNull ProjectReq req) {
         Project project = projectManager.mustFoundEntityById(id);
+        OffsetDateTime updatedAt = project.getUpdatedAt();
         ProjectStatusType currentStatus = project.getStatus();
         projectConverter.update(req, project);
         projectManager.compareAndUpdateAttachments(req, project.getId());
@@ -318,7 +320,7 @@ public class ProjectServiceImpl implements ProjectService {
                     .before(currentStatus.name())
                     .after(req.getStatus().name())
                     .operatorId(project.getAssigneeId())
-                    .lastModifiedAt(project.getUpdatedAt())
+                    .lastModifiedAt(updatedAt)
                     .build();
             applicationEventPublisher.publishEvent(statusChangedEvent);
         }

@@ -29,6 +29,7 @@ import org.springframework.stereotype.Service;
 import org.sugar.commons.exception.ConditionNotMetException;
 import org.sugar.crud.model.PageableModelSet;
 
+import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -212,6 +213,7 @@ public class ClueServiceImpl implements ClueService {
     @Override
     public int updateOne(@NonNull Long id, @NonNull ClueReq req) {
         Clue clue = clueManager.mustFoundEntityById(id);
+        OffsetDateTime updatedAt = clue.getUpdatedAt();
         ClueStatusType currentStatus = clue.getStatus();
         if (!Objects.equals(req.getAdcode(), clue.getAdcode())) {
             List<Clue> effectiveEntityByAdcode = clueManager.findEffectiveEntityByAdcode(req.getAdcode());
@@ -248,7 +250,7 @@ public class ClueServiceImpl implements ClueService {
                     .before(currentStatus.name())
                     .after(req.getStatus().name())
                     .operatorId(clue.getAssigneeId())
-                    .lastModifiedAt(clue.getUpdatedAt())
+                    .lastModifiedAt(updatedAt)
                     .build();
             applicationEventPublisher.publishEvent(statusChangedEvent);
         }
