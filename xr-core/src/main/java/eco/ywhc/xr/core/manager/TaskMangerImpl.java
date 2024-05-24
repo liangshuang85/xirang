@@ -7,7 +7,6 @@ import eco.ywhc.xr.common.constant.TaskStatusType;
 import eco.ywhc.xr.common.constant.TaskTemplateRefType;
 import eco.ywhc.xr.common.constant.TaskType;
 import eco.ywhc.xr.common.exception.LarkTaskNotFoundException;
-import eco.ywhc.xr.common.model.TaskListInfo;
 import eco.ywhc.xr.common.model.dto.req.TaskListReq;
 import eco.ywhc.xr.common.model.dto.res.TaskRes;
 import eco.ywhc.xr.common.model.entity.BaseEntity;
@@ -18,7 +17,6 @@ import eco.ywhc.xr.core.mapper.TaskMapper;
 import eco.ywhc.xr.core.mapper.TaskTemplateMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import org.sugar.commons.exception.InternalErrorException;
@@ -32,8 +30,6 @@ import java.util.*;
 @Slf4j
 @RequiredArgsConstructor
 public class TaskMangerImpl implements TaskManager {
-
-    private static final String prefix = "息壤-";
 
     private static final String resourceType = "tasklist";
 
@@ -135,8 +131,8 @@ public class TaskMangerImpl implements TaskManager {
     private String translateType(String type) {
 
         Map<String, String> dictionary = new HashMap<>();
-        dictionary.put("FRAMEWORK_AGREEMENT", "框架协议");
-        dictionary.put("PROJECT", "项目");
+        dictionary.put("FRAMEWORK_AGREEMENT", "框架项目管理");
+        dictionary.put("PROJECT", "项目管理");
         dictionary.put("PROJECT_PROPOSAL_PREPARATION", "项目建议书拟定");
         dictionary.put("FRAMEWORK_AGREEMENT_PREPARATION", "框架协议拟定");
         dictionary.put("INVESTMENT_AGREEMENT_PREPARATION", "投资协议拟定");
@@ -145,68 +141,103 @@ public class TaskMangerImpl implements TaskManager {
     }
 
     @Override
-    public TaskListInfo getTaskList(TaskTemplateRefType refType, String name, Long id) {
-        TaskListInfo taskListInfo = new TaskListInfo();
-        String translateType = translateType(refType.toString());
-        //查找任务清单
-        String pageToken = null;
-        Optional<Tasklist> tasklist;
-        Boolean hasMore;
-        do {
-            ListTasklistReq listTasklistReq = ListTasklistReq.newBuilder()
-                    .pageSize(50)
-                    .pageToken(pageToken)
-                    .userIdType("open_id")
-                    .build();
-            ListTasklistResp listTasklistResp;
-            try {
-                listTasklistResp = client.task().v2().tasklist().list(listTasklistReq);
-                if (!listTasklistResp.success()) {
-                    throw new InternalErrorException();
-                }
-            } catch (Exception e) {
-                log.error("获取任务清单失败", e);
-                throw new InternalErrorException(e);
-            }
-            pageToken = listTasklistResp.getData().getPageToken();
-            hasMore = listTasklistResp.getData().getHasMore();
-            Tasklist[] items = listTasklistResp.getData().getItems();
-            //查找符合条件的任务清单
-            tasklist = Arrays.stream(items)
-                    .filter(item -> item.getCreator().getType().equals("app"))
-                    .filter(item -> item.getName().equals(prefix + translateType + "-" + name + "(" + id + ")"))
-                    .findFirst();
-        } while (Boolean.TRUE.equals(hasMore) && StringUtils.isNotBlank(pageToken) && tasklist.isEmpty());
-        if (tasklist.isEmpty()) {
-            //创建任务清单
-            CreateTasklistReq createTasklistReq = CreateTasklistReq.newBuilder()
-                    .userIdType("open_id")
-                    .inputTasklist(InputTasklist.newBuilder()
-                            .name(prefix + translateType + "-" + name + "(" + id + ")")
-                            .build())
-                    .build();
-            CreateTasklistResp createTasklistResp;
-            try {
-                createTasklistResp = client.task().v2().tasklist().create(createTasklistReq);
-                if (!createTasklistResp.success()) {
-                    log.error("创建任务清单失败：{}", createTasklistResp.getMsg());
-                    throw new InternalErrorException();
-                }
-            } catch (Exception e) {
-                log.error("创建任务清单失败：{}", e.getMessage());
-                throw new InternalErrorException(e);
-            }
-            taskListInfo.setTaskListGuid(createTasklistResp.getData().getTasklist().getGuid());
-            taskListInfo.setMembers(Arrays.stream(createTasklistResp.getData().getTasklist().getMembers())
-                    .map(Member::getId)
-                    .toList());
-            return taskListInfo;
+    public List<String> getTaskList(String taskListGuid) {
+
+        GetTasklistReq req = GetTasklistReq.newBuilder()
+                .tasklistGuid(taskListGuid)
+                .userIdType("open_id")
+                .build();
+        GetTasklistResp resp;
+        try {
+            resp = client.task().v2().tasklist().get(req);
+        } catch (Exception e) {
+            log.error("获取任务清单失败:{}", e.getMessage());
+            throw new InternalErrorException("获取任务清单失败");
         }
-        taskListInfo.setTaskListGuid(tasklist.get().getGuid());
-        taskListInfo.setMembers(Arrays.stream(tasklist.get().getMembers())
+        if (!resp.success()) {
+            log.error("获取任务清单失败:{}", resp.getMsg());
+            throw new InternalErrorException("获取任务清单失败");
+        }
+        return Arrays.stream(resp.getData().getTasklist().getMembers())
                 .map(Member::getId)
-                .toList());
-        return taskListInfo;
+                .toList();
+    }
+
+    @Override
+    public String createTaskList(TaskTemplateRefType refType, String name) {
+        String translateType = translateType(refType.toString());
+        //创建任务清单
+        CreateTasklistReq createTasklistReq = CreateTasklistReq.newBuilder()
+                .userIdType("open_id")
+                .inputTasklist(InputTasklist.newBuilder()
+                        .name("【" + translateType + "】" + name)
+                        .build())
+                .build();
+        CreateTasklistResp createTasklistResp;
+        try {
+            createTasklistResp = client.task().v2().tasklist().create(createTasklistReq);
+        } catch (Exception e) {
+            log.error("创建任务清单失败：{}", e.getMessage());
+            throw new InternalErrorException(e);
+        }
+        if (!createTasklistResp.success()) {
+            log.error("创建任务清单失败：{}", createTasklistResp.getMsg());
+            throw new InternalErrorException();
+        }
+        return createTasklistResp.getData().getTasklist().getGuid();
+    }
+
+    @Override
+    public String createTaskListSection(String taskListGuid, TaskType taskType) {
+        String translateType = translateType(taskType.toString());
+        //创建分组
+        CreateSectionReq createSectionReq = CreateSectionReq.newBuilder()
+                .inputSection(InputSection.newBuilder()
+                        .name(translateType)
+                        .resourceType(resourceType)
+                        .resourceId(taskListGuid)
+                        .build())
+                .build();
+        CreateSectionResp createSectionResp;
+        try {
+            createSectionResp = client.task().v2().section().create(createSectionReq);
+        } catch (Exception e) {
+            log.error("创建任务清单分组失败：{}", e.getMessage());
+            throw new InternalErrorException(e);
+        }
+        if (!createSectionResp.success()) {
+            log.error("创建任务清单分组失败：{}", createSectionResp.getMsg());
+            throw new InternalErrorException();
+        }
+        return createSectionResp.getData().getSection().getGuid();
+    }
+
+    @Override
+    public void updateTaskListName(String taskListGuid, TaskTemplateRefType type, String name) {
+        String translateType = translateType(type.toString());
+        PatchTasklistReq req = PatchTasklistReq.newBuilder()
+                .tasklistGuid(taskListGuid)
+                .userIdType("open_id")
+                .patchTasklistReqBody(PatchTasklistReqBody.newBuilder()
+                        .tasklist(InputTasklist.newBuilder()
+                                .name("【" + translateType + "】" + name)
+                                .build())
+                        .updateFields(new String[]{
+                                "name"
+                        })
+                        .build())
+                .build();
+        PatchTasklistResp resp;
+        try {
+            resp = client.task().v2().tasklist().patch(req);
+        } catch (Exception e) {
+            log.error("创建任务清单分组失败：{}", e.getMessage());
+            throw new InternalErrorException("更新任务清单名称失败");
+        }
+        if (!resp.success()) {
+            log.error("创建任务清单分组失败：{}", resp.getMsg());
+            throw new InternalErrorException("更新任务清单名称失败");
+        }
     }
 
     @Override
@@ -336,6 +367,15 @@ public class TaskMangerImpl implements TaskManager {
     @Override
     public void updateById(Task task) {
         taskMapper.updateById(task);
+    }
+
+    @Override
+    public Task findAnyTaskByRefId(long refId) {
+        QueryWrapper<Task> qw = new QueryWrapper<>();
+        qw.lambda().eq(Task::getDeleted, 0)
+                .eq(Task::getRefId, refId)
+                .last("LIMIT 1");
+        return taskMapper.selectOne(qw);
     }
 
     @Override

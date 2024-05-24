@@ -2,7 +2,6 @@ package eco.ywhc.xr.core.manager;
 
 import eco.ywhc.xr.common.constant.TaskTemplateRefType;
 import eco.ywhc.xr.common.constant.TaskType;
-import eco.ywhc.xr.common.model.TaskListInfo;
 import eco.ywhc.xr.common.model.dto.req.TaskListReq;
 import eco.ywhc.xr.common.model.dto.res.TaskRes;
 import eco.ywhc.xr.common.model.entity.Task;
@@ -50,10 +49,33 @@ public interface TaskManager {
     /**
      * 获取任务清单
      *
+     * @param taskListGuid 任务清单Guid
+     */
+    List<String> getTaskList(String taskListGuid);
+
+    /**
+     * 创建任务清单
+     *
      * @param refType 任务关联类型
      * @param name    任务关联对象名称
      */
-    TaskListInfo getTaskList(TaskTemplateRefType refType, String name, Long id);
+    String createTaskList(TaskTemplateRefType refType, String name);
+
+    /**
+     * 创建任务清单分组
+     *
+     * @param taskListGuid 任务清单Guid
+     * @param taskType     任务类型
+     */
+    String createTaskListSection(String taskListGuid, TaskType taskType);
+
+    /**
+     * 更新任务清单名称
+     *
+     * @param taskListGuid 任务清单Guid
+     * @param name         任务清单名称
+     */
+    void updateTaskListName(String taskListGuid, TaskTemplateRefType type, String name);
 
     /**
      * 获取任务清单分组
@@ -92,6 +114,13 @@ public interface TaskManager {
      * @param task 任务
      */
     void updateById(Task task);
+
+    /**
+     * 根据关联ID获取任意一个任务
+     *
+     * @param refId 关联ID
+     */
+    Task findAnyTaskByRefId(long refId);
 
     Task findEntityById(@NonNull Long id);
 

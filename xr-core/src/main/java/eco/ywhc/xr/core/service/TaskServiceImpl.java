@@ -10,7 +10,6 @@ import eco.ywhc.xr.common.constant.TaskTemplateRefType;
 import eco.ywhc.xr.common.constant.TaskType;
 import eco.ywhc.xr.common.converter.TaskConverter;
 import eco.ywhc.xr.common.event.InstanceRoleLarkMemberInsertedEvent;
-import eco.ywhc.xr.common.model.TaskListInfo;
 import eco.ywhc.xr.common.model.dto.req.TaskListReq;
 import eco.ywhc.xr.common.model.entity.InstanceRole;
 import eco.ywhc.xr.common.model.entity.Task;
@@ -74,9 +73,9 @@ public class TaskServiceImpl implements TaskService {
             summary = "【项目管理任务】" + "【投资协议拟定】" + name;
         }
         // 获取任务清单
-        String taskListGuid = taskManager.getTaskList(taskTemplate.getRefType(), name, currentTask.getRefId()).getTaskListGuid();
+        String taskListGuid = currentTask.getTasklistGuid();
         // 获取任务分组
-        String sectionGuid = taskManager.getSections(taskTemplate.getType(), taskListGuid);
+        String sectionGuid = currentTask.getSectionGuid();
         // 获取实例角色成员
         List<String> memberIds = instanceRoleLarkMemberManager.getMemberIdsByInstanceRoleIdAndRefId(currentTask.getInstanceRoleId(), currentTask.getRefId());
         if (memberIds.isEmpty()) {
@@ -153,19 +152,20 @@ public class TaskServiceImpl implements TaskService {
     }
 
     private void HandleInstanceRoleLarkMemberInsertedEvent(InstanceRoleLarkMemberInsertedEvent event) {
+        String taskListGuid = event.getTaskListGuid();
         // 获取任务清单
-        TaskListInfo taskList = taskManager.getTaskList(event.getRefType(), event.getName(), event.getId());
+        List<String> memberIds = taskManager.getTaskList(taskListGuid);
         // 查找需要移出任务清单的成员
-        List<String> removeMembers = taskList.getMembers().stream()
+        List<String> removeMembers = memberIds.stream()
                 .filter(member -> !event.getCurrentMembers().contains(member))
                 .toList();
         // 添加成员到任务清单
         if (!event.getCurrentMembers().isEmpty()) {
-            taskManager.addMemberToTaskList(taskList.getTaskListGuid(), event.getCurrentMembers());
+            taskManager.addMemberToTaskList(taskListGuid, event.getCurrentMembers());
         }
         // 移出成员
         if (!removeMembers.isEmpty()) {
-            taskManager.removeMemberFromTaskList(taskList.getTaskListGuid(), removeMembers);
+            taskManager.removeMemberFromTaskList(taskListGuid, removeMembers);
         }
     }
 

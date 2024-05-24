@@ -13,10 +13,7 @@ import eco.ywhc.xr.common.exception.LarkTaskNotFoundException;
 import eco.ywhc.xr.common.model.RequestContextUser;
 import eco.ywhc.xr.common.model.dto.req.FrameworkAgreementReq;
 import eco.ywhc.xr.common.model.dto.res.*;
-import eco.ywhc.xr.common.model.entity.FrameworkAgreement;
-import eco.ywhc.xr.common.model.entity.FrameworkAgreementChannelEntry;
-import eco.ywhc.xr.common.model.entity.InstanceRole;
-import eco.ywhc.xr.common.model.entity.Task;
+import eco.ywhc.xr.common.model.entity.*;
 import eco.ywhc.xr.common.model.lark.LarkEmployee;
 import eco.ywhc.xr.common.model.query.FrameworkAgreementQuery;
 import eco.ywhc.xr.core.manager.*;
@@ -30,8 +27,10 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.lang.NonNull;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 import org.sugar.commons.exception.InternalErrorException;
+import org.sugar.commons.exception.UniqueViolationException;
 import org.sugar.crud.model.PageableModelSet;
 
 import java.time.OffsetDateTime;
@@ -93,6 +92,7 @@ public class FrameworkAgreementServiceImpl implements FrameworkAgreementService 
 
     @Override
     public Long createOne(@NonNull FrameworkAgreementReq req) {
+        validateRequest(req, null);
         FrameworkAgreement frameworkAgreement = frameworkAgreementConverter.fromRequest(req);
         frameworkAgreement.setCode(generateUniqueId());
         frameworkAgreement.setStatus(FrameworkAgreementType.PRE_PROJECT);
@@ -112,13 +112,14 @@ public class FrameworkAgreementServiceImpl implements FrameworkAgreementService 
 
         visitManager.createMany(req.getFrameworkVisits(), frameworkAgreement.getId());
 
+        applicationEventPublisher.publishEvent(FrameworkAgreementCreatedEvent.of(frameworkAgreement));
+
+        String tasklistGuid = taskManager.findAnyTaskByRefId(frameworkAgreement.getId()).getTasklistGuid();
         if (CollectionUtils.isNotEmpty(req.getInstanceRoleLarkMembers())) {
             instanceRoleLarkMemberManager.insertInstanceRoleLarkMember(req.getInstanceRoleLarkMembers(), frameworkAgreement.getId(), InstanceRefType.FRAMEWORK_AGREEMENT);
             List<String> memberIds = instanceRoleLarkMemberManager.getMemberIdsByRefId(frameworkAgreement.getId());
-            applicationEventPublisher.publishEvent(InstanceRoleLarkMemberInsertedEvent.of(frameworkAgreement.getId(), req.getName(), TaskTemplateRefType.FRAMEWORK_AGREEMENT, memberIds));
+            applicationEventPublisher.publishEvent(InstanceRoleLarkMemberInsertedEvent.of(memberIds, tasklistGuid));
         }
-
-        applicationEventPublisher.publishEvent(FrameworkAgreementCreatedEvent.of(frameworkAgreement));
 
         StatusChangedEvent statusChangedEvent = StatusChangedEvent.builder()
                 .refId(frameworkAgreement.getId())
@@ -324,6 +325,14 @@ public class FrameworkAgreementServiceImpl implements FrameworkAgreementService 
     @Override
     public int updateOne(@NonNull Long id, @NonNull FrameworkAgreementReq req) {
         FrameworkAgreement frameworkAgreement = frameworkAgreementManager.mustFoundEntityById(id);
+        validateRequest(req, id);
+        // 获取任务清单Guid
+        String tasklistGuid = taskManager.findAnyTaskByRefId(id).getTasklistGuid();
+        // 修改名称同时修改任务清单名
+        if (req.getName() != null && !req.getName().equals(frameworkAgreement.getName())) {
+            taskManager.updateTaskListName(tasklistGuid, TaskTemplateRefType.FRAMEWORK_AGREEMENT, req.getName());
+        }
+
         OffsetDateTime updatedAt = frameworkAgreement.getUpdatedAt();
         FrameworkAgreementType currentStatus = frameworkAgreement.getStatus();
         frameworkAgreementConverter.update(req, frameworkAgreement);
@@ -363,7 +372,7 @@ public class FrameworkAgreementServiceImpl implements FrameworkAgreementService 
             instanceRoleLarkMemberManager.insertInstanceRoleLarkMember(req.getInstanceRoleLarkMembers(), id, InstanceRefType.FRAMEWORK_AGREEMENT);
         }
         List<String> memberIds = instanceRoleLarkMemberManager.getMemberIdsByRefId(frameworkAgreement.getId());
-        applicationEventPublisher.publishEvent(InstanceRoleLarkMemberInsertedEvent.of(id, req.getName(), TaskTemplateRefType.FRAMEWORK_AGREEMENT, memberIds));
+        applicationEventPublisher.publishEvent(InstanceRoleLarkMemberInsertedEvent.of(memberIds, tasklistGuid));
 
         // 发布框架协议已更新事件
         applicationEventPublisher.publishEvent(FrameworkAgreementUpdatedEvent.of(frameworkAgreement));
@@ -396,6 +405,20 @@ public class FrameworkAgreementServiceImpl implements FrameworkAgreementService 
         // 逻辑删除基础信息
         basicDataManager.deleteEntityByRefId(id);
         return frameworkAgreementMapper.logicDeleteEntityById(id);
+    }
+
+    private void validateRequest(FrameworkAgreementReq req, @Nullable Long id) {
+        FrameworkAgreement frameworkAgreement = findEntityByName(req.getName());
+        if (frameworkAgreement != null && !frameworkAgreement.getId().equals(id)) {
+            throw new UniqueViolationException("框架协议名称已存在");
+        }
+    }
+
+    private FrameworkAgreement findEntityByName(String name) {
+        QueryWrapper<FrameworkAgreement> qw = new QueryWrapper<>();
+        qw.lambda().eq(BaseEntity::getDeleted, false)
+                .eq(FrameworkAgreement::getName, name);
+        return frameworkAgreementMapper.selectOne(qw);
     }
 
 }

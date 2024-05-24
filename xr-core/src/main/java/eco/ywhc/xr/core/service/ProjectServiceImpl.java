@@ -31,6 +31,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
+import org.sugar.commons.exception.UniqueViolationException;
 import org.sugar.crud.model.PageableModelSet;
 
 import java.time.OffsetDateTime;
@@ -92,6 +93,7 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     public Long createOne(@NonNull ProjectReq req) {
+        validateRequest(req, null);
         Project project = projectConverter.fromRequest(req);
         project.setCode(generateUniqueId());
         projectMapper.insert(project);
@@ -105,13 +107,13 @@ public class ProjectServiceImpl implements ProjectService {
         // 创建拜访记录
         visitManager.createMany(req.getProjectVisits(), project.getId());
 
+        applicationEventPublisher.publishEvent(ProjectCreatedEvent.of(project));
+        String tasklistGuid = taskManager.findAnyTaskByRefId(project.getId()).getTaskGuid();
         if (CollectionUtils.isNotEmpty(req.getInstanceRoleLarkMembers())) {
             instanceRoleLarkMemberManager.insertInstanceRoleLarkMember(req.getInstanceRoleLarkMembers(), project.getId(), InstanceRefType.PROJECT);
             List<String> memberIds = instanceRoleLarkMemberManager.getMemberIdsByRefId(project.getId());
-            applicationEventPublisher.publishEvent(InstanceRoleLarkMemberInsertedEvent.of(project.getId(), req.getName(), TaskTemplateRefType.PROJECT, memberIds));
+            applicationEventPublisher.publishEvent(InstanceRoleLarkMemberInsertedEvent.of(memberIds, tasklistGuid));
         }
-
-        applicationEventPublisher.publishEvent(ProjectCreatedEvent.of(project));
 
         StatusChangedEvent statusChangedEvent = StatusChangedEvent.builder()
                 .refId(project.getId())
@@ -304,7 +306,14 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     public int updateOne(@NonNull Long id, @NonNull ProjectReq req) {
+        validateRequest(req, null);
         Project project = projectManager.mustFoundEntityById(id);
+        // 获取任务清单Guid
+        String tasklistGuid = taskManager.findAnyTaskByRefId(id).getTasklistGuid();
+        // 修改名称同时修改任务清单名
+        if (req.getName() != null && !req.getName().equals(project.getName())) {
+            taskManager.updateTaskListName(tasklistGuid, TaskTemplateRefType.PROJECT, req.getName());
+        }
         OffsetDateTime updatedAt = project.getUpdatedAt();
         ProjectStatusType currentStatus = project.getStatus();
         projectConverter.update(req, project);
@@ -328,7 +337,7 @@ public class ProjectServiceImpl implements ProjectService {
         }
         if (CollectionUtils.isNotEmpty(req.getInstanceRoleLarkMembers())) {
             List<String> memberIds = instanceRoleLarkMemberManager.getMemberIdsByRefId(project.getId());
-            applicationEventPublisher.publishEvent(InstanceRoleLarkMemberInsertedEvent.of(id, req.getName(), TaskTemplateRefType.PROJECT, memberIds));
+            applicationEventPublisher.publishEvent(InstanceRoleLarkMemberInsertedEvent.of(memberIds, tasklistGuid));
         }
 
         // 发布项目已更新事件
@@ -359,6 +368,20 @@ public class ProjectServiceImpl implements ProjectService {
         // 逻辑删除基础信息
         basicDataManager.deleteEntityByRefId(id);
         return projectMapper.logicDeleteEntityById(id);
+    }
+
+    private void validateRequest(ProjectReq req, Long id) {
+        Project project = findEntityByName(req.getName());
+        if (project != null && !project.getId().equals(id)) {
+            throw new UniqueViolationException("项目名称已存在");
+        }
+    }
+
+    private Project findEntityByName(String name) {
+        QueryWrapper<Project> qw = new QueryWrapper<>();
+        qw.lambda().eq(Project::getDeleted, 0)
+                .eq(Project::getName, name);
+        return projectMapper.selectOne(qw);
     }
 
 }

@@ -60,4 +60,14 @@ public class Task extends BaseEntity implements IdentifiableEntity<Long> {
      */
     private TaskStatusType status;
 
+    /**
+     * 任务清单Guid
+     */
+    private String tasklistGuid;
+
+    /**
+     * 任务清单分组Guid
+     */
+    private String sectionGuid;
+
 }
