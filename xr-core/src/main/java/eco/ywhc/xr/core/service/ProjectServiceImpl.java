@@ -215,6 +215,9 @@ public class ProjectServiceImpl implements ProjectService {
                 .build();
         res.setAssignee(assignee);
 
+        List<InstanceRoleLarkMemberRes> instanceRoleLarkMemberRes = instanceRoleLarkMemberManager.findInstanceRoleLarkMemberByRefId(id);
+        res.setInstanceRoleLarkMembers(instanceRoleLarkMemberRes);
+
         List<Task> tasks = taskManager.listTasksByRefId(id);
         List<TaskRes> taskResList = new ArrayList<>();
         // 遍历任务列表，更新每个任务的状态
@@ -223,6 +226,27 @@ public class ProjectServiceImpl implements ProjectService {
                 TaskRes taskRes = taskConverter.toResponse(task);
                 InstanceRole instanceRole = instanceRoleManager.findEntityById(task.getInstanceRoleId());
                 taskRes.setInstanceRoleName(instanceRole.getName());
+                //如果任务状态为待发起，则显示实例角色成员
+                if (task.getStatus() == TaskStatusType.pending) {
+                    Set<String> memberIds = instanceRoleLarkMemberRes.stream()
+                            .filter(i -> i.getInstanceRoleId().equals(task.getInstanceRoleId()))
+                            .findFirst()
+                            .map(InstanceRoleLarkMemberRes::getMemberIds)
+                            .orElse(Collections.emptySet());
+                    if (!memberIds.isEmpty()) {
+                        List<AssigneeRes> assignees = memberIds.stream()
+                                .map(memberId -> {
+                                    LarkEmployee larkEmployee1 = larkEmployeeManager.retrieveLarkEmployee(memberId);
+                                    return AssigneeRes.builder()
+                                            .assigneeId(memberId)
+                                            .assigneeName(larkEmployee1.getName())
+                                            .avatarInfo(larkEmployee1.getAvatarInfo())
+                                            .build();
+                                })
+                                .toList();
+                        taskRes.setAssignees(assignees);
+                    }
+                }
                 taskResList.add(taskRes);
                 continue;
             }
@@ -268,8 +292,6 @@ public class ProjectServiceImpl implements ProjectService {
                 ));
         res.setApprovalMap(approvalResMaps);
 
-        List<InstanceRoleLarkMemberRes> instanceRoleLarkMemberRes = instanceRoleLarkMemberManager.findInstanceRoleLarkMemberByRefId(id);
-        res.setInstanceRoleLarkMembers(instanceRoleLarkMemberRes);
 
         List<ChangeRes> changes = changeManager.findAllByRefId(id);
         List<ChangeRes> changeRes = changes.stream().peek(i -> i.setOperator(assignee)).toList();

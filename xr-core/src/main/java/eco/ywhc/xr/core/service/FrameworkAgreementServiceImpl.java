@@ -230,12 +230,37 @@ public class FrameworkAgreementServiceImpl implements FrameworkAgreementService 
         // 查询基础数据
         res.setBasicData(basicDataManager.getBasicData(id));
 
+        // 查询实例角色成员
+        List<InstanceRoleLarkMemberRes> instanceRoleLarkMembers = instanceRoleLarkMemberManager.findInstanceRoleLarkMemberByRefId(id);
+        res.setInstanceRoleLarkMembers(instanceRoleLarkMembers);
+
         List<Task> tasks = taskManager.listTasksByRefId(id);
         List<TaskRes> taskResList = new ArrayList<>();
         for (Task task : tasks) {
             if (task.getTaskGuid() == null) {
                 InstanceRole instanceRole = instanceRoleManager.findEntityById(task.getInstanceRoleId());
                 TaskRes taskRes = taskConverter.toResponse(task);
+                // 如果任务状态为待发起，则显示实例角色成员
+                if (task.getStatus() == TaskStatusType.pending) {
+                    Set<String> memberIds = instanceRoleLarkMembers.stream()
+                            .filter(i -> i.getInstanceRoleId().equals(task.getInstanceRoleId()))
+                            .findFirst()
+                            .map(InstanceRoleLarkMemberRes::getMemberIds)
+                            .orElse(Collections.emptySet());
+                    if (!memberIds.isEmpty()) {
+                        List<AssigneeRes> assignees = memberIds.stream()
+                                .map(memberId -> {
+                                    LarkEmployee larkEmployee1 = larkEmployeeManager.retrieveLarkEmployee(memberId);
+                                    return AssigneeRes.builder()
+                                            .assigneeId(memberId)
+                                            .assigneeName(larkEmployee1.getName())
+                                            .avatarInfo(larkEmployee1.getAvatarInfo())
+                                            .build();
+                                })
+                                .toList();
+                        taskRes.setAssignees(assignees);
+                    }
+                }
                 taskRes.setInstanceRoleName(instanceRole.getName());
                 taskResList.add(taskRes);
                 continue;
@@ -286,9 +311,6 @@ public class FrameworkAgreementServiceImpl implements FrameworkAgreementService 
 
         List<VisitRes> visitList = visitManager.findAllByRefId(id);
         res.setFrameworkVisits(visitList);
-
-        List<InstanceRoleLarkMemberRes> instanceRoleLarkMembers = instanceRoleLarkMemberManager.findInstanceRoleLarkMemberByRefId(id);
-        res.setInstanceRoleLarkMembers(instanceRoleLarkMembers);
 
         List<ChangeRes> changes = changeManager.findAllByRefId(id);
         List<ChangeRes> changeRes = changes.stream().peek(i -> i.setOperator(assignee)).toList();

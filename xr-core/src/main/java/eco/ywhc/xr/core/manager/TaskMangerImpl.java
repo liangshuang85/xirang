@@ -23,6 +23,9 @@ import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import org.sugar.commons.exception.InternalErrorException;
 
+import java.time.Instant;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
 import java.util.*;
 
 @Service
@@ -88,9 +91,14 @@ public class TaskMangerImpl implements TaskManager {
         taskMapper.updateById(task);
 
         TaskRes res = new TaskRes();
+        // completedAt 不为"0"说明任务已完成
         if (!Objects.equals(task.getCompletedAt(), "0")) {
             task.setStatus(TaskStatusType.done);
             taskMapper.updateById(task);
+            Instant startTime = Instant.ofEpochMilli(Long.parseLong(taskData.getCreatedAt()));
+            res.setStartTime(OffsetDateTime.ofInstant(startTime, ZoneId.systemDefault()));
+            Instant endTime = Instant.ofEpochMilli(Long.parseLong(taskData.getCompletedAt()));
+            res.setEndTime(OffsetDateTime.ofInstant(endTime, ZoneId.systemDefault()));
             res.setStatus(TaskStatusType.done);
         } else {
             res.setStatus(task.getStatus());

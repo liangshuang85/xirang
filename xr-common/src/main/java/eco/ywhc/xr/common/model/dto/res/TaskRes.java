@@ -5,6 +5,7 @@ import eco.ywhc.xr.common.constant.TaskType;
 import lombok.Data;
 import org.sugar.crud.model.BaseRestResponse;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 
 /**
@@ -52,5 +53,15 @@ public class TaskRes implements BaseRestResponse {
      * 负责人信息
      */
     private List<AssigneeRes> assignees;
+
+    /**
+     * 任务发起时间
+     */
+    private OffsetDateTime startTime;
+
+    /**
+     * 任务结束时间
+     */
+    private OffsetDateTime endTime;
 
 }
