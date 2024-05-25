@@ -5,7 +5,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import lombok.Data;
+import lombok.Value;
 import org.sugar.crud.model.BaseRestRequest;
 
 import java.util.ArrayList;
@@ -16,7 +16,7 @@ import java.util.Set;
 /**
  * 项目Req
  */
-@Data
+@Value
 public class ProjectReq implements BaseRestRequest {
 
     /**
@@ -24,115 +24,115 @@ public class ProjectReq implements BaseRestRequest {
      */
     @NotBlank
     @Size(max = 40)
-    private String name;
+    String name;
 
     /**
      * 行政区划代码
      */
     @NotNull
-    private Long adcode;
+    Long adcode;
 
     /**
      * 框架协议ID
      */
     @NotNull
-    private Long frameworkAgreementId;
+    Long frameworkAgreementId;
 
     /**
      * 负责人的飞书OpenID
      */
     @NotBlank
     @Size(max = 40)
-    private String assigneeId;
+    String assigneeId;
 
     /**
      * 项目状态
      */
     @NotNull
-    private ProjectStatusType status;
+    ProjectStatusType status;
 
     /**
      * 项目信息Req
      */
-    private ProjectInformationReq projectInformation;
+    ProjectInformationReq projectInformation;
 
     /**
      * 会议决议附件ID
      */
     @NotNull
-    private Set<Long> meetingResolutionsAttachmentIds = new HashSet<>();
+    Set<Long> meetingResolutionsAttachmentIds = new HashSet<>();
 
     /**
      * 会议纪要附件ID
      */
     @NotNull
-    private Set<Long> meetingMinutesAttachmentIds = new HashSet<>();
+    Set<Long> meetingMinutesAttachmentIds = new HashSet<>();
 
     /**
      * 投资协议附件ID
      */
     @NotNull
-    private Set<Long> investmentAgreementAttachmentIds = new HashSet<>();
+    Set<Long> investmentAgreementAttachmentIds = new HashSet<>();
 
     /**
      * 投资协议签订附件ID
      */
     @NotNull
-    private Set<Long> investmentAgreementSigningAttachmentIds = new HashSet<>();
+    Set<Long> investmentAgreementSigningAttachmentIds = new HashSet<>();
 
     /**
      * 企业投资备案附件ID
      */
     @NotNull
-    private Set<Long> enterpriseInvestmentRecordAttachmentIds = new HashSet<>();
+    Set<Long> enterpriseInvestmentRecordAttachmentIds = new HashSet<>();
 
     /**
      * 国土土地使用证附件ID
      */
     @NotNull
-    private Set<Long> landUseRightCertificateAttachmentIds = new HashSet<>();
+    Set<Long> landUseRightCertificateAttachmentIds = new HashSet<>();
 
     /**
      * 建设用地规划许可证附件ID
      */
     @NotNull
-    private Set<Long> planningPermitForConstructionLandAttachmentIds = new HashSet<>();
+    Set<Long> planningPermitForConstructionLandAttachmentIds = new HashSet<>();
 
     /**
      * 预可研附件ID
      */
     @NotNull
-    private Set<Long> preFeasibilityStudyAttachmentIds = new HashSet<>();
+    Set<Long> preFeasibilityStudyAttachmentIds = new HashSet<>();
 
     /**
      * 可研附件ID
      */
     @NotNull
-    private Set<Long> feasibilityStudyAttachmentIds = new HashSet<>();
+    Set<Long> feasibilityStudyAttachmentIds = new HashSet<>();
 
     /**
      * 初步设计附件ID
      */
     @NotNull
-    private Set<Long> preliminaryDesignAttachmentIds = new HashSet<>();
+    Set<Long> preliminaryDesignAttachmentIds = new HashSet<>();
 
     /**
      * 实例角色成员
      */
     @Valid
     @NotNull
-    private List<InstanceRoleLarkMemberReq> instanceRoleLarkMembers = new ArrayList<>();
+    List<InstanceRoleLarkMemberReq> instanceRoleLarkMembers = new ArrayList<>();
 
     /**
      * 基础数据
      */
-    private BasicDataReq basicData;
+    BasicDataReq basicData;
 
     /**
      * 拜访信息
      */
     @Valid
     @NotNull
-    private List<VisitReq> projectVisits = new ArrayList<>();
+    List<VisitReq> projectVisits = new ArrayList<>();
 
 }

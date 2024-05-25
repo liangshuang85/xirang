@@ -1,7 +1,7 @@
 package eco.ywhc.xr.common.model.dto.req;
 
 import jakarta.validation.constraints.NotNull;
-import lombok.Data;
+import lombok.Value;
 import org.sugar.crud.model.BaseRestRequest;
 
 import java.time.LocalDate;
@@ -11,36 +11,36 @@ import java.util.Set;
 /**
  * 拜访信息Req
  */
-@Data
+@Value
 public class VisitReq implements BaseRestRequest {
 
     /**
      * 拜访关联ID
      */
-    private Long refId;
+    Long refId;
 
     /**
      * 是否为正式拜访
      */
     @NotNull
-    private Boolean official = false;
+    Boolean official = false;
 
     /**
      * 拜访日期
      */
     @NotNull
-    private LocalDate visitDate;
+    LocalDate visitDate;
 
     /**
      * 邀请函附件ID
      */
     @NotNull
-    private Set<Long> invitationLetterAttachmentIds = new HashSet<>();
+    Set<Long> invitationLetterAttachmentIds = new HashSet<>();
 
     /**
      * 拜访记录附件ID
      */
     @NotNull
-    private Set<Long> visitRecordAttachmentIds = new HashSet<>();
+    Set<Long> visitRecordAttachmentIds = new HashSet<>();
 
 }

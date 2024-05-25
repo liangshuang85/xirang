@@ -4,9 +4,7 @@ import eco.ywhc.xr.common.constant.InstanceRefType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.Value;
 import org.sugar.crud.model.BaseRestRequest;
 
 import java.util.HashSet;
@@ -15,9 +13,7 @@ import java.util.Set;
 /**
  * 实例角色
  */
-@Getter
-@Setter
-@ToString
+@Value
 public class InstanceRoleReq implements BaseRestRequest {
 
     /**
@@ -25,30 +21,30 @@ public class InstanceRoleReq implements BaseRestRequest {
      */
     @NotBlank
     @Size(max = 64)
-    private String name;
+    String name;
 
     /**
      * 角色描述
      */
     @Size(max = 128)
-    private String description;
+    String description;
 
     /**
      * 关联对象类型
      */
     @NotNull
-    private InstanceRefType refType;
+    InstanceRefType refType;
 
     /**
      * 是否为负责人
      */
     @NotNull
-    private Boolean assignee = false;
+    Boolean assignee = false;
 
     /**
      * 权限编码集合
      */
     @NotNull
-    private Set<String> permissionCodes = new HashSet<>();
+    Set<String> permissionCodes = new HashSet<>();
 
 }

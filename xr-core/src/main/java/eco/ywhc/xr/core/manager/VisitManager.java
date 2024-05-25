@@ -3,7 +3,7 @@ package eco.ywhc.xr.core.manager;
 import eco.ywhc.xr.common.model.dto.req.VisitReq;
 import eco.ywhc.xr.common.model.dto.res.VisitRes;
 import eco.ywhc.xr.common.model.entity.Visit;
-import lombok.NonNull;
+import org.springframework.lang.NonNull;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collection;

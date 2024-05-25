@@ -2,9 +2,7 @@ package eco.ywhc.xr.common.model.dto.req;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.Value;
 import org.sugar.crud.model.BaseRestRequest;
 
 import java.util.HashSet;
@@ -13,9 +11,7 @@ import java.util.Set;
 /**
  * 角色Request
  */
-@Getter
-@Setter
-@ToString
+@Value
 public class RoleReq implements BaseRestRequest {
 
     /**
@@ -23,18 +19,18 @@ public class RoleReq implements BaseRestRequest {
      */
     @NotBlank
     @Size(max = 64)
-    private String name;
+    String name;
 
     /**
      * 描述
      */
     @Size(max = 128)
-    private String description;
+    String description;
 
     /**
      * 权限编码集合
      */
-    private Set<String> permissionCodes = new HashSet<>();
+    Set<String> permissionCodes = new HashSet<>();
 
 }
 

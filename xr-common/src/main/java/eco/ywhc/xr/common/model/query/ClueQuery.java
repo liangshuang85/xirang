@@ -3,35 +3,34 @@ package eco.ywhc.xr.common.model.query;
 import eco.ywhc.xr.common.constant.ClueLevel;
 import eco.ywhc.xr.common.constant.ClueStatusType;
 import jakarta.validation.constraints.Size;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.Value;
 import org.sugar.crud.query.BasePageQuery;
 
-@Getter
-@Setter
-@ToString
+/**
+ * 线索Query
+ */
+@Value
 public class ClueQuery extends BasePageQuery {
 
     /**
      * 行政区代码
      */
-    private Long adcode;
+    Long adcode;
 
     /**
      * 线索状态
      */
-    private ClueStatusType status;
+    ClueStatusType status;
 
     /**
      * 负责人
      */
     @Size(max = 255)
-    private String assigneeId;
+    String assigneeId;
 
     /**
      * 线索评级
      */
-    private ClueLevel level;
+    ClueLevel level;
 
 }

@@ -1,30 +1,28 @@
 package eco.ywhc.xr.common.model.query;
 
 import eco.ywhc.xr.common.constant.InstanceRefType;
-import lombok.Getter;
-import lombok.ToString;
+import lombok.Value;
 import org.sugar.crud.query.BasePageQuery;
 
 /**
- * 角色Query
+ * 实例角色Query
  */
-@Getter
-@ToString
+@Value
 public class InstanceRoleQuery extends BasePageQuery {
 
     /**
      * 实例关联类型
      */
-    private InstanceRefType instanceRefType;
+    InstanceRefType instanceRefType;
 
     /**
      * 启用状态
      */
-    private Boolean enabled = true;
+    Boolean enabled = true;
 
     /**
      * 包括负责人实例角色
      */
-    private Boolean includeAssignee = false;
+    Boolean includeAssignee = false;
 
 }

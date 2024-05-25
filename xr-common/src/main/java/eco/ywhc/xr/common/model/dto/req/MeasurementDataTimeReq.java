@@ -2,20 +2,20 @@ package eco.ywhc.xr.common.model.dto.req;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import lombok.Data;
+import lombok.Value;
 import org.sugar.crud.model.BaseRestRequest;
 
 /**
  * 测算数据时段表请求实体类
  */
-@Data
+@Value
 public class MeasurementDataTimeReq implements BaseRestRequest {
 
     /**
      * 月份
      */
     @NotNull
-    private Integer month;
+    Integer month;
 
     /**
      * 尖峰时段
@@ -24,7 +24,7 @@ public class MeasurementDataTimeReq implements BaseRestRequest {
      * 例如: 8-10,20-22,23
      */
     @NotBlank
-    private String top;
+    String top;
 
     /**
      * 高峰时段
@@ -33,7 +33,7 @@ public class MeasurementDataTimeReq implements BaseRestRequest {
      * 例如: 8-10,20-22,23
      */
     @NotBlank
-    private String peak;
+    String peak;
 
     /**
      * 平段时段
@@ -42,7 +42,7 @@ public class MeasurementDataTimeReq implements BaseRestRequest {
      * 例如: 8-10,20-22,23
      */
     @NotBlank
-    private String normal;
+    String normal;
 
     /**
      * 低谷时段
@@ -51,7 +51,7 @@ public class MeasurementDataTimeReq implements BaseRestRequest {
      * 例如: 8-10,20-22,23
      */
     @NotBlank
-    private String valley;
+    String valley;
 
     /**
      * 深谷时段
@@ -60,6 +60,6 @@ public class MeasurementDataTimeReq implements BaseRestRequest {
      * 例如: 8-10,20-22,23
      */
     @NotBlank
-    private String deep;
+    String deep;
 
 }

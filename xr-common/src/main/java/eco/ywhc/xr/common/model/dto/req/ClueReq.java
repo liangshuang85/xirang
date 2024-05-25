@@ -5,9 +5,7 @@ import eco.ywhc.xr.common.constant.ClueStatusType;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.Value;
 import org.sugar.crud.model.BaseRestRequest;
 
 import java.util.ArrayList;
@@ -16,59 +14,57 @@ import java.util.List;
 /**
  * 基础线索信息Req
  */
-@Setter
-@Getter
-@ToString
+@Value
 public class ClueReq implements BaseRestRequest {
 
     /**
      * 行政区代码
      */
     @NotNull
-    private Long adcode;
+    Long adcode;
 
     /**
      * 线索负责人
      */
     @NotBlank
-    private String assigneeId;
+    String assigneeId;
 
     /**
      * 线索状态
      */
     @NotNull
-    private ClueStatusType status = ClueStatusType.CLUE_DISCOVERY;
+    ClueStatusType status = ClueStatusType.CLUE_DISCOVERY;
 
     /**
      * 线索级别
      */
-    private ClueLevel level;
+    ClueLevel level;
 
     /**
      * 线索渠道录入
      */
     @Valid
     @NotNull
-    private ChannelEntryReq clueChannelEntry;
+    ChannelEntryReq clueChannelEntry;
 
     /**
      * 拜访信息
      */
     @Valid
     @NotNull
-    private List<VisitReq> clueVisits = new ArrayList<>();
+    List<VisitReq> clueVisits = new ArrayList<>();
 
     /**
      * 实例角色成员
      */
     @Valid
     @NotNull
-    private List<InstanceRoleLarkMemberReq> instanceRoleLarkMembers = new ArrayList<>();
+    List<InstanceRoleLarkMemberReq> instanceRoleLarkMembers = new ArrayList<>();
 
     /**
      * 基础数据
      */
     @NotNull
-    private BasicDataReq basicData;
+    BasicDataReq basicData;
 
 }

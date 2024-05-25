@@ -1,7 +1,7 @@
 package eco.ywhc.xr.common.model.dto.req;
 
 import jakarta.validation.constraints.NotNull;
-import lombok.Data;
+import lombok.Value;
 import org.sugar.crud.model.BaseRestRequest;
 
 import java.math.BigDecimal;
@@ -9,43 +9,43 @@ import java.math.BigDecimal;
 /**
  * 月度电价请求实体类
  */
-@Data
+@Value
 public class MonthlyElectricityPriceReq implements BaseRestRequest {
 
     /**
      * 月份
      */
     @NotNull
-    private Integer month;
+    Integer month;
 
     /**
      * 尖峰电价(￥ /kwh)
      */
     @NotNull
-    private BigDecimal topPrice;
+    BigDecimal topPrice;
 
     /**
      * 高峰电价(￥ /kwh)
      */
     @NotNull
-    private BigDecimal peakPrice;
+    BigDecimal peakPrice;
 
     /**
      * 平段电价(￥/kwh)
      */
     @NotNull
-    private BigDecimal normalPrice;
+    BigDecimal normalPrice;
 
     /**
      * 低谷电价(￥/kWh)
      */
     @NotNull
-    private BigDecimal valleyPrice;
+    BigDecimal valleyPrice;
 
     /**
      * 深谷电价(￥/kwh)
      */
     @NotNull
-    private BigDecimal deepPrice;
+    BigDecimal deepPrice;
 
 }

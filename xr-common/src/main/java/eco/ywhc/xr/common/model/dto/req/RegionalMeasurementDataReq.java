@@ -2,7 +2,7 @@ package eco.ywhc.xr.common.model.dto.req;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
-import lombok.Data;
+import lombok.Value;
 import org.sugar.crud.model.BaseRestRequest;
 
 import java.math.BigDecimal;
@@ -12,146 +12,146 @@ import java.util.List;
 /**
  * 区域测算数据表请求实体类
  */
-@Data
+@Value
 public class RegionalMeasurementDataReq implements BaseRestRequest {
 
     /**
      * 6位数字格式的行政区划代码
      */
-    private Long adcode;
+    Long adcode;
 
     /**
      * 市场充电价格(￥ /kWh)
      */
-    private BigDecimal marketChargingPrice;
+    BigDecimal marketChargingPrice;
 
     /**
      * 固定充电价格(￥ /kWh)
      */
-    private BigDecimal staticChargingPrice;
+    BigDecimal staticChargingPrice;
 
     /**
      * 充电价格(￥/kwh)
      */
-    private BigDecimal chargingPrice;
+    BigDecimal chargingPrice;
 
     /**
      * 充电补贴(￥/kWh)
      */
-    private BigDecimal chargingSubsidy;
+    BigDecimal chargingSubsidy;
 
     /**
      * 充电补贴年限(年)
      */
-    private Integer chargingSubsidyYears;
+    Integer chargingSubsidyYears;
 
     /**
      * 放电补贴(￥/kWh)
      */
-    private BigDecimal dischargingSubsidy;
+    BigDecimal dischargingSubsidy;
 
     /**
      * 放电补贴年限(年)
      */
-    private Integer dischargingSubsidyYears;
+    Integer dischargingSubsidyYears;
 
     /**
      * 放电价格(￥/kwh)
      */
-    private BigDecimal dischargingPrice;
+    BigDecimal dischargingPrice;
 
     /**
      * 租赁价格(￥/kwh·年)
      */
-    private BigDecimal leasingPrice;
+    BigDecimal leasingPrice;
 
     /**
      * 碳排放因子(tCO:/MWh)
      */
-    private BigDecimal carbonEmissionFactor;
+    BigDecimal carbonEmissionFactor;
 
     /**
      * 增值税%
      */
-    private BigDecimal vat;
+    BigDecimal vat;
 
     /**
      * 城建税%
      */
-    private BigDecimal urbanConstructionTax;
+    BigDecimal urbanConstructionTax;
 
     /**
      * 教育费%
      */
-    private BigDecimal educationFee;
+    BigDecimal educationFee;
 
     /**
      * 所得税%
      */
-    private BigDecimal incomeTax;
+    BigDecimal incomeTax;
 
     /**
      * 碳资产增值税%
      */
-    private BigDecimal carbonAssetValueAddedTax;
+    BigDecimal carbonAssetValueAddedTax;
 
     /**
      * 所得税理由
      */
-    private String incomeTaxJustification;
+    String incomeTaxJustification;
 
     /**
      * 尖峰电价(￥ /kwh)
      */
-    private BigDecimal topPrice;
+    BigDecimal topPrice;
 
     /**
      * 平段电价(￥/kwh)
      */
-    private BigDecimal normalPrice;
+    BigDecimal normalPrice;
 
     /**
      * 低谷电价(￥/kWh)
      */
-    private BigDecimal valleyPrice;
+    BigDecimal valleyPrice;
 
     /**
      * 线损电价(￥/kWh)
      */
-    private BigDecimal lineLossPrice;
+    BigDecimal lineLossPrice;
 
     /**
      * 系统运行费折价(￥ /kWh)
      */
-    private BigDecimal operationFeeDiscount;
+    BigDecimal operationFeeDiscount;
 
     /**
      * 上网环节线损电价(￥ /kWh)
      */
-    private BigDecimal gridConnectionLineLossPrice;
+    BigDecimal gridConnectionLineLossPrice;
 
     /**
      * 高峰电价(￥ /kwh)
      */
-    private BigDecimal peakPrice;
+    BigDecimal peakPrice;
 
     /**
      * 深谷电价(￥/kwh)
      */
-    private BigDecimal deepPrice;
+    BigDecimal deepPrice;
 
     /**
      * 测算数据时段表
      */
     @NotNull
     @Valid
-    private List<MeasurementDataTimeReq> measurementDataTimes = new ArrayList<>();
+    List<MeasurementDataTimeReq> measurementDataTimes = new ArrayList<>();
 
     /**
      * 月电价表
      */
     @NotNull
     @Valid
-    private List<MonthlyElectricityPriceReq> monthlyElectricityPrices = new ArrayList<>();
+    List<MonthlyElectricityPriceReq> monthlyElectricityPrices = new ArrayList<>();
 
 }

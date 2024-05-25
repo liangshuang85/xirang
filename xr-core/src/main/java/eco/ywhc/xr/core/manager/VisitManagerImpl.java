@@ -9,10 +9,10 @@ import eco.ywhc.xr.common.model.dto.res.AttachmentResponse;
 import eco.ywhc.xr.common.model.dto.res.VisitRes;
 import eco.ywhc.xr.common.model.entity.Visit;
 import eco.ywhc.xr.core.mapper.VisitMapper;
-import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import org.sugar.commons.exception.InvalidInputException;
 
