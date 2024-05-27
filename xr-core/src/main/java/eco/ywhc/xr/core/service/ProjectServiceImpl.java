@@ -306,7 +306,7 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     public int updateOne(@NonNull Long id, @NonNull ProjectReq req) {
-        validateRequest(req, null);
+        validateRequest(req, id);
         Project project = projectManager.mustFoundEntityById(id);
         // 获取任务清单Guid
         String tasklistGuid = taskManager.findAnyTaskByRefId(id).getTasklistGuid();
