@@ -29,9 +29,9 @@ public class PermissionAssignment extends BaseEntity implements IdentifiableEnti
     private Long id;
 
     /**
-     * 角色ID
+     * 主体ID
      */
-    private Long roleId;
+    private Long subjectId;
 
     /**
      * 权限编码

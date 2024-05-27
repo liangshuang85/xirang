@@ -105,7 +105,7 @@ public class InstanceRoleManagerImpl implements InstanceRoleManager {
     public Set<String> listPermissionCodesById(long id) {
         QueryWrapper<PermissionAssignment> qw = new QueryWrapper<>();
         qw.lambda().eq(PermissionAssignment::getDeleted, 0)
-                .eq(PermissionAssignment::getRoleId, id);
+                .eq(PermissionAssignment::getSubjectId, id);
         return permissionAssignmentMapper.selectList(qw).stream()
                 .map(PermissionAssignment::getPermissionCode)
                 .collect(Collectors.toSet());
@@ -126,7 +126,7 @@ public class InstanceRoleManagerImpl implements InstanceRoleManager {
         }
         QueryWrapper<PermissionAssignment> qw = new QueryWrapper<>();
         qw.lambda().eq(PermissionAssignment::getDeleted, 0)
-                .in(PermissionAssignment::getRoleId, ids);
+                .in(PermissionAssignment::getSubjectId, ids);
         return permissionAssignmentMapper.selectList(qw).stream()
                 .map(PermissionAssignment::getPermissionCode)
                 .collect(Collectors.toSet());
@@ -146,7 +146,7 @@ public class InstanceRoleManagerImpl implements InstanceRoleManager {
         List<PermissionAssignment> permissionAssignments = pendingToGrant.stream()
                 .map(i -> {
                     PermissionAssignment permissionAssignment = new PermissionAssignment();
-                    permissionAssignment.setRoleId(id);
+                    permissionAssignment.setSubjectId(id);
                     permissionAssignment.setPermissionCode(i);
                     return permissionAssignment;
                 })
@@ -161,7 +161,7 @@ public class InstanceRoleManagerImpl implements InstanceRoleManager {
         }
         UpdateWrapper<PermissionAssignment> uw = new UpdateWrapper<>();
         uw.lambda().eq(PermissionAssignment::getDeleted, 0)
-                .eq(PermissionAssignment::getRoleId, id)
+                .eq(PermissionAssignment::getSubjectId, id)
                 .in(PermissionAssignment::getPermissionCode, permissionCodes)
                 .set(PermissionAssignment::getDeleted, 1);
         permissionAssignmentMapper.update(uw);
@@ -185,9 +185,9 @@ public class InstanceRoleManagerImpl implements InstanceRoleManager {
         }
         QueryWrapper<PermissionAssignment> qw = new QueryWrapper<>();
         qw.lambda().eq(PermissionAssignment::getDeleted, 0)
-                .in(PermissionAssignment::getRoleId, ids);
+                .in(PermissionAssignment::getSubjectId, ids);
         return permissionAssignmentMapper.selectList(qw).stream()
-                .collect(Collectors.groupingBy(PermissionAssignment::getRoleId,
+                .collect(Collectors.groupingBy(PermissionAssignment::getSubjectId,
                         Collectors.mapping(PermissionAssignment::getPermissionCode, Collectors.toSet())));
     }
 
