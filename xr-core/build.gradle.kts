@@ -16,14 +16,17 @@ dependencies {
         exclude(group = "software.amazon.awssdk", module = "netty-nio-client")
         exclude(group = "software.amazon.awssdk", module = "apache-client")
     }
+    implementation(libs.bcpkix.jdk18on)
     implementation(libs.caffeine)
     implementation(libs.commons.collections4)
     implementation(libs.commons.lang3)
     implementation(libs.commons.io)
+    implementation(libs.ksuid)
     implementation(libs.lark.oapi.sdk) {
         exclude(group = "commons-logging", module = "commons-logging")
     }
     implementation(libs.mybatis.plus.spring.boot3.starter)
+    implementation(libs.nimbus.jose.jwt)
     implementation(libs.spring.boot.starter.aop)
     implementation(libs.spring.boot.starter.data.redis)
     implementation(libs.spring.boot.starter.validation)

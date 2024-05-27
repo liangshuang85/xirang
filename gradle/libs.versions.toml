@@ -2,12 +2,13 @@
 aliyun-java-sdk-core = "4.6.3"
 aliyun-sms = "2.0.22"
 awssdk = "2.20.92"
+bcpkix-jdk18on = "1.78"
 caffeine = "3.1.8"
 commons-collections4 = "4.4"
 commons-io = "2.16.1"
 commons-lang3 = "3.14.0"
 flyway = "9.22.3"
-lombok-plugin = "8.6"
+ksuid = "1.1.2"
 gradle-git-properties-plugin = "2.4.1"
 guava = "33.1.0-jre"
 jackson = "2.15.4"
@@ -15,9 +16,11 @@ jsr305 = "3.0.2"
 lark-oapi-sdk = "2.2.6"
 lettuce = "6.3.2.RELEASE"
 lombok = "1.18.32"
+lombok-plugin = "8.6"
 mapstruct = "1.5.5.Final"
 mybatis-plus = "3.5.5"
 mysql-connector = "8.3.0"
+nimbus-jose-jwt = "9.39.1"
 p6spy-spring-boot-starter = "1.9.1"
 spring-boot = "3.2.5"
 spring-dependency-management-plugin = "1.1.4"
@@ -32,6 +35,7 @@ aliyun-java-sdk-core = { module = "com.aliyun:aliyun-java-sdk-core", version.ref
 aliyun-sms = { module = "com.aliyun:alibabacloud-dysmsapi20170525", version.ref = "aliyun-sms" }
 aws-apache-client = { module = "software.amazon.awssdk:apache-client", version.ref = "awssdk" }
 aws-s3 = { module = "software.amazon.awssdk:s3", version.ref = "awssdk" }
+bcpkix-jdk18on = { module = "org.bouncycastle:bcpkix-jdk18on", version.ref = "bcpkix-jdk18on" }
 caffeine = { module = "com.github.ben-manes.caffeine:caffeine", version.ref = "caffeine" }
 commons-collections4 = { module = "org.apache.commons:commons-collections4", version.ref = "commons-collections4" }
 commons-io = { module = "commons-io:commons-io", version.ref = "commons-io" }
@@ -40,6 +44,7 @@ flyway-mysql = { module = "org.flywaydb:flyway-mysql", version.ref = "flyway" }
 guava = { module = "com.google.guava:guava", version.ref = "guava" }
 jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind", version.ref = "jackson" }
 jsr305 = { module = "com.google.code.findbugs:jsr305", version.ref = "jsr305" }
+ksuid = { module = "com.github.ksuid:ksuid", version.ref = "ksuid" }
 lark-oapi-sdk = { module = "com.larksuite.oapi:oapi-sdk", version.ref = "lark-oapi-sdk" }
 lettuce-core = { module = "io.lettuce:lettuce-core", version.ref = "lettuce" }
 lombok = { module = "org.projectlombok:lombok", version.ref = "lombok" }
@@ -49,6 +54,7 @@ mybatis-plus-core = { module = "com.baomidou:mybatis-plus-core", version.ref = "
 mybatis-plus-extension = { module = "com.baomidou:mybatis-plus-extension", version.ref = "mybatis-plus" }
 mybatis-plus-spring-boot3-starter = { module = "com.baomidou:mybatis-plus-spring-boot3-starter", version.ref = "mybatis-plus" }
 mysql-connector-j = { module = "com.mysql:mysql-connector-j", version.ref = "mysql-connector" }
+nimbus-jose-jwt = { module = "com.nimbusds:nimbus-jose-jwt", version.ref = "nimbus-jose-jwt" }
 p6spy-spring-boot-starter = { module = "com.github.gavlyukovskiy:p6spy-spring-boot-starter", version.ref = "p6spy-spring-boot-starter" }
 spring-boot-configuration-processor = { module = "org.springframework.boot:spring-boot-configuration-processor", version.ref = "spring-boot" }
 spring-boot-starter = { module = "org.springframework.boot:spring-boot-starter", version.ref = "spring-boot" }
