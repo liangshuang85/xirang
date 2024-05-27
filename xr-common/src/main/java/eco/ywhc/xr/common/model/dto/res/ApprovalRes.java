@@ -43,6 +43,11 @@ public class ApprovalRes implements BaseRestResponse {
     /**
      * 待审批人
      */
+    private List<AssigneeRes> pendingAssignees = new ArrayList<>();
+
+    /**
+     * 审批人
+     */
     private List<AssigneeRes> assignees = new ArrayList<>();
 
     /**

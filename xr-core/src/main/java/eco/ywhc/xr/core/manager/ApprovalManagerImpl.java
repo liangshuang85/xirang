@@ -18,6 +18,7 @@ import eco.ywhc.xr.common.model.lark.LarkEmployee;
 import eco.ywhc.xr.core.manager.lark.LarkEmployeeManager;
 import eco.ywhc.xr.core.mapper.ApprovalMapper;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import org.sugar.commons.exception.InternalErrorException;
@@ -37,6 +38,7 @@ import java.util.Optional;
  */
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class ApprovalManagerImpl implements ApprovalManager {
 
     private final Client client;
@@ -107,11 +109,14 @@ public class ApprovalManagerImpl implements ApprovalManager {
         GetInstanceResp resp;
         try {
             resp = client.approval().instance().get(req);
-            if (!resp.success()) {
-                throw new InternalErrorException("获取审批实例失败");
-            }
+
         } catch (Exception e) {
+            log.error("获取审批实例失败:{}", e.getMessage());
             throw new InternalErrorException(e);
+        }
+        if (!resp.success()) {
+            log.error("获取审批实例失败:{}", resp.getMsg());
+            throw new InternalErrorException("获取审批实例失败");
         }
         GetInstanceRespBody approvalData = resp.getData();
         ApprovalStatusType approvalStatusType = ApprovalStatusType.valueOf(approvalData.getStatus());
@@ -145,6 +150,9 @@ public class ApprovalManagerImpl implements ApprovalManager {
                 })
                 .toList();
         res.setAssignees(assignees);
+        if (approvalStatusType == ApprovalStatusType.PENDING) {
+            res.setPendingAssignees(assignees);
+        }
 
         List<String> appLinks = Arrays.stream(taskList)
                 .filter(instanceTask -> res.getApprovalStatus().name().equals(instanceTask.getStatus()))
