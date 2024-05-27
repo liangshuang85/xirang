@@ -228,8 +228,8 @@ public class ProjectServiceImpl implements ProjectService {
                 TaskRes taskRes = taskConverter.toResponse(task);
                 InstanceRole instanceRole = instanceRoleManager.findEntityById(task.getInstanceRoleId());
                 taskRes.setInstanceRoleName(instanceRole.getName());
-                //如果任务状态为待发起，则显示实例角色成员
-                if (task.getStatus() == TaskStatusType.pending) {
+                //如果任务状态为待发起或已删除，则显示实例角色成员
+                if (task.getStatus() == TaskStatusType.pending || task.getStatus() == TaskStatusType.deleted) {
                     Set<String> memberIds = instanceRoleLarkMemberRes.stream()
                             .filter(i -> i.getInstanceRoleId().equals(task.getInstanceRoleId()))
                             .findFirst()

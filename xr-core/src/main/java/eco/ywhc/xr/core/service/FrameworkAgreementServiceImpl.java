@@ -241,8 +241,8 @@ public class FrameworkAgreementServiceImpl implements FrameworkAgreementService 
             if (task.getTaskGuid() == null) {
                 InstanceRole instanceRole = instanceRoleManager.findEntityById(task.getInstanceRoleId());
                 TaskRes taskRes = taskConverter.toResponse(task);
-                // 如果任务状态为待发起，则显示实例角色成员
-                if (task.getStatus() == TaskStatusType.pending) {
+                // 如果任务状态为待发起或者已删除，则显示实例角色成员
+                if (task.getStatus() == TaskStatusType.pending || task.getStatus() == TaskStatusType.deleted) {
                     Set<String> memberIds = instanceRoleLarkMembers.stream()
                             .filter(i -> i.getInstanceRoleId().equals(task.getInstanceRoleId()))
                             .findFirst()
