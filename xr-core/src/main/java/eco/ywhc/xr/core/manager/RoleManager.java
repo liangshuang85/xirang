@@ -91,11 +91,4 @@ public interface RoleManager {
      */
     Set<String> listGrantedPermissionCodes(Collection<Long> ids);
 
-    /**
-     * 获取全部角色
-     *
-     * @param permissionCode 权限编码
-     */
-    List<Long> findAllEntitiesByPermissionCode(String permissionCode);
-
 }

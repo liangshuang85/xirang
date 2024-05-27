@@ -60,4 +60,11 @@ public interface PermissionManager {
     @Nullable
     Permission findEntityByCode(String code);
 
+    /**
+     * 检查列表中的权限编码是否都存在，{@code codes}为空时抛出异常
+     *
+     * @param codes 权限编码列表
+     */
+    boolean allExist(Collection<String> codes);
+
 }

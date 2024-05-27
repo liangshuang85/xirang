@@ -6,9 +6,9 @@ import eco.ywhc.xr.common.model.dto.req.PermissionReq;
 import eco.ywhc.xr.common.model.dto.res.PermissionRes;
 import eco.ywhc.xr.common.model.entity.Permission;
 import eco.ywhc.xr.common.model.entity.PermissionResource;
+import eco.ywhc.xr.core.manager.PermissionAssignmentManager;
 import eco.ywhc.xr.core.manager.PermissionManager;
 import eco.ywhc.xr.core.manager.PermissionResourceManager;
-import eco.ywhc.xr.core.manager.RoleManager;
 import eco.ywhc.xr.core.mapper.PermissionMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,6 +29,8 @@ import java.util.stream.Collectors;
 @Slf4j
 public class PermissionServiceImpl implements PermissionService {
 
+    private final PermissionAssignmentManager permissionAssignmentManager;
+
     private final PermissionConverter permissionConverter;
 
     private final PermissionMapper permissionMapper;
@@ -36,8 +38,6 @@ public class PermissionServiceImpl implements PermissionService {
     private final PermissionManager permissionManager;
 
     private final PermissionResourceManager permissionResourceManager;
-
-    private final RoleManager roleManager;
 
     @Override
     public Long createOne(PermissionReq req) {
@@ -89,7 +89,7 @@ public class PermissionServiceImpl implements PermissionService {
         if (permission.getBuiltIn()) {
             throw new InvalidInputException("不能删除内置权限");
         }
-        List<Long> roleIds = roleManager.findAllEntitiesByPermissionCode(permission.getCode());
+        List<Long> roleIds = permissionAssignmentManager.listAllSubjectIdsByPermissionCode(permission.getCode());
         if (CollectionUtils.isNotEmpty(roleIds)) {
             throw new ConditionNotMetException("权限仍在使用，不能删除");
         }

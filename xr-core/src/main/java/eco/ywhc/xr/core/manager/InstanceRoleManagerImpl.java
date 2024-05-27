@@ -28,6 +28,8 @@ public class InstanceRoleManagerImpl implements InstanceRoleManager {
 
     private final PermissionAssignmentMapper permissionAssignmentMapper;
 
+    private final PermissionAssignmentManager permissionAssignmentManager;
+
     @Override
     public void configureInstanceRoleMembers(InstanceRefType refType, long refId, List<InstanceRoleLarkMemberReq> reqs) {
         QueryWrapper<InstanceRoleLarkMember> qw = new QueryWrapper<>();
@@ -103,12 +105,7 @@ public class InstanceRoleManagerImpl implements InstanceRoleManager {
 
     @Override
     public Set<String> listPermissionCodesById(long id) {
-        QueryWrapper<PermissionAssignment> qw = new QueryWrapper<>();
-        qw.lambda().eq(PermissionAssignment::getDeleted, 0)
-                .eq(PermissionAssignment::getSubjectId, id);
-        return permissionAssignmentMapper.selectList(qw).stream()
-                .map(PermissionAssignment::getPermissionCode)
-                .collect(Collectors.toSet());
+        return permissionAssignmentManager.listAllPermissionCodesBySubjectId(id);
     }
 
     @Override
@@ -120,16 +117,8 @@ public class InstanceRoleManagerImpl implements InstanceRoleManager {
     }
 
     @Override
-    public Set<String> listPermissionCodes(Collection<Long> ids) {
-        if (CollectionUtils.isEmpty(ids)) {
-            return Collections.emptySet();
-        }
-        QueryWrapper<PermissionAssignment> qw = new QueryWrapper<>();
-        qw.lambda().eq(PermissionAssignment::getDeleted, 0)
-                .in(PermissionAssignment::getSubjectId, ids);
-        return permissionAssignmentMapper.selectList(qw).stream()
-                .map(PermissionAssignment::getPermissionCode)
-                .collect(Collectors.toSet());
+    public Set<String> listGrantedPermissionCodes(Collection<Long> ids) {
+        return permissionAssignmentManager.listAllPermissionCodesBySubjectIds(ids);
     }
 
     @Override
@@ -179,19 +168,6 @@ public class InstanceRoleManagerImpl implements InstanceRoleManager {
     }
 
     @Override
-    public Map<Long, Set<String>> listPermissionCodesByIds(Collection<Long> ids) {
-        if (CollectionUtils.isEmpty(ids)) {
-            return Collections.emptyMap();
-        }
-        QueryWrapper<PermissionAssignment> qw = new QueryWrapper<>();
-        qw.lambda().eq(PermissionAssignment::getDeleted, 0)
-                .in(PermissionAssignment::getSubjectId, ids);
-        return permissionAssignmentMapper.selectList(qw).stream()
-                .collect(Collectors.groupingBy(PermissionAssignment::getSubjectId,
-                        Collectors.mapping(PermissionAssignment::getPermissionCode, Collectors.toSet())));
-    }
-
-    @Override
     public Map<Long, Set<String>> listPermissionCodesByRefIdsAndMemberId(Collection<Long> refIds, String memberId) {
         if (CollectionUtils.isEmpty(refIds)) {
             return Collections.emptyMap();
@@ -208,7 +184,7 @@ public class InstanceRoleManagerImpl implements InstanceRoleManager {
         }
         Map<Long, Set<String>> result = new HashMap<>();
         for (Map.Entry<Long, List<Long>> entry : instanceInstanceRoleIdMap.entrySet()) {
-            result.put(entry.getKey(), listPermissionCodes(entry.getValue()));
+            result.put(entry.getKey(), listGrantedPermissionCodes(entry.getValue()));
         }
         return result;
     }
@@ -216,7 +192,7 @@ public class InstanceRoleManagerImpl implements InstanceRoleManager {
     @Override
     public Set<String> listPermissionCodesByRefIdAndMemberId(long refId, String memberId) {
         Set<Long> instanceRoleIds = findAllInstanceRoleIdsByRefIdAndMemberId(refId, memberId);
-        return listPermissionCodes(instanceRoleIds);
+        return listGrantedPermissionCodes(instanceRoleIds);
     }
 
     @Override

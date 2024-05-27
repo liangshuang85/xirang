@@ -134,8 +134,7 @@ public class RoleServiceImpl implements RoleService {
         if (CollectionUtils.isEmpty(permissionCodes)) {
             return;
         }
-        Set<String> allPermissionCodes = permissionManager.findAllPermissionCodes();
-        if (!allPermissionCodes.containsAll(permissionCodes)) {
+        if (!permissionManager.allExist(permissionCodes)) {
             throw new InvalidInputException("权限编码列表错误");
         }
     }

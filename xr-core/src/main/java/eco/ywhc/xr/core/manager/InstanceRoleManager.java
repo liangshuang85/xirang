@@ -66,7 +66,7 @@ public interface InstanceRoleManager {
      *
      * @param ids 实例角色ID列表
      */
-    Set<String> listPermissionCodes(Collection<Long> ids);
+    Set<String> listGrantedPermissionCodes(Collection<Long> ids);
 
     /**
      * 授予角色权限
@@ -91,14 +91,6 @@ public interface InstanceRoleManager {
      * @param memberId 实例角色成员的飞书OpenID
      */
     Set<Long> findAllInstanceRoleIdsByRefIdAndMemberId(long refId, String memberId);
-
-    /**
-     * 获取实例角色ID列表中的实例角色当前被授予的全部权限资源的编码
-     *
-     * @param ids 实例角色ID列表
-     * @return Key为实例角色ID，Value为实例角色权限编码列表
-     */
-    Map<Long, Set<String>> listPermissionCodesByIds(Collection<Long> ids);
 
     /**
      * 列出实例ID列表中实例的全部实例权限编码

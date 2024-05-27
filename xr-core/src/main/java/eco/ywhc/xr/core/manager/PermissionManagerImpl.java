@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
+import org.sugar.commons.exception.InternalErrorException;
 import org.sugar.commons.exception.ResourceNotFoundException;
 
 import java.util.*;
@@ -81,6 +82,15 @@ public class PermissionManagerImpl implements PermissionManager {
         qw.lambda().eq(Permission::getDeleted, 0)
                 .eq(Permission::getCode, code);
         return permissionMapper.selectOne(qw);
+    }
+
+    @Override
+    public boolean allExist(Collection<String> codes) {
+        if (CollectionUtils.isEmpty(codes)) {
+            throw new InternalErrorException("权限编码列表错误");
+        }
+        final List<Permission> foundPermissionCodes = findAllEntitiesByPermissionCodes(Set.copyOf(codes));
+        return foundPermissionCodes.size() == codes.size();
     }
 
 }
