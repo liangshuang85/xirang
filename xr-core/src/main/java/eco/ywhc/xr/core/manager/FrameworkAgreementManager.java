@@ -43,4 +43,11 @@ public interface FrameworkAgreementManager extends BaseManager<Long, FrameworkAg
      */
     void compareAndUpdateStatus(FrameworkAgreement frameworkAgreement);
 
+    /**
+     * 根据关联线索ID查询是否存在框架协议
+     *
+     * @param clueId 关联线索ID
+     */
+    boolean isExistByClueId(long clueId);
+
 }

@@ -37,4 +37,11 @@ public interface ProjectManager extends BaseManager<Long, Project, ProjectReq, P
      */
     void findAndSetAttachments(ProjectRes res);
 
+    /**
+     * 根据关联框架协议ID查询是否存在项目
+     *
+     * @param frameworkAgreementId 关联框架协议ID
+     */
+    boolean isExistByFrameworkAgreementId(long frameworkAgreementId);
+
 }

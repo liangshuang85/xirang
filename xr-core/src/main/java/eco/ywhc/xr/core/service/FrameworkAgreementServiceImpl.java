@@ -29,6 +29,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
+import org.sugar.commons.exception.ConditionNotMetException;
 import org.sugar.commons.exception.InternalErrorException;
 import org.sugar.commons.exception.UniqueViolationException;
 import org.sugar.crud.model.PageableModelSet;
@@ -76,6 +77,8 @@ public class FrameworkAgreementServiceImpl implements FrameworkAgreementService 
     private final ChangeManager changeManager;
 
     private final BasicDataManager basicDataManager;
+
+    private final ProjectManager projectManager;
 
     public String generateUniqueId() {
         QueryWrapper<FrameworkAgreement> qw = new QueryWrapper<>();
@@ -395,6 +398,9 @@ public class FrameworkAgreementServiceImpl implements FrameworkAgreementService 
 
     @Override
     public int logicDeleteOne(@NonNull Long id) {
+        if (projectManager.isExistByFrameworkAgreementId(id)) {
+            throw new ConditionNotMetException("该框架协议存在关联项目，需要先删除关联项目才能删除此框架协议");
+        }
         attachmentManager.deleteByOwnerId(id);
         attachmentManager.deleteByOwnerId(frameworkAgreementManager.getChannelEntryByFrameworkAgreementId(id).getId());
         frameworkAgreementChannelEntryMapper.logicDeleteEntityById(frameworkAgreementManager.getChannelEntryByFrameworkAgreementId(id).getId());

@@ -103,4 +103,12 @@ public class FrameworkAgreementManagerImpl implements FrameworkAgreementManager 
         }
     }
 
+    @Override
+    public boolean isExistByClueId(long clueId) {
+        QueryWrapper<FrameworkAgreement> qw = new QueryWrapper<>();
+        qw.lambda().eq(FrameworkAgreement::getDeleted, false)
+                .eq(FrameworkAgreement::getClueId, clueId);
+        return frameworkAgreementMapper.exists(qw);
+    }
+
 }

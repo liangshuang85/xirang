@@ -90,4 +90,12 @@ public class ProjectManagerImpl implements ProjectManager {
         res.setPreliminaryDesignAttachments(preliminaryDesigneAttachments);
     }
 
+    @Override
+    public boolean isExistByFrameworkAgreementId(long frameworkAgreementId) {
+        QueryWrapper<Project> qw = new QueryWrapper<>();
+        qw.lambda().eq(Project::getDeleted, 0)
+                .eq(Project::getFrameworkAgreementId, frameworkAgreementId);
+        return projectMapper.exists(qw);
+    }
+
 }

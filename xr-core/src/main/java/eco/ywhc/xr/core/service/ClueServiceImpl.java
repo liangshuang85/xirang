@@ -64,6 +64,8 @@ public class ClueServiceImpl implements ClueService {
 
     private final BasicDataManager basicDataManager;
 
+    private final FrameworkAgreementManager frameworkAgreementManager;
+
     @Override
     public Long createOne(@NonNull ClueReq req) {
         List<Clue> effectiveEntityByAdcode = clueManager.findEffectiveEntityByAdcode(req.getAdcode());
@@ -263,6 +265,9 @@ public class ClueServiceImpl implements ClueService {
     @Override
     public int logicDeleteOne(@NonNull Long id) {
         clueManager.mustFoundEntityById(id);
+        if (frameworkAgreementManager.isExistByClueId(id)) {
+            throw new ConditionNotMetException("该线索存在关联框架协议，需要先删除关联框架协议才能删除此线索");
+        }
         int affected = clueMapper.logicDeleteEntityById(id);
 
         channelEntryManager.logicDeleteEntityByClueId(id);
