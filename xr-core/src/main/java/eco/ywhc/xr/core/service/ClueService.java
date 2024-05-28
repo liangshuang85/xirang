@@ -1,5 +1,6 @@
 package eco.ywhc.xr.core.service;
 
+import eco.ywhc.xr.common.constant.ClueStatusType;
 import eco.ywhc.xr.common.model.dto.req.ClueReq;
 import eco.ywhc.xr.common.model.dto.res.ClueRes;
 import eco.ywhc.xr.common.model.entity.Clue;
@@ -8,6 +9,9 @@ import org.springframework.lang.NonNull;
 import org.springframework.transaction.annotation.Transactional;
 import org.sugar.crud.model.PageableModelSet;
 import org.sugar.crud.service.BaseService;
+
+import java.util.List;
+import java.util.Map;
 
 /**
  * 线索
@@ -39,5 +43,12 @@ public interface ClueService extends BaseService<Long, Clue, ClueReq, ClueRes, C
      * @param id 线索Id
      */
     int logicDeleteOne(@NonNull Long id);
+
+    /**
+     * 根据线索ID动态改变线索状态表
+     *
+     * @param id 线索Id
+     */
+    Map<ClueStatusType, List<ClueStatusType>> getMap(@NonNull Long id);
 
 }

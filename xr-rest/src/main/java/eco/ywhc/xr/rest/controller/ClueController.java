@@ -83,14 +83,18 @@ public class ClueController {
 
     /**
      * 获取线索状态表
+     * <p>
+     * 返回一个Map对象，其中
      * <br>
-     * key:线索当前状态
+     * key：线索当前状态
      * <br>
      * value：当前状态可以变更为的状态列表
+     *
+     * @param id 线索ID
      */
     @GetMapping("/clues/status")
-    public Map<ClueStatusType, List<ClueStatusType>> getMap() {
-        return ClueStatus.getMap();
+    public Map<ClueStatusType, List<ClueStatusType>> getMap(@RequestParam(required = false) Long id) {
+        return clueService.getMap(id);
     }
 
     /**

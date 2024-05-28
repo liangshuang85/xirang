@@ -8,10 +8,12 @@ import eco.ywhc.xr.common.converter.ClueConverter;
 import eco.ywhc.xr.common.event.ClueCreatedEvent;
 import eco.ywhc.xr.common.event.ClueUpdatedEvent;
 import eco.ywhc.xr.common.event.StatusChangedEvent;
+import eco.ywhc.xr.common.model.ClueStatus;
 import eco.ywhc.xr.common.model.RequestContextUser;
 import eco.ywhc.xr.common.model.dto.req.ClueReq;
 import eco.ywhc.xr.common.model.dto.req.VisitReq;
 import eco.ywhc.xr.common.model.dto.res.*;
+import eco.ywhc.xr.common.model.entity.AdministrativeDivision;
 import eco.ywhc.xr.common.model.entity.Clue;
 import eco.ywhc.xr.common.model.lark.LarkEmployee;
 import eco.ywhc.xr.common.model.query.ClueQuery;
@@ -276,6 +278,21 @@ public class ClueServiceImpl implements ClueService {
         changeManager.bulkDeleteByRefId(id);
         basicDataManager.deleteEntityByRefId(id);
         return affected;
+    }
+
+    @Override
+    public Map<ClueStatusType, List<ClueStatusType>> getMap(@NonNull Long id) {
+        Map<ClueStatusType, List<ClueStatusType>> map = new HashMap<>(ClueStatus.getMap());
+        Clue clue = clueMapper.findEntityById(id);
+        if (clue == null) {
+            return map;
+        }
+        AdministrativeDivision division = administrativeDivisionManager.findEntityByAdcode(clue.getAdcode());
+        if (division.getLevel() == 3) {
+            map.remove(ClueStatusType.CLUE_DERIVABLE);
+            map.put(ClueStatusType.CLUE_FOLLOW, List.of(ClueStatusType.CLUE_PROPOSABLE, ClueStatusType.CLUE_CLOSE));
+        }
+        return map;
     }
 
 }
