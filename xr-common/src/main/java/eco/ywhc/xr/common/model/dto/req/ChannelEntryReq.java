@@ -9,49 +9,49 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * 线索渠道录入Req
+ * 渠道录入信息Req
  */
 @Value
 public class ChannelEntryReq implements BaseRestRequest {
 
     /**
-     * 合伙人姓名
+     * 渠道合伙人姓名
      */
     @Size(max = 100)
     String partnerName;
 
     /**
-     * 工作背景
+     * 重要工作背景
      */
-    @Size(max = 255)
+    @Size(max = 2000)
     String background;
 
     /**
-     * 社会关系
+     * 重要社会关系
      */
-    @Size(max = 255)
+    @Size(max = 2000)
     String socialRelations;
 
     /**
-     * 联系人姓名
+     * 关键联系人姓名
      */
     @Size(max = 100)
     String contactName;
 
     /**
-     * 对接人姓名
+     * 政府对接人姓名
      */
     @Size(max = 100)
     String counterpartName;
 
     /**
-     * 联系人职务
+     * 关键联系人职务
      */
     @Size(max = 200)
     String contactPosition;
 
     /**
-     * 对接人姓名
+     * 政府对接人职务
      */
     @Size(max = 200)
     String counterpartPosition;

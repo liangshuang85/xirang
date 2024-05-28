@@ -70,7 +70,7 @@ public class FrameworkAgreementRes implements BaseRestResponse {
     /**
      * 框架协议项目渠道录入信息Res
      */
-    FrameworkAgreementChannelEntryRes frameworkAgreementChannelEntry;
+    ChannelEntryRes frameworkAgreementChannelEntry;
 
     /**
      * 框架协议关联的任务

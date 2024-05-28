@@ -21,7 +21,6 @@ import eco.ywhc.xr.common.model.lark.LarkEmployee;
 import eco.ywhc.xr.common.model.query.ProjectQuery;
 import eco.ywhc.xr.core.manager.*;
 import eco.ywhc.xr.core.manager.lark.LarkEmployeeManager;
-import eco.ywhc.xr.core.mapper.ProjectInformationMapper;
 import eco.ywhc.xr.core.mapper.ProjectMapper;
 import eco.ywhc.xr.core.util.SessionUtils;
 import lombok.RequiredArgsConstructor;
@@ -46,35 +45,33 @@ public class ProjectServiceImpl implements ProjectService {
 
     private final ApplicationEventPublisher applicationEventPublisher;
 
-    private final ProjectMapper projectMapper;
-
-    private final ProjectInformationMapper projectInformationMapper;
-
-    private final ProjectManager projectManager;
-
-    private final LarkEmployeeManager larkEmployeeManager;
-
     private final AdministrativeDivisionManager administrativeDivisionManager;
-
-    private final TaskManager taskManager;
-
-    private final BasicDataManager basicDataManager;
-
-    private final ProjectConverter projectConverter;
-
-    private final ProjectInformationConverter projectInformationConverter;
-
-    private final TaskConverter taskConverter;
 
     private final ApprovalManager approvalManager;
 
     private final AttachmentManager attachmentManager;
 
-    private final InstanceRoleLarkMemberManager instanceRoleLarkMemberManager;
+    private final BasicDataManager basicDataManager;
+
+    private final ChangeManager changeManager;
 
     private final InstanceRoleManager instanceRoleManager;
 
-    private final ChangeManager changeManager;
+    private final InstanceRoleLarkMemberManager instanceRoleLarkMemberManager;
+
+    private final LarkEmployeeManager larkEmployeeManager;
+
+    private final ProjectConverter projectConverter;
+
+    private final ProjectInformationConverter projectInformationConverter;
+
+    private final ProjectMapper projectMapper;
+
+    private final ProjectManager projectManager;
+
+    private final TaskConverter taskConverter;
+
+    private final TaskManager taskManager;
 
     private final VisitManager visitManager;
 
@@ -98,10 +95,8 @@ public class ProjectServiceImpl implements ProjectService {
         project.setCode(generateUniqueId());
         projectMapper.insert(project);
         projectManager.compareAndUpdateAttachments(req, project.getId());
-        ProjectInformation projectInformation = projectInformationConverter.fromRequest(req.getProjectInformation());
-        projectInformation.setProjectId(project.getId());
-        projectInformationMapper.insert(projectInformation);
-
+        // 创建项目信息
+        projectManager.createProjectInformation(req.getProjectInformation(), project.getId());
         // 创建基础信息
         basicDataManager.createOne(req.getBasicData(), project.getId());
         // 创建拜访记录
@@ -319,12 +314,8 @@ public class ProjectServiceImpl implements ProjectService {
         projectConverter.update(req, project);
         projectManager.compareAndUpdateAttachments(req, project.getId());
         int affected = projectMapper.updateById(project);
-
-        ProjectInformation projectInformation = projectManager.getProjectInformationByProjectId(id);
-        projectInformationConverter.update(req.getProjectInformation(), projectInformation);
-        projectInformation.setProjectId(id);
-        projectInformationMapper.updateById(projectInformation);
-
+        // 更新项目信息
+        projectManager.updateProjectInformation(req.getProjectInformation(), id);
         // 更新基础数据
         basicDataManager.updateOne(req.getBasicData(), id);
         // 更新拜访记录
@@ -361,9 +352,13 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     public int logicDeleteOne(@NonNull Long id) {
-        projectInformationMapper.logicDeleteEntityById(projectManager.getProjectInformationByProjectId(id).getId());
+        // 逻辑删除项目信息
+        projectManager.logicDeleteProjectInformation(id);
+        // 逻辑删除任务
         taskManager.logicDeleteEntityById(id);
+        // 逻辑删除附件
         attachmentManager.deleteByOwnerId(id);
+        //逻辑删除变更记录
         changeManager.bulkDeleteByRefId(id);
         // 逻辑删除基础信息
         basicDataManager.deleteEntityByRefId(id);

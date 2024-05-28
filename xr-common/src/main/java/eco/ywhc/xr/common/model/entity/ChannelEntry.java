@@ -10,7 +10,7 @@ import org.sugar.crud.entity.IdentifiableEntity;
 import java.io.Serial;
 
 /**
- * 线索录入渠道
+ * 渠道录入信息
  */
 @Getter
 @Setter
@@ -18,55 +18,49 @@ import java.io.Serial;
 public class ChannelEntry extends BaseEntity implements IdentifiableEntity<Long> {
 
     @Serial
-    private static final long serialVersionUID = 1848034602548293788L;
+    private static final long serialVersionUID = -8867367104509501448L;
 
     @TableId(type = IdType.ASSIGN_ID)
     private Long id;
 
     /**
-     * 线索ID
+     * 关联对象ID
      */
-    private Long clueId;
+    private Long refId;
 
     /**
-     * 合伙人姓名
+     * 渠道合伙人姓名
      */
     private String partnerName;
 
     /**
-     * 工作背景
+     * 重要工作背景
      */
     private String background;
 
     /**
-     * 社会关系
+     * 重要社会关系
      */
     private String socialRelations;
 
     /**
-     * 联系人姓名
+     * 关键联系人姓名
      */
     private String contactName;
 
     /**
-     * 对接人姓名
+     * 政府对接人姓名
      */
     private String counterpartName;
 
     /**
-     * 联系人职务
+     * 关键联系人职务
      */
     private String contactPosition;
 
     /**
-     * 对接人姓名
+     * 政府对接人职务
      */
     private String counterpartPosition;
 
-    /**
-     * 线索状态
-     */
-    private String status = "";
-
 }
-

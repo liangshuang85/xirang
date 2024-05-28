@@ -2,46 +2,44 @@ package eco.ywhc.xr.core.manager;
 
 import eco.ywhc.xr.common.model.dto.req.ChannelEntryReq;
 import eco.ywhc.xr.common.model.dto.res.ChannelEntryRes;
-import eco.ywhc.xr.common.model.entity.ChannelEntry;
-import org.springframework.lang.NonNull;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * 渠道录入信息(eco.ywhc.xr.common.model.entity.BChannelEntry)表服务接口
- *
- * @author makejava
- * @since 2024-04-18 11:51:08
+ * 渠道录入信息
  */
 @Transactional(rollbackFor = {Exception.class})
 public interface ChannelEntryManager {
 
     /**
-     * 创建新的渠道
+     * 创建渠道录入信息
      *
-     * @param clueId 线索Id
+     * @param req   渠道录入信息
+     * @param refId 关联ID
      */
-    long createOne(@NonNull ChannelEntryReq req, long clueId);
+    void createChannelEntry(ChannelEntryReq req, long refId);
 
     /**
-     * 根据线索Id查找渠道
+     * 更新渠道录入信息
      *
-     * @param clueId 线索Id
+     * @param req   渠道录入信息
+     * @param refId 关联ID
      */
-    ChannelEntry findEntityByClueId(long clueId);
+    void updateChannelEntry(ChannelEntryReq req, long refId);
 
     /**
-     * 根据线索Id查找渠道并转换成Res
+     * 逻辑删除渠道录入信息
      *
-     * @param clueId 线索Id
+     * @param refId 关联ID
      */
-    ChannelEntryRes findByClueId(long clueId);
+    void logicDeleteChannelEntry(long refId);
 
     /**
-     * 将线索Id对应的渠道删除
+     * 根据关联ID获取渠道录入信息
      *
-     * @param clueId 线索Id
+     * @param refId 关联ID
+     * @return 渠道录入信息
      */
-    void logicDeleteEntityByClueId(long clueId);
+    ChannelEntryRes getChannelEntryByRefId(long refId);
 
 }
 

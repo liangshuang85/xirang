@@ -1,5 +1,6 @@
 package eco.ywhc.xr.core.manager;
 
+import eco.ywhc.xr.common.model.dto.req.ProjectInformationReq;
 import eco.ywhc.xr.common.model.dto.req.ProjectReq;
 import eco.ywhc.xr.common.model.dto.res.ProjectRes;
 import eco.ywhc.xr.common.model.entity.Project;
@@ -9,11 +10,37 @@ import org.springframework.lang.NonNull;
 import org.springframework.transaction.annotation.Transactional;
 import org.sugar.crud.manager.BaseManager;
 
+/**
+ * 项目
+ */
 @Transactional(rollbackFor = {Exception.class})
 public interface ProjectManager extends BaseManager<Long, Project, ProjectReq, ProjectRes, ProjectQuery> {
 
     @Override
     Project findEntityById(@NonNull Long id);
+
+    /**
+     * 创建项目信息
+     *
+     * @param req 项目信息REQ
+     * @param id  项目ID
+     */
+    void createProjectInformation(ProjectInformationReq req, long id);
+
+    /**
+     * 更新项目信息
+     *
+     * @param req 项目信息REQ
+     * @param id  项目ID
+     */
+    void updateProjectInformation(ProjectInformationReq req, long id);
+
+    /**
+     * 逻辑删除项目信息
+     *
+     * @param id 项目ID
+     */
+    void logicDeleteProjectInformation(long id);
 
     /**
      * 根据项目ID获取项目信息

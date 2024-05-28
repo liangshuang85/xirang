@@ -2,7 +2,6 @@ package eco.ywhc.xr.core.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import eco.ywhc.xr.common.constant.*;
-import eco.ywhc.xr.common.converter.FrameworkAgreementChannelEntryConverter;
 import eco.ywhc.xr.common.converter.FrameworkAgreementConverter;
 import eco.ywhc.xr.common.converter.TaskConverter;
 import eco.ywhc.xr.common.event.FrameworkAgreementCreatedEvent;
@@ -13,12 +12,14 @@ import eco.ywhc.xr.common.exception.LarkTaskNotFoundException;
 import eco.ywhc.xr.common.model.RequestContextUser;
 import eco.ywhc.xr.common.model.dto.req.FrameworkAgreementReq;
 import eco.ywhc.xr.common.model.dto.res.*;
-import eco.ywhc.xr.common.model.entity.*;
+import eco.ywhc.xr.common.model.entity.BaseEntity;
+import eco.ywhc.xr.common.model.entity.FrameworkAgreement;
+import eco.ywhc.xr.common.model.entity.InstanceRole;
+import eco.ywhc.xr.common.model.entity.Task;
 import eco.ywhc.xr.common.model.lark.LarkEmployee;
 import eco.ywhc.xr.common.model.query.FrameworkAgreementQuery;
 import eco.ywhc.xr.core.manager.*;
 import eco.ywhc.xr.core.manager.lark.LarkEmployeeManager;
-import eco.ywhc.xr.core.mapper.FrameworkAgreementChannelEntryMapper;
 import eco.ywhc.xr.core.mapper.FrameworkAgreementMapper;
 import eco.ywhc.xr.core.util.SessionUtils;
 import lombok.RequiredArgsConstructor;
@@ -46,39 +47,37 @@ public class FrameworkAgreementServiceImpl implements FrameworkAgreementService 
 
     private final ApplicationEventPublisher applicationEventPublisher;
 
-    private final FrameworkAgreementMapper frameworkAgreementMapper;
-
-    private final FrameworkAgreementChannelEntryMapper frameworkAgreementChannelEntryMapper;
-
-    private final FrameworkAgreementConverter frameworkAgreementConverter;
-
-    private final FrameworkAgreementChannelEntryConverter frameworkAgreementChannelEntryConverter;
-
     private final AdministrativeDivisionManager administrativeDivisionManager;
-
-    private final TaskConverter taskConverter;
-
-    private final FrameworkAgreementManager frameworkAgreementManager;
-
-    private final TaskManager taskManager;
-
-    private final LarkEmployeeManager larkEmployeeManager;
 
     private final ApprovalManager approvalManager;
 
-    private final VisitManager visitManager;
-
     private final AttachmentManager attachmentManager;
-
-    private final InstanceRoleLarkMemberManager instanceRoleLarkMemberManager;
-
-    private final InstanceRoleManager instanceRoleManager;
-
-    private final ChangeManager changeManager;
 
     private final BasicDataManager basicDataManager;
 
+    private final ChangeManager changeManager;
+
+    private final ChannelEntryManager channelEntryManager;
+
+    private final FrameworkAgreementMapper frameworkAgreementMapper;
+
+    private final FrameworkAgreementConverter frameworkAgreementConverter;
+
+    private final FrameworkAgreementManager frameworkAgreementManager;
+
+    private final InstanceRoleManager instanceRoleManager;
+
+    private final InstanceRoleLarkMemberManager instanceRoleLarkMemberManager;
+
+    private final LarkEmployeeManager larkEmployeeManager;
+
     private final ProjectManager projectManager;
+
+    private final TaskConverter taskConverter;
+
+    private final TaskManager taskManager;
+
+    private final VisitManager visitManager;
 
     public String generateUniqueId() {
         QueryWrapper<FrameworkAgreement> qw = new QueryWrapper<>();
@@ -104,17 +103,13 @@ public class FrameworkAgreementServiceImpl implements FrameworkAgreementService 
         frameworkAgreementManager.compareAndUpdateAttachments(req, frameworkAgreement.getId());
         // 判断项目建议书批复状态和框架协议书签署状态
         frameworkAgreementManager.compareAndUpdateStatus(frameworkAgreement);
-
-        FrameworkAgreementChannelEntry frameworkAgreementChannelEntry = frameworkAgreementChannelEntryConverter.fromRequest(req.getFrameworkAgreementChannelEntry());
-        frameworkAgreementChannelEntry.setFrameworkAgreementId(frameworkAgreement.getId());
-        frameworkAgreementChannelEntryMapper.insert(frameworkAgreementChannelEntry);
-        frameworkAgreementManager.compareAndUpdateAttachments(req.getFrameworkAgreementChannelEntry(), frameworkAgreementChannelEntry.getId());
-
-        //插入基本数据
+        //创建渠道录入信息
+        channelEntryManager.createChannelEntry(req.getFrameworkAgreementChannelEntry(), frameworkAgreement.getId());
+        //创建基本数据
         basicDataManager.createOne(req.getBasicData(), frameworkAgreement.getId());
-
+        //创建拜访记录
         visitManager.createMany(req.getFrameworkVisits(), frameworkAgreement.getId());
-
+        // 发布框架协议已创建事件
         applicationEventPublisher.publishEvent(FrameworkAgreementCreatedEvent.of(frameworkAgreement));
 
         String tasklistGuid = taskManager.findAnyTaskByRefId(frameworkAgreement.getId()).getTasklistGuid();
@@ -132,6 +127,7 @@ public class FrameworkAgreementServiceImpl implements FrameworkAgreementService 
                 .operatorId(frameworkAgreement.getAssigneeId())
                 .lastModifiedAt(frameworkAgreement.getCreatedAt())
                 .build();
+        // 发布状态变更事件
         applicationEventPublisher.publishEvent(statusChangedEvent);
 
         return frameworkAgreement.getId();
@@ -187,9 +183,8 @@ public class FrameworkAgreementServiceImpl implements FrameworkAgreementService 
                     .avatarInfo(larkEmployee.getAvatarInfo())
                     .build();
             res.setAssignee(assignee);
-
-            FrameworkAgreementChannelEntryRes channelEntry = frameworkAgreementManager.getChannelEntryByFrameworkAgreementId(i.getId());
-            res.setFrameworkAgreementChannelEntry(channelEntry);
+            // 查询渠道录入信息
+            res.setFrameworkAgreementChannelEntry(channelEntryManager.getChannelEntryByRefId(i.getId()));
 
             res.setPermissionCodes(permissionMap.getOrDefault(i.getId(), Collections.emptySet()));
 
@@ -227,9 +222,8 @@ public class FrameworkAgreementServiceImpl implements FrameworkAgreementService 
                 .avatarInfo(larkEmployee.getAvatarInfo())
                 .build();
         res.setAssignee(assignee);
-
-        FrameworkAgreementChannelEntryRes channelEntry = frameworkAgreementManager.getChannelEntryByFrameworkAgreementId(frameworkAgreement.getId());
-        res.setFrameworkAgreementChannelEntry(channelEntry);
+        // 查询渠道录入信息
+        res.setFrameworkAgreementChannelEntry(channelEntryManager.getChannelEntryByRefId(id));
 
         // 查询基础数据
         res.setBasicData(basicDataManager.getBasicData(id));
@@ -354,19 +348,13 @@ public class FrameworkAgreementServiceImpl implements FrameworkAgreementService 
             frameworkAgreement.setFrameworkAgreementSigned(true);
             frameworkAgreementMapper.updateById(frameworkAgreement);
         }
-
-        FrameworkAgreementChannelEntry frameworkAgreementChannelEntry = frameworkAgreementManager.getFrameworkAgreementChannelEntryById(id);
-        frameworkAgreementChannelEntryConverter.update(req.getFrameworkAgreementChannelEntry(), frameworkAgreementChannelEntry);
-        frameworkAgreementChannelEntry.setFrameworkAgreementId(id);
-        // 比较并更新附件
-        frameworkAgreementManager.compareAndUpdateAttachments(req.getFrameworkAgreementChannelEntry(), frameworkAgreementChannelEntry.getId());
+        //更新渠道录入信息
+        channelEntryManager.updateChannelEntry(req.getFrameworkAgreementChannelEntry(), frameworkAgreement.getId());
         // 判断项目建议书批复状态和框架协议书签署状态
         frameworkAgreementManager.compareAndUpdateStatus(frameworkAgreement);
-        frameworkAgreementChannelEntryMapper.updateById(frameworkAgreementChannelEntry);
-
         //更新基础数据
         basicDataManager.updateOne(req.getBasicData(), id);
-
+        //更新拜访记录
         visitManager.logicDeleteAllEntitiesByRefId(id);
         visitManager.createMany(req.getFrameworkVisits(), id);
 
@@ -402,11 +390,15 @@ public class FrameworkAgreementServiceImpl implements FrameworkAgreementService 
             throw new ConditionNotMetException("该框架协议存在关联项目，需要先删除关联项目才能删除此框架协议");
         }
         attachmentManager.deleteByOwnerId(id);
-        attachmentManager.deleteByOwnerId(frameworkAgreementManager.getChannelEntryByFrameworkAgreementId(id).getId());
-        frameworkAgreementChannelEntryMapper.logicDeleteEntityById(frameworkAgreementManager.getChannelEntryByFrameworkAgreementId(id).getId());
+        // 逻辑删除渠道录入信息
+        channelEntryManager.logicDeleteChannelEntry(id);
+        // 逻辑删除任务
         taskManager.logicDeleteEntityById(id);
+        // 逻辑删除审批
         approvalManager.logicDeleteAllEntitiesByRefId(id);
+        // 逻辑删除拜访记录
         visitManager.logicDeleteAllEntitiesByRefId(id);
+        // 逻辑删除变更记录
         changeManager.bulkDeleteByRefId(id);
         // 逻辑删除基础信息
         basicDataManager.deleteEntityByRefId(id);

@@ -2,6 +2,8 @@ package eco.ywhc.xr.core.manager;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import eco.ywhc.xr.common.constant.FileOwnerType;
+import eco.ywhc.xr.common.converter.ProjectInformationConverter;
+import eco.ywhc.xr.common.model.dto.req.ProjectInformationReq;
 import eco.ywhc.xr.common.model.dto.req.ProjectReq;
 import eco.ywhc.xr.common.model.dto.res.AttachmentResponse;
 import eco.ywhc.xr.common.model.dto.res.ProjectRes;
@@ -26,11 +28,33 @@ public class ProjectManagerImpl implements ProjectManager {
 
     private final ProjectInformationMapper projectInformationMapper;
 
+    private final ProjectInformationConverter projectInformationConverter;
+
     private final AttachmentManager attachmentManager;
 
     @Override
     public Project findEntityById(@NonNull Long id) {
         return projectMapper.findEntityById(id);
+    }
+
+    @Override
+    public void createProjectInformation(ProjectInformationReq req, long id) {
+        ProjectInformation projectInformation = projectInformationConverter.fromRequest(req);
+        projectInformation.setProjectId(id);
+        projectInformationMapper.insert(projectInformation);
+    }
+
+    @Override
+    public void updateProjectInformation(ProjectInformationReq req, long id) {
+        ProjectInformation projectInformation = getProjectInformationByProjectId(id);
+        projectInformationConverter.update(req, projectInformation);
+        projectInformation.setProjectId(id);
+        projectInformationMapper.updateById(projectInformation);
+    }
+
+    @Override
+    public void logicDeleteProjectInformation(long id) {
+        projectInformationMapper.logicDeleteEntityById(getProjectInformationByProjectId(id).getId());
     }
 
     @Override

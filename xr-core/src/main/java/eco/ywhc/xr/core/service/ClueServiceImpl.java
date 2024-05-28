@@ -40,33 +40,33 @@ import java.util.stream.Collectors;
 @Slf4j
 public class ClueServiceImpl implements ClueService {
 
-    private final ApplicationEventPublisher applicationEventPublisher;
-
-    private final ClueConverter clueConverter;
-
-    private final ClueManager clueManager;
-
-    private final ClueMapper clueMapper;
-
     private final AdministrativeDivisionManager administrativeDivisionManager;
 
     private final ApprovalManager approvalManager;
 
-    private final ChannelEntryManager channelEntryManager;
-
-    private final VisitManager visitManager;
-
-    private final LarkEmployeeManager larkEmployeeManager;
-
-    private final InstanceRoleLarkMemberManager instanceRoleLarkMemberManager;
-
-    private final InstanceRoleManager instanceRoleManager;
-
-    private final ChangeManager changeManager;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
     private final BasicDataManager basicDataManager;
 
+    private final ClueConverter clueConverter;
+
+    private final ClueMapper clueMapper;
+
+    private final ClueManager clueManager;
+
+    private final ChangeManager changeManager;
+
+    private final ChannelEntryManager channelEntryManager;
+
     private final FrameworkAgreementManager frameworkAgreementManager;
+
+    private final InstanceRoleManager instanceRoleManager;
+
+    private final InstanceRoleLarkMemberManager instanceRoleLarkMemberManager;
+
+    private final LarkEmployeeManager larkEmployeeManager;
+
+    private final VisitManager visitManager;
 
     @Override
     public Long createOne(@NonNull ClueReq req) {
@@ -85,8 +85,8 @@ public class ClueServiceImpl implements ClueService {
         Long id = clue.getId();
 
         basicDataManager.createOne(req.getBasicData(), id);
-
-        channelEntryManager.createOne(req.getClueChannelEntry(), id);
+        // 创建渠道录入信息
+        channelEntryManager.createChannelEntry(req.getClueChannelEntry(), id);
         visitManager.createMany(req.getClueVisits(), id);
 
         if (CollectionUtils.isNotEmpty(req.getInstanceRoleLarkMembers())) {
@@ -181,9 +181,8 @@ public class ClueServiceImpl implements ClueService {
                 .avatarInfo(larkEmployee.getAvatarInfo())
                 .build();
         res.setAssignee(assignee);
-
-        ChannelEntryRes channelEntry = channelEntryManager.findByClueId(id);
-        res.setClueChannelEntry(channelEntry);
+        // 获取渠道录入信息
+        res.setClueChannelEntry(channelEntryManager.getChannelEntryByRefId(id));
 
         List<VisitRes> visits = visitManager.findAllByRefId(id);
         res.setClueVisits(visits);
@@ -231,9 +230,8 @@ public class ClueServiceImpl implements ClueService {
         clue.setHasOfficialVisit(hasOfficialVisit);
 
         int affected = clueMapper.updateById(clue);
-
-        channelEntryManager.logicDeleteEntityByClueId(id);
-        channelEntryManager.createOne(req.getClueChannelEntry(), id);
+        // 更新渠道录入信息
+        channelEntryManager.updateChannelEntry(req.getClueChannelEntry(), id);
 
         visitManager.logicDeleteAllEntitiesByRefId(id);
         visitManager.createMany(req.getClueVisits(), id);
@@ -271,8 +269,8 @@ public class ClueServiceImpl implements ClueService {
             throw new ConditionNotMetException("该线索存在关联框架协议，需要先删除关联框架协议才能删除此线索");
         }
         int affected = clueMapper.logicDeleteEntityById(id);
-
-        channelEntryManager.logicDeleteEntityByClueId(id);
+        // 逻辑删除渠道录入信息
+        channelEntryManager.logicDeleteChannelEntry(id);
         visitManager.logicDeleteAllEntitiesByRefId(id);
         approvalManager.logicDeleteAllEntitiesByRefId(id);
         changeManager.bulkDeleteByRefId(id);
