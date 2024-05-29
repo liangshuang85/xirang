@@ -34,3 +34,13 @@ REPLACE INTO `s_permission` (`id`, `name`, `resource_code`, `code`, `description
 VALUES (17, '项目:查看列表', 'PROJECT', 'PROJECT:LIST', '', 'GLOBAL', 1);
 REPLACE INTO `s_permission` (`id`, `name`, `resource_code`, `code`, `description`, `level`, `built_in`)
 VALUES (18, '项目:查看详情', 'PROJECT', 'PROJECT:VIEW', '', 'GLOBAL', 1);
+REPLACE INTO `s_permission` (`id`, `name`, `resource_code`, `code`, `description`, `level`, `built_in`)
+VALUES (19, '测算数据:新建', 'ESTIMATE_DATA', 'ESTIMATE_DATA:CREATE', '', 'GLOBAL', 1);
+REPLACE INTO `s_permission` (`id`, `name`, `resource_code`, `code`, `description`, `level`, `built_in`)
+VALUES (20, '测算数据:删除', 'ESTIMATE_DATA', 'ESTIMATE_DATA:DELETE', '', 'GLOBAL', 1);
+REPLACE INTO `s_permission` (`id`, `name`, `resource_code`, `code`, `description`, `level`, `built_in`)
+VALUES (21, '测算数据:编辑', 'ESTIMATE_DATA', 'ESTIMATE_DATA:EDIT', '', 'GLOBAL', 1);
+REPLACE INTO `s_permission` (`id`, `name`, `resource_code`, `code`, `description`, `level`, `built_in`)
+VALUES (22, '测算数据:查看列表', 'ESTIMATE_DATA', 'ESTIMATE_DATA:LIST', '', 'GLOBAL', 1);
+REPLACE INTO `s_permission` (`id`, `name`, `resource_code`, `code`, `description`, `level`, `built_in`)
+VALUES (23, '测算数据:查看详情', 'ESTIMATE_DATA', 'ESTIMATE_DATA:VIEW', '', 'GLOBAL', 1);
