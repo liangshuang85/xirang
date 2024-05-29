@@ -9,7 +9,7 @@ import eco.ywhc.xr.common.event.FrameworkAgreementUpdatedEvent;
 import eco.ywhc.xr.common.event.InstanceRoleLarkMemberInsertedEvent;
 import eco.ywhc.xr.common.event.StatusChangedEvent;
 import eco.ywhc.xr.common.exception.LarkTaskNotFoundException;
-import eco.ywhc.xr.common.model.RequestContextUser;
+import eco.ywhc.xr.common.security.CurrentUser;
 import eco.ywhc.xr.common.model.dto.req.FrameworkAgreementReq;
 import eco.ywhc.xr.common.model.dto.res.*;
 import eco.ywhc.xr.common.model.entity.BaseEntity;
@@ -135,7 +135,7 @@ public class FrameworkAgreementServiceImpl implements FrameworkAgreementService 
 
     @Override
     public PageableModelSet<FrameworkAgreementRes> findMany(@NonNull FrameworkAgreementQuery query) {
-        RequestContextUser requestContextUser = SessionUtils.currentUser();
+        CurrentUser currentUser = SessionUtils.currentUser();
 
         List<Long> adIds = new ArrayList<>();
         if (query.getAdcode() != null) {
@@ -155,7 +155,7 @@ public class FrameworkAgreementServiceImpl implements FrameworkAgreementService 
         // 如果没有全局 FRAMEWORK_AGREEMENT:VIEW 权限，则检查实例权限
         if (!SessionUtils.currentUserPermissionCodes().contains("FRAMEWORK_AGREEMENT:VIEW")) {
             String existsStatement = "SELECT 1 FROM `s_instance_role_lark_member` WHERE `deleted`=0 " +
-                    " AND `member_id`='" + requestContextUser.getLarkOpenId() + "' " +
+                    " AND `member_id`='" + currentUser.getLarkOpenId() + "' " +
                     " AND `ref_type`='FRAMEWORK_AGREEMENT' " +
                     " AND `ref_id`=`b_framework_agreement`.id";
             qw.exists(existsStatement);
@@ -170,7 +170,7 @@ public class FrameworkAgreementServiceImpl implements FrameworkAgreementService 
         Map<Long, AdministrativeDivisionRes> administrativeDivisionMap = administrativeDivisionManager.findAllAsMapByAdcodesSurely(adcodes);
 
         List<Long> clueIds = rows.getRecords().stream().map(FrameworkAgreement::getId).toList();
-        Map<Long, Set<String>> permissionMap = instanceRoleManager.listPermissionCodesByRefIdsAndMemberId(clueIds, requestContextUser.getLarkOpenId());
+        Map<Long, Set<String>> permissionMap = instanceRoleManager.listPermissionCodesByRefIdsAndMemberId(clueIds, currentUser.getLarkOpenId());
 
         var results = rows.convert(i -> {
             FrameworkAgreementRes res = frameworkAgreementConverter.toResponse(i);
@@ -195,7 +195,7 @@ public class FrameworkAgreementServiceImpl implements FrameworkAgreementService 
 
     @Override
     public FrameworkAgreementRes findOne(@NonNull Long id) {
-        RequestContextUser requestContextUser = SessionUtils.currentUser();
+        CurrentUser currentUser = SessionUtils.currentUser();
 
         FrameworkAgreement frameworkAgreement = frameworkAgreementManager.mustFoundEntityById(id);
         FrameworkAgreementRes res = frameworkAgreementConverter.toResponse(frameworkAgreement);
@@ -314,7 +314,7 @@ public class FrameworkAgreementServiceImpl implements FrameworkAgreementService 
         List<ChangeRes> changeRes = changes.stream().peek(i -> i.setOperator(assignee)).toList();
         res.setChanges(changeRes);
 
-        res.setPermissionCodes(instanceRoleManager.listPermissionCodesByRefIdAndMemberId(id, requestContextUser.getLarkOpenId()));
+        res.setPermissionCodes(instanceRoleManager.listPermissionCodesByRefIdAndMemberId(id, currentUser.getLarkOpenId()));
 
         return res;
     }

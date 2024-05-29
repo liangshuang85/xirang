@@ -10,7 +10,7 @@ import eco.ywhc.xr.common.event.ProjectCreatedEvent;
 import eco.ywhc.xr.common.event.ProjectUpdatedEvent;
 import eco.ywhc.xr.common.event.StatusChangedEvent;
 import eco.ywhc.xr.common.exception.LarkTaskNotFoundException;
-import eco.ywhc.xr.common.model.RequestContextUser;
+import eco.ywhc.xr.common.security.CurrentUser;
 import eco.ywhc.xr.common.model.dto.req.ProjectReq;
 import eco.ywhc.xr.common.model.dto.res.*;
 import eco.ywhc.xr.common.model.entity.InstanceRole;
@@ -125,7 +125,7 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     public PageableModelSet<ProjectRes> findMany(@NonNull ProjectQuery query) {
-        RequestContextUser requestContextUser = SessionUtils.currentUser();
+        CurrentUser currentUser = SessionUtils.currentUser();
 
         List<Long> adIds = new ArrayList<>();
         if (query.getAdcode() != null) {
@@ -144,7 +144,7 @@ public class ProjectServiceImpl implements ProjectService {
         // 如果没有全局 PROJECT:VIEW 权限，则检查实例权限
         if (!SessionUtils.currentUserPermissionCodes().contains("PROJECT:VIEW")) {
             String existsStatement = "SELECT 1 FROM `s_instance_role_lark_member` WHERE `deleted`=0 " +
-                    " AND `member_id`='" + requestContextUser.getLarkOpenId() + "' " +
+                    " AND `member_id`='" + currentUser.getLarkOpenId() + "' " +
                     " AND `ref_type`='PROJECT' " +
                     " AND `ref_id`=`b_project`.id";
             qw.exists(existsStatement);
@@ -159,7 +159,7 @@ public class ProjectServiceImpl implements ProjectService {
         Map<Long, AdministrativeDivisionRes> administrativeDivisionMap = administrativeDivisionManager.findAllAsMapByAdcodesSurely(adcodes);
 
         List<Long> clueIds = rows.getRecords().stream().map(Project::getId).toList();
-        Map<Long, Set<String>> permissionMap = instanceRoleManager.listPermissionCodesByRefIdsAndMemberId(clueIds, requestContextUser.getLarkOpenId());
+        Map<Long, Set<String>> permissionMap = instanceRoleManager.listPermissionCodesByRefIdsAndMemberId(clueIds, currentUser.getLarkOpenId());
 
         var results = rows.convert(i -> {
             ProjectRes res = projectConverter.toResponse(i);
@@ -185,7 +185,7 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     public ProjectRes findOne(@NonNull Long id) {
-        RequestContextUser requestContextUser = SessionUtils.currentUser();
+        CurrentUser currentUser = SessionUtils.currentUser();
 
         Project project = projectManager.mustFoundEntityById(id);
         ProjectRes res = projectConverter.toResponse(project);
@@ -294,7 +294,7 @@ public class ProjectServiceImpl implements ProjectService {
         List<ChangeRes> changeRes = changes.stream().peek(i -> i.setOperator(assignee)).toList();
         res.setChanges(changeRes);
 
-        res.setPermissionCodes(instanceRoleManager.listPermissionCodesByRefIdAndMemberId(id, requestContextUser.getLarkOpenId()));
+        res.setPermissionCodes(instanceRoleManager.listPermissionCodesByRefIdAndMemberId(id, currentUser.getLarkOpenId()));
 
         return res;
     }

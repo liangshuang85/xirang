@@ -5,7 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import eco.ywhc.xr.common.converter.UserConverter;
 import eco.ywhc.xr.common.exception.InvalidCredentialException;
 import eco.ywhc.xr.common.model.PasswordChangeRequest;
-import eco.ywhc.xr.common.model.RequestContextUser;
+import eco.ywhc.xr.common.security.CurrentUser;
 import eco.ywhc.xr.common.model.entity.User;
 import eco.ywhc.xr.common.model.lark.LarkEmployee;
 import eco.ywhc.xr.core.manager.lark.LarkEmployeeManager;
@@ -56,7 +56,7 @@ public class UserManagerImpl implements UserManager {
     }
 
     @Override
-    public RequestContextUser usernamePasswordAuthenticate(String username, String rawPassword) throws InvalidCredentialException {
+    public CurrentUser usernamePasswordAuthenticate(String username, String rawPassword) throws InvalidCredentialException {
         log.debug("尝试使用用户名\"{}\"登录系统", username);
         if (StringUtils.isBlank(username)) {
             log.debug("登录提供的用户名为空");
@@ -83,11 +83,11 @@ public class UserManagerImpl implements UserManager {
         if (!ok) {
             throw new InvalidCredentialException(COMMON_AUTH_FAILED_MSG);
         }
-        return userConverter.toRequestContextUser(user);
+        return userConverter.toCurrentUser(user);
     }
 
     @Override
-    public RequestContextUser authWithUserOpenId(@NonNull String userOpenId) {
+    public CurrentUser authWithUserOpenId(@NonNull String userOpenId) {
         log.debug("飞书用户的OpenID\"{}\"登录系统", userOpenId);
         if (StringUtils.isBlank(userOpenId)) {
             log.warn("登录提供的用户OpenID为空");
@@ -110,7 +110,7 @@ public class UserManagerImpl implements UserManager {
             user.setBlocked(false);
             userMapper.insert(user);
         }
-        return userConverter.toRequestContextUser(user);
+        return userConverter.toCurrentUser(user);
     }
 
     @Override

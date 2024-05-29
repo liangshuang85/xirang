@@ -33,4 +33,11 @@ public interface JwtManager {
      */
     PemKeyPair generatePemKeyPair(String algorithm, boolean opensslCompatible);
 
+    /**
+     * 校验JWT是否合法
+     *
+     * @param jwt JWT字符串
+     */
+    boolean validateJWT(String jwt);
+
 }

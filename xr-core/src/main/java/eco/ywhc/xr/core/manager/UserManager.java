@@ -2,8 +2,8 @@ package eco.ywhc.xr.core.manager;
 
 import eco.ywhc.xr.common.exception.InvalidCredentialException;
 import eco.ywhc.xr.common.model.PasswordChangeRequest;
-import eco.ywhc.xr.common.model.RequestContextUser;
 import eco.ywhc.xr.common.model.entity.User;
+import eco.ywhc.xr.common.security.CurrentUser;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.transaction.annotation.Transactional;
@@ -39,17 +39,17 @@ public interface UserManager {
      *
      * @param username    用户名
      * @param rawPassword 密码原文
-     * @return RequestContextUser 如果认证成功，返回{@link RequestContextUser}实例，否则抛出{@link InvalidCredentialException}异常
+     * @return 如果认证成功，返回{@link CurrentUser}实例，否则抛出{@link InvalidCredentialException}异常
      */
-    RequestContextUser usernamePasswordAuthenticate(String username, String rawPassword) throws InvalidCredentialException;
+    CurrentUser usernamePasswordAuthenticate(String username, String rawPassword) throws InvalidCredentialException;
 
     /**
      * 用户飞书OpenID认证
      *
      * @param userOpenId 用户飞书OpenID
-     * @return RequestContextUser 如果认证成功，返回{@link RequestContextUser}实例
+     * @return 如果认证成功，返回{@link CurrentUser}实例
      */
-    RequestContextUser authWithUserOpenId(@NonNull String userOpenId);
+    CurrentUser authWithUserOpenId(@NonNull String userOpenId);
 
     /**
      * 修改密码

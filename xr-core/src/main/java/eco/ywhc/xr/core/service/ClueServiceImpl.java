@@ -9,7 +9,7 @@ import eco.ywhc.xr.common.event.ClueCreatedEvent;
 import eco.ywhc.xr.common.event.ClueUpdatedEvent;
 import eco.ywhc.xr.common.event.StatusChangedEvent;
 import eco.ywhc.xr.common.model.ClueStatus;
-import eco.ywhc.xr.common.model.RequestContextUser;
+import eco.ywhc.xr.common.security.CurrentUser;
 import eco.ywhc.xr.common.model.dto.req.ClueReq;
 import eco.ywhc.xr.common.model.dto.req.VisitReq;
 import eco.ywhc.xr.common.model.dto.res.*;
@@ -110,7 +110,7 @@ public class ClueServiceImpl implements ClueService {
 
     @Override
     public PageableModelSet<ClueRes> findMany(@NonNull ClueQuery query) {
-        RequestContextUser requestContextUser = SessionUtils.currentUser();
+        CurrentUser currentUser = SessionUtils.currentUser();
 
         List<Long> adIds = new ArrayList<>();
         if (query.getAdcode() != null) {
@@ -129,7 +129,7 @@ public class ClueServiceImpl implements ClueService {
         // 如果没有全局 CLUE:VIEW 权限，则检查实例权限
         if (!SessionUtils.currentUserPermissionCodes().contains("CLUE:VIEW")) {
             String existsStatement = "SELECT 1 FROM `s_instance_role_lark_member` WHERE `deleted`=0 " +
-                    " AND `member_id`='" + requestContextUser.getLarkOpenId() + "' " +
+                    " AND `member_id`='" + currentUser.getLarkOpenId() + "' " +
                     " AND `ref_type`='CLUE' " +
                     " AND `ref_id`=`b_clue`.id";
             qw.exists(existsStatement);
@@ -143,7 +143,7 @@ public class ClueServiceImpl implements ClueService {
         Map<Long, AdministrativeDivisionRes> administrativeDivisionMap = administrativeDivisionManager.findAllAsMapByAdcodesSurely(adcodes);
 
         List<Long> clueIds = rows.getRecords().stream().map(Clue::getId).toList();
-        Map<Long, Set<String>> permissionMap = instanceRoleManager.listPermissionCodesByRefIdsAndMemberId(clueIds, requestContextUser.getLarkOpenId());
+        Map<Long, Set<String>> permissionMap = instanceRoleManager.listPermissionCodesByRefIdsAndMemberId(clueIds, currentUser.getLarkOpenId());
 
         var result = rows.convert(i -> {
             ClueRes res = clueConverter.toResponse(i);
@@ -166,7 +166,7 @@ public class ClueServiceImpl implements ClueService {
 
     @Override
     public ClueRes findOne(@NonNull Long id) {
-        RequestContextUser requestContextUser = SessionUtils.currentUser();
+        CurrentUser currentUser = SessionUtils.currentUser();
 
         Clue clue = clueManager.mustFoundEntityById(id);
         ClueRes res = clueConverter.toResponse(clue);
@@ -208,7 +208,7 @@ public class ClueServiceImpl implements ClueService {
 
         res.setBasicData(basicDataManager.getBasicData(id));
 
-        res.setPermissionCodes(instanceRoleManager.listPermissionCodesByRefIdAndMemberId(id, requestContextUser.getLarkOpenId()));
+        res.setPermissionCodes(instanceRoleManager.listPermissionCodesByRefIdAndMemberId(id, currentUser.getLarkOpenId()));
 
         return res;
     }

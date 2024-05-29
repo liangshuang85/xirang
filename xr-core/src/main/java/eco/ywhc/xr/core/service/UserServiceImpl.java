@@ -2,7 +2,9 @@ package eco.ywhc.xr.core.service;
 
 import eco.ywhc.xr.common.constant.SessionAttribute;
 import eco.ywhc.xr.common.model.PasswordChangeRequest;
-import eco.ywhc.xr.common.model.RequestContextUser;
+import eco.ywhc.xr.common.security.CurrentUser;
+import eco.ywhc.xr.common.security.SecurityContext;
+import eco.ywhc.xr.common.security.SecurityContextHolder;
 import eco.ywhc.xr.core.manager.OAuth2Manager;
 import eco.ywhc.xr.core.manager.RoleManager;
 import eco.ywhc.xr.core.manager.UserManager;
@@ -34,9 +36,20 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public String usernamePasswordAuthenticate(HttpServletRequest httpServletRequest, String username, String rawPassword) {
-        RequestContextUser user = userManager.usernamePasswordAuthenticate(username, rawPassword);
+        CurrentUser currentUser = userManager.usernamePasswordAuthenticate(username, rawPassword);
+        // 获取基本角色权限
+        Set<String> basicPermissionCodes = roleManager.listBasicPermissionCodes();
+        log.trace("用户所分配的基本权限有：{}", basicPermissionCodes);
+        currentUser = currentUser.toBuilder().permissionCodes(basicPermissionCodes).build();
+        // 将当前用户的信息保存到 <code>SecurityContext</code>
+        SecurityContext securityContext = new SecurityContext(currentUser);
+        SecurityContextHolder.setContext(securityContext);
+
+        final CurrentUser currentUser1 = SessionUtils.currentUser();
+        System.out.println(currentUser1);
+
         HttpSession session = httpServletRequest.getSession(true);
-        session.setAttribute(SessionAttribute.SESSION_ATTR_USER, user);
+        session.setAttribute(SessionAttribute.SESSION_ATTR_USER, currentUser);
         return session.getId();
     }
 
@@ -55,7 +68,7 @@ public class UserServiceImpl implements UserService {
             throw new InternalErrorException("获取Access Token失败");
         }
 
-        RequestContextUser user = userManager.authWithUserOpenId(userOpenId);
+        CurrentUser currentUser = userManager.authWithUserOpenId(userOpenId);
         // 获取基本角色权限
         Set<String> basicPermissionCodes = roleManager.listBasicPermissionCodes();
         log.trace("用户所分配的基本权限有：{}", basicPermissionCodes);
@@ -68,20 +81,24 @@ public class UserServiceImpl implements UserService {
         Set<String> combinedPermissionCodes = Stream.concat(basicPermissionCodes.stream(), permissionCodes.stream())
                 .collect(Collectors.toSet());
         log.trace("用户所分配的最终权限是：{}", combinedPermissionCodes);
+        currentUser = currentUser.toBuilder().permissionCodes(combinedPermissionCodes).build();
+        // 将当前用户的信息保存到 <code>SecurityContext</code>
+        SecurityContext securityContext = new SecurityContext(currentUser);
+        SecurityContextHolder.setContext(securityContext);
 
         HttpSession session = httpServletRequest.getSession(true);
-        session.setAttribute(SessionAttribute.SESSION_ATTR_USER, user);
+        session.setAttribute(SessionAttribute.SESSION_ATTR_USER, currentUser);
         session.setAttribute(SessionAttribute.SESSION_ATTR_PERMISSION, combinedPermissionCodes);
         return session.getId();
     }
 
     @Override
     public boolean changePassword(PasswordChangeRequest req) {
-        RequestContextUser requestContextUser = SessionUtils.currentUser();
-        if (requestContextUser == null) {
+        CurrentUser currentUser = SessionUtils.currentUser();
+        if (currentUser == null) {
             return false;
         }
-        return userManager.changePassword(requestContextUser.getId(), req);
+        return userManager.changePassword(currentUser.getId(), req);
     }
 
     @Override

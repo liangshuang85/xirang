@@ -1,19 +1,18 @@
-package eco.ywhc.xr.common.model;
+package eco.ywhc.xr.common.security;
 
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.Builder;
+import lombok.Value;
 
 import java.io.Serial;
 import java.io.Serializable;
+import java.util.Set;
 
 /**
- * 会话用户
+ * 当前会话用户
  */
-@Getter
-@Setter
-@ToString
-public class RequestContextUser implements Serializable {
+@Builder(toBuilder = true)
+@Value
+public class CurrentUser implements Serializable {
 
     @Serial
     private static final long serialVersionUID = -1263135012306586601L;
@@ -21,46 +20,51 @@ public class RequestContextUser implements Serializable {
     /**
      * 用户ID
      */
-    private Long id;
+    Long id;
 
     /**
      * 用户名
      */
-    private String username;
+    String username;
 
     /**
      * 昵称
      */
-    private String nickname;
+    String nickname;
 
     /**
      * 全名
      */
-    private String fullName;
+    String fullName;
 
     /**
      * 电话号码
      */
-    private String phoneNumber;
+    String phoneNumber;
 
     /**
      * Email
      */
-    private String email;
+    String email;
 
     /**
      * 是否为管理员
      */
-    private Boolean admin;
+    Boolean admin;
 
     /**
      * 封禁标记
      */
-    private Boolean blocked;
+    Boolean blocked;
 
     /**
      * 飞书用户的OpenID
      */
-    private String larkOpenId;
+    String larkOpenId;
+
+    /**
+     * 权限编码集合
+     */
+    Set<String> permissionCodes;
 
 }
