@@ -3,7 +3,6 @@ package eco.ywhc.xr.core.manager;
 import eco.ywhc.xr.common.constant.TaskTemplateRefType;
 import eco.ywhc.xr.common.constant.TaskType;
 import eco.ywhc.xr.common.model.dto.req.TaskListReq;
-import eco.ywhc.xr.common.model.dto.res.TaskRes;
 import eco.ywhc.xr.common.model.entity.Task;
 import eco.ywhc.xr.common.model.entity.TaskTemplate;
 import org.springframework.lang.NonNull;
@@ -27,9 +26,9 @@ public interface TaskManager {
     void logicDeleteEntityById(long refId);
 
     /**
-     * 获取飞书任务
+     * 从飞书接口更新任务数据
      */
-    TaskRes getLarkTask(Task task);
+    void updateTaskFromLark(Task task);
 
     /**
      * 根据ID获取任务模板

@@ -5,17 +5,21 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import eco.ywhc.xr.common.constant.TaskStatusType;
 import eco.ywhc.xr.common.constant.TaskType;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import org.sugar.crud.entity.IdentifiableEntity;
 
 import java.io.Serial;
+import java.time.OffsetDateTime;
 
 /**
  * 任务
  */
 @Getter
 @Setter
+@ToString
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder(toBuilder = true)
 @TableName(value = "b_task")
 public class Task extends BaseEntity implements IdentifiableEntity<Long> {
 
@@ -69,5 +73,30 @@ public class Task extends BaseEntity implements IdentifiableEntity<Long> {
      * 任务清单分组Guid
      */
     private String sectionGuid;
+
+    /**
+     * 任务负责人
+     */
+    private String members;
+
+    /**
+     * 任务URL
+     */
+    private String url;
+
+    /**
+     * 任务名
+     */
+    private String summary;
+
+    /**
+     * 任务发起时间
+     */
+    private OffsetDateTime startTime;
+
+    /**
+     * 任务结束时间
+     */
+    private OffsetDateTime endTime;
 
 }

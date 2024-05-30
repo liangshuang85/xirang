@@ -8,13 +8,7 @@ import org.mapstruct.Mapping;
 @Mapper
 public interface TaskConverter {
 
+    @Mapping(source = "url", target = "taskUrl")
     TaskRes toResponse(Task task);
-
-    @Mapping(target = "id", ignore = true)
-    @Mapping(target = "createdAt", ignore = true)
-    @Mapping(target = "updatedAt", ignore = true)
-    @Mapping(target = "updatedBy", ignore = true)
-    @Mapping(target = "deleted", ignore = true)
-    Task with(Task oldTask);
 
 }

@@ -3,7 +3,6 @@ package eco.ywhc.xr.core.schedule;
 import com.lark.oapi.service.ehr.v1.model.Employee;
 import com.lark.oapi.service.ehr.v1.model.ListEmployeeRespBody;
 import eco.ywhc.xr.common.constant.TaskStatusType;
-import eco.ywhc.xr.common.converter.ApprovalConverter;
 import eco.ywhc.xr.common.exception.LarkTaskNotFoundException;
 import eco.ywhc.xr.common.model.entity.Approval;
 import eco.ywhc.xr.common.model.entity.Task;
@@ -38,9 +37,7 @@ public class ScheduledTasks {
 
     private final ApprovalManager approvalManager;
 
-    private final ApprovalConverter approvalConverter;
-
-    @Scheduled(initialDelay = 10000, fixedDelay = 30000)
+    @Scheduled(initialDelay = 10000, fixedDelay = 300000)
     public void syncLarkEmployees() {
         log.debug("开始同步飞书上的员工花名册信息");
         Boolean hasMore;
@@ -68,7 +65,7 @@ public class ScheduledTasks {
         log.debug("员工花名册信息同步完成");
     }
 
-    @Scheduled(initialDelay = 15000, fixedDelay = 300000)
+    @Scheduled(initialDelay = 15000, fixedDelay = 60000)
     public void syncLarkTasks() {
         log.info("开始同步飞书任务信息");
         long prevTaskId = -1;
@@ -81,9 +78,11 @@ public class ScheduledTasks {
             for (Task task : tasks) {
                 log.debug("开始同步飞书任务信息，任务ID: {}", task.getId());
                 try {
-                    taskManager.getLarkTask(task);
+                    taskManager.updateTaskFromLark(task);
                 } catch (LarkTaskNotFoundException ignored) {
-                    task.setTaskGuid(null);
+                    task.setTaskGuid("");
+                    task.setMembers("");
+                    task.setUrl("");
                     task.setStatus(TaskStatusType.deleted);
                     taskManager.updateById(task);
                 }
@@ -92,7 +91,7 @@ public class ScheduledTasks {
         }
     }
 
-    @Scheduled(initialDelay = 20000, fixedDelay = 300000)
+    @Scheduled(initialDelay = 20000, fixedDelay = 60000)
     public void syncLarkApprovals() {
         log.info("开始同步飞书审批信息");
         long prevApprovalId = -1;
@@ -104,13 +103,13 @@ public class ScheduledTasks {
             }
             for (Approval approval : approvals) {
                 log.debug("开始同步飞书审批信息，审批ID: {}", approval.getId());
-                approvalManager.updateApproval(approvalConverter.toResponse(approval));
+                approvalManager.updateApprovalFromLark(approval);
             }
             prevApprovalId = approvals.get(approvals.size() - 1).getId();
         }
     }
 
-    @Scheduled(initialDelay = 10000, fixedDelay = 60000)
+    @Scheduled(initialDelay = 10000, fixedDelay = 300000)
     public void syncLarkDepartments() {
         larkDepartmentManager.syncLarkDepartments();
     }

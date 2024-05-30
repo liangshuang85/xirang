@@ -14,7 +14,4 @@ public interface ApprovalConverter {
 
     ApprovalRes toResponse(Approval source);
 
-    @Mapping(target = "id", ignore = true)
-    Approval with(Approval oldApproval);
-
 }

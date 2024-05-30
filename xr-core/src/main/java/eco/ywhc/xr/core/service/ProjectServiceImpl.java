@@ -9,8 +9,6 @@ import eco.ywhc.xr.common.event.InstanceRoleLarkMemberInsertedEvent;
 import eco.ywhc.xr.common.event.ProjectCreatedEvent;
 import eco.ywhc.xr.common.event.ProjectUpdatedEvent;
 import eco.ywhc.xr.common.event.StatusChangedEvent;
-import eco.ywhc.xr.common.exception.LarkTaskNotFoundException;
-import eco.ywhc.xr.common.security.CurrentUser;
 import eco.ywhc.xr.common.model.dto.req.ProjectReq;
 import eco.ywhc.xr.common.model.dto.res.*;
 import eco.ywhc.xr.common.model.entity.InstanceRole;
@@ -19,6 +17,7 @@ import eco.ywhc.xr.common.model.entity.ProjectInformation;
 import eco.ywhc.xr.common.model.entity.Task;
 import eco.ywhc.xr.common.model.lark.LarkEmployee;
 import eco.ywhc.xr.common.model.query.ProjectQuery;
+import eco.ywhc.xr.common.security.CurrentUser;
 import eco.ywhc.xr.core.manager.*;
 import eco.ywhc.xr.core.manager.lark.LarkEmployeeManager;
 import eco.ywhc.xr.core.mapper.ProjectMapper;
@@ -212,46 +211,28 @@ public class ProjectServiceImpl implements ProjectService {
                 .build();
         res.setAssignee(assignee);
 
-        List<InstanceRoleLarkMemberRes> instanceRoleLarkMemberRes = instanceRoleLarkMemberManager.findInstanceRoleLarkMemberByRefId(id);
-        res.setInstanceRoleLarkMembers(instanceRoleLarkMemberRes);
+        List<InstanceRoleLarkMemberRes> instanceRoleLarkMembers = instanceRoleLarkMemberManager.findInstanceRoleLarkMemberByRefId(id);
+        res.setInstanceRoleLarkMembers(instanceRoleLarkMembers);
 
         List<Task> tasks = taskManager.listTasksByRefId(id);
         List<TaskRes> taskResList = new ArrayList<>();
-        // 遍历任务列表，更新每个任务的状态
+        //  从数据库中查询任务
         for (Task task : tasks) {
-            if (task.getTaskGuid() == null) {
-                TaskRes taskRes = taskConverter.toResponse(task);
-                InstanceRole instanceRole = instanceRoleManager.findEntityById(task.getInstanceRoleId());
-                taskRes.setInstanceRoleName(instanceRole.getName());
-                //如果任务状态为待发起或已删除，则显示实例角色成员
-                if (task.getStatus() == TaskStatusType.pending || task.getStatus() == TaskStatusType.deleted) {
-                    Set<String> memberIds = instanceRoleLarkMemberRes.stream()
-                            .filter(i -> i.getInstanceRoleId().equals(task.getInstanceRoleId()))
-                            .findFirst()
-                            .map(InstanceRoleLarkMemberRes::getMemberIds)
-                            .orElse(Collections.emptySet());
-                    if (!memberIds.isEmpty()) {
-                        List<AssigneeRes> assignees = memberIds.stream()
-                                .map(memberId -> {
-                                    LarkEmployee larkEmployee1 = larkEmployeeManager.retrieveLarkEmployee(memberId);
-                                    return AssigneeRes.builder()
-                                            .assigneeId(memberId)
-                                            .assigneeName(larkEmployee1.getName())
-                                            .avatarInfo(larkEmployee1.getAvatarInfo())
-                                            .build();
-                                })
-                                .toList();
-                        taskRes.setAssignees(assignees);
-                    }
-                }
-                taskResList.add(taskRes);
-                continue;
+            InstanceRole instanceRole = instanceRoleManager.findEntityById(task.getInstanceRoleId());
+            TaskRes taskRes = taskConverter.toResponse(task);
+            Set<String> memberIds = new HashSet<>();
+            // 如果任务状态为待发起，则显示实例角色成员
+            if (task.getStatus() == TaskStatusType.pending) {
+                memberIds = instanceRoleLarkMembers.stream()
+                        .filter(i -> i.getInstanceRoleId().equals(task.getInstanceRoleId()))
+                        .findFirst()
+                        .map(InstanceRoleLarkMemberRes::getMemberIds)
+                        .orElse(Collections.emptySet());
+            } else if (StringUtils.isNotBlank(task.getMembers())) {
+                memberIds = Arrays.stream(task.getMembers().split(","))
+                        .collect(Collectors.toSet());
             }
-            try {
-                TaskRes larkTask = taskManager.getLarkTask(task);
-                // 获取任务负责人
-                List<String> memberIds = instanceRoleLarkMemberManager.getMemberIdsByInstanceRoleIdAndRefId(task.getInstanceRoleId(), id);
-                // 获取任务负责人信息
+            if (!memberIds.isEmpty()) {
                 List<AssigneeRes> assignees = memberIds.stream()
                         .map(memberId -> {
                             LarkEmployee larkEmployee1 = larkEmployeeManager.retrieveLarkEmployee(memberId);
@@ -262,13 +243,10 @@ public class ProjectServiceImpl implements ProjectService {
                                     .build();
                         })
                         .toList();
-                larkTask.setAssignees(assignees);
-                taskResList.add(larkTask);
-            } catch (LarkTaskNotFoundException e) {
-                task.setTaskGuid(null);
-                task.setStatus(TaskStatusType.deleted);
-                taskManager.updateById(task);
+                taskRes.setAssignees(assignees);
             }
+            taskRes.setInstanceRoleName(instanceRole.getName());
+            taskResList.add(taskRes);
         }
         Map<TaskType, Map<String, List<TaskRes>>> taskMap = taskResList.stream()
                 .collect(Collectors.groupingBy(
@@ -278,11 +256,6 @@ public class ProjectServiceImpl implements ProjectService {
         res.setTaskMap(taskMap);
 
         Map<ApprovalType, Map<String, List<ApprovalRes>>> approvalResMaps = approvalManager.listApprovalsByRefId(id).stream()
-                .peek(i -> {
-                    if (i.getApprovalInstanceId() != null) {
-                        approvalManager.updateApproval(i);
-                    }
-                })
                 .collect(Collectors.groupingBy(
                         ApprovalRes::getType,
                         Collectors.groupingBy(ApprovalRes::getDepartmentName)

@@ -9,7 +9,6 @@ import eco.ywhc.xr.common.event.ClueCreatedEvent;
 import eco.ywhc.xr.common.event.ClueUpdatedEvent;
 import eco.ywhc.xr.common.event.StatusChangedEvent;
 import eco.ywhc.xr.common.model.ClueStatus;
-import eco.ywhc.xr.common.security.CurrentUser;
 import eco.ywhc.xr.common.model.dto.req.ClueReq;
 import eco.ywhc.xr.common.model.dto.req.VisitReq;
 import eco.ywhc.xr.common.model.dto.res.*;
@@ -17,6 +16,7 @@ import eco.ywhc.xr.common.model.entity.AdministrativeDivision;
 import eco.ywhc.xr.common.model.entity.Clue;
 import eco.ywhc.xr.common.model.lark.LarkEmployee;
 import eco.ywhc.xr.common.model.query.ClueQuery;
+import eco.ywhc.xr.common.security.CurrentUser;
 import eco.ywhc.xr.core.manager.*;
 import eco.ywhc.xr.core.manager.lark.LarkEmployeeManager;
 import eco.ywhc.xr.core.mapper.ClueMapper;
@@ -188,11 +188,6 @@ public class ClueServiceImpl implements ClueService {
         res.setClueVisits(visits);
 
         Map<ApprovalType, Map<String, List<ApprovalRes>>> approvalMap = approvalManager.listApprovalsByRefId(id).stream()
-                .peek(i -> {
-                    if (i.getApprovalInstanceId() != null) {
-                        approvalManager.updateApproval(i);
-                    }
-                })
                 .collect(Collectors.groupingBy(
                         ApprovalRes::getType,
                         Collectors.groupingBy(ApprovalRes::getDepartmentName)

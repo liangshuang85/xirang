@@ -27,6 +27,7 @@ import org.sugar.commons.exception.InternalErrorException;
 import org.sugar.commons.exception.InvalidInputException;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -121,24 +122,35 @@ public class TaskServiceImpl implements TaskService {
                     .build();
             // 添加任务到任务清单
             taskManager.addTaskToTaskList(taskListReq);
-            // 添加成员到任务清单
-            taskManager.addMemberToTaskList(taskListGuid, memberIds);
         } catch (Exception e) {
             throw new InternalErrorException("任务发起失败");
         }
         if (!resp.success()) {
             throw new InternalErrorException("任务发起失败");
         }
-
+        // 根据任务状态更新任务
         if (currentTask.getStatus() == TaskStatusType.pending) {
             currentTask.setTaskGuid(resp.getData().getTask().getGuid());
             currentTask.setStatus(TaskStatusType.todo);
+            // 更新任务成员
+            currentTask.setMembers(memberIds.stream()
+                    .map(String::valueOf)
+                    .collect(Collectors.joining(",")));
+            currentTask.setUrl(resp.getData().getTask().getUrl());
+            currentTask.setSummary(summary);
             taskMapper.updateById(currentTask);
             return 1;
         } else if (currentTask.getStatus() == TaskStatusType.done || currentTask.getStatus() == TaskStatusType.deleted) {
-            Task newTask = taskConverter.with(currentTask);
-            newTask.setTaskGuid(resp.getData().getTask().getGuid());
-            newTask.setStatus(TaskStatusType.todo);
+            Task newTask = currentTask.toBuilder()
+                    .id(null)
+                    .taskGuid(resp.getData().getTask().getGuid())
+                    .status(TaskStatusType.todo)
+                    .members(memberIds.stream()
+                            .map(String::valueOf)
+                            .collect(Collectors.joining(",")))
+                    .url(resp.getData().getTask().getUrl())
+                    .summary(summary)
+                    .build();
             taskMapper.insert(newTask);
             return 1;
         }

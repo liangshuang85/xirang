@@ -134,20 +134,20 @@ public class ApprovalServiceImpl implements ApprovalService {
         } catch (Exception e) {
             throw new InternalErrorException(e);
         }
-
-        // 业务数据处理
+        String instanceCode = resp.getData().getInstanceCode();
+        currentApproval.setApprovalInstanceId(instanceCode);
+        // 根据审批状态更新审批
         if (currentApproval.getApprovalStatus() == ApprovalStatusType.PENDING_START) {
-            currentApproval.setApprovalInstanceId(resp.getData().getInstanceCode());
-            currentApproval.setApprovalStatus(ApprovalStatusType.PENDING);
-            approvalMapper.updateById(currentApproval);
+            approvalManager.updateApprovalFromLark(currentApproval);
             return 1;
         } else if (currentApproval.getApprovalStatus() == ApprovalStatusType.APPROVED ||
                 currentApproval.getApprovalStatus() == ApprovalStatusType.REJECTED ||
                 currentApproval.getApprovalStatus() == ApprovalStatusType.CANCELED ||
                 currentApproval.getApprovalStatus() == ApprovalStatusType.DELETED) {
-            Approval newApproval = approvalConverter.with(currentApproval);
-            newApproval.setApprovalInstanceId(resp.getData().getInstanceCode());
-            newApproval.setApprovalStatus(ApprovalStatusType.PENDING);
+            Approval newApproval = currentApproval.toBuilder()
+                    .id(null)
+                    .build();
+            approvalManager.updateApprovalFromLark(newApproval);
             approvalMapper.insert(newApproval);
             return 1;
         }

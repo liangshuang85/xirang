@@ -6,17 +6,21 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import eco.ywhc.xr.common.constant.ApprovalStatusType;
 import eco.ywhc.xr.common.constant.ApprovalTemplateRefType;
 import eco.ywhc.xr.common.constant.ApprovalType;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import org.sugar.crud.entity.IdentifiableEntity;
 
 import java.io.Serial;
+import java.time.OffsetDateTime;
 
 /**
  * 审批记录
  */
 @Getter
 @Setter
+@ToString
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder(toBuilder = true)
 @TableName("b_approval")
 public class Approval extends BaseEntity implements IdentifiableEntity<Long> {
 
@@ -60,5 +64,25 @@ public class Approval extends BaseEntity implements IdentifiableEntity<Long> {
      * 部门名称
      */
     private String departmentName;
+
+    /**
+     * 审批成员的ID
+     */
+    private String members;
+
+    /**
+     * 审批任务ID
+     */
+    private String instanceTasks;
+
+    /**
+     * 审批发起时间
+     */
+    private OffsetDateTime startTime;
+
+    /**
+     * 审批结束时间
+     */
+    private OffsetDateTime endTime;
 
 }

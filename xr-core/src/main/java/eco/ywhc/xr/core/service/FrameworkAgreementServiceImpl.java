@@ -8,8 +8,6 @@ import eco.ywhc.xr.common.event.FrameworkAgreementCreatedEvent;
 import eco.ywhc.xr.common.event.FrameworkAgreementUpdatedEvent;
 import eco.ywhc.xr.common.event.InstanceRoleLarkMemberInsertedEvent;
 import eco.ywhc.xr.common.event.StatusChangedEvent;
-import eco.ywhc.xr.common.exception.LarkTaskNotFoundException;
-import eco.ywhc.xr.common.security.CurrentUser;
 import eco.ywhc.xr.common.model.dto.req.FrameworkAgreementReq;
 import eco.ywhc.xr.common.model.dto.res.*;
 import eco.ywhc.xr.common.model.entity.BaseEntity;
@@ -18,6 +16,7 @@ import eco.ywhc.xr.common.model.entity.InstanceRole;
 import eco.ywhc.xr.common.model.entity.Task;
 import eco.ywhc.xr.common.model.lark.LarkEmployee;
 import eco.ywhc.xr.common.model.query.FrameworkAgreementQuery;
+import eco.ywhc.xr.common.security.CurrentUser;
 import eco.ywhc.xr.core.manager.*;
 import eco.ywhc.xr.core.manager.lark.LarkEmployeeManager;
 import eco.ywhc.xr.core.mapper.FrameworkAgreementMapper;
@@ -31,7 +30,6 @@ import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 import org.sugar.commons.exception.ConditionNotMetException;
-import org.sugar.commons.exception.InternalErrorException;
 import org.sugar.commons.exception.UniqueViolationException;
 import org.sugar.crud.model.PageableModelSet;
 
@@ -234,40 +232,23 @@ public class FrameworkAgreementServiceImpl implements FrameworkAgreementService 
 
         List<Task> tasks = taskManager.listTasksByRefId(id);
         List<TaskRes> taskResList = new ArrayList<>();
+        // 从数据库中查询任务
         for (Task task : tasks) {
-            if (task.getTaskGuid() == null) {
-                InstanceRole instanceRole = instanceRoleManager.findEntityById(task.getInstanceRoleId());
-                TaskRes taskRes = taskConverter.toResponse(task);
-                // 如果任务状态为待发起或者已删除，则显示实例角色成员
-                if (task.getStatus() == TaskStatusType.pending || task.getStatus() == TaskStatusType.deleted) {
-                    Set<String> memberIds = instanceRoleLarkMembers.stream()
-                            .filter(i -> i.getInstanceRoleId().equals(task.getInstanceRoleId()))
-                            .findFirst()
-                            .map(InstanceRoleLarkMemberRes::getMemberIds)
-                            .orElse(Collections.emptySet());
-                    if (!memberIds.isEmpty()) {
-                        List<AssigneeRes> assignees = memberIds.stream()
-                                .map(memberId -> {
-                                    LarkEmployee larkEmployee1 = larkEmployeeManager.retrieveLarkEmployee(memberId);
-                                    return AssigneeRes.builder()
-                                            .assigneeId(memberId)
-                                            .assigneeName(larkEmployee1.getName())
-                                            .avatarInfo(larkEmployee1.getAvatarInfo())
-                                            .build();
-                                })
-                                .toList();
-                        taskRes.setAssignees(assignees);
-                    }
-                }
-                taskRes.setInstanceRoleName(instanceRole.getName());
-                taskResList.add(taskRes);
-                continue;
+            InstanceRole instanceRole = instanceRoleManager.findEntityById(task.getInstanceRoleId());
+            TaskRes taskRes = taskConverter.toResponse(task);
+            Set<String> memberIds = new HashSet<>();
+            // 如果任务状态为待发起，则显示实例角色成员
+            if (task.getStatus() == TaskStatusType.pending) {
+                memberIds = instanceRoleLarkMembers.stream()
+                        .filter(i -> i.getInstanceRoleId().equals(task.getInstanceRoleId()))
+                        .findFirst()
+                        .map(InstanceRoleLarkMemberRes::getMemberIds)
+                        .orElse(Collections.emptySet());
+            } else if (StringUtils.isNotBlank(task.getMembers())) {
+                memberIds = Arrays.stream(task.getMembers().split(","))
+                        .collect(Collectors.toSet());
             }
-            try {
-                TaskRes larkTask = taskManager.getLarkTask(task);
-                // 获取任务负责人
-                List<String> memberIds = instanceRoleLarkMemberManager.getMemberIdsByInstanceRoleIdAndRefId(task.getInstanceRoleId(), id);
-                // 获取任务负责人信息
+            if (!memberIds.isEmpty()) {
                 List<AssigneeRes> assignees = memberIds.stream()
                         .map(memberId -> {
                             LarkEmployee larkEmployee1 = larkEmployeeManager.retrieveLarkEmployee(memberId);
@@ -278,15 +259,10 @@ public class FrameworkAgreementServiceImpl implements FrameworkAgreementService 
                                     .build();
                         })
                         .toList();
-                larkTask.setAssignees(assignees);
-                taskResList.add(larkTask);
-            } catch (LarkTaskNotFoundException ignored) {
-                task.setTaskGuid(null);
-                task.setStatus(TaskStatusType.deleted);
-                taskManager.updateById(task);
-            } catch (Exception e) {
-                throw new InternalErrorException("查询飞书任务失败");
+                taskRes.setAssignees(assignees);
             }
+            taskRes.setInstanceRoleName(instanceRole.getName());
+            taskResList.add(taskRes);
         }
         Map<TaskType, Map<String, List<TaskRes>>> taskMap = taskResList.stream()
                 .collect(Collectors.groupingBy(
@@ -296,11 +272,6 @@ public class FrameworkAgreementServiceImpl implements FrameworkAgreementService 
         res.setTaskMap(taskMap);
 
         Map<ApprovalType, Map<String, List<ApprovalRes>>> approvalResMaps = approvalManager.listApprovalsByRefId(id).stream()
-                .peek(i -> {
-                    if (i.getApprovalInstanceId() != null) {
-                        approvalManager.updateApproval(i);
-                    }
-                })
                 .collect(Collectors.groupingBy(
                         ApprovalRes::getType,
                         Collectors.groupingBy(ApprovalRes::getDepartmentName)

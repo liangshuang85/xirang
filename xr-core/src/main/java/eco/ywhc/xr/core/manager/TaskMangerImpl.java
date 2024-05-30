@@ -8,9 +8,7 @@ import eco.ywhc.xr.common.constant.TaskTemplateRefType;
 import eco.ywhc.xr.common.constant.TaskType;
 import eco.ywhc.xr.common.exception.LarkTaskNotFoundException;
 import eco.ywhc.xr.common.model.dto.req.TaskListReq;
-import eco.ywhc.xr.common.model.dto.res.TaskRes;
 import eco.ywhc.xr.common.model.entity.BaseEntity;
-import eco.ywhc.xr.common.model.entity.InstanceRole;
 import eco.ywhc.xr.common.model.entity.Task;
 import eco.ywhc.xr.common.model.entity.TaskTemplate;
 import eco.ywhc.xr.core.mapper.TaskMapper;
@@ -39,8 +37,6 @@ public class TaskMangerImpl implements TaskManager {
 
     private final Client client;
 
-    private final InstanceRoleManager instanceRoleManager;
-
     @Override
     public List<Task> listTasksByRefId(long id) {
         QueryWrapper<Task> qw = new QueryWrapper<>();
@@ -61,7 +57,7 @@ public class TaskMangerImpl implements TaskManager {
     }
 
     @Override
-    public TaskRes getLarkTask(Task task) {
+    public void updateTaskFromLark(Task task) {
         GetTaskReq req = GetTaskReq.newBuilder()
                 .taskGuid(task.getTaskGuid())
                 .build();
@@ -86,27 +82,17 @@ public class TaskMangerImpl implements TaskManager {
         task.setCompletedAt(taskData.getCompletedAt());
         taskMapper.updateById(task);
 
-        TaskRes res = new TaskRes();
         // completedAt 不为"0"说明任务已完成
         if (!Objects.equals(task.getCompletedAt(), "0")) {
             task.setStatus(TaskStatusType.done);
-            taskMapper.updateById(task);
             Instant startTime = Instant.ofEpochMilli(Long.parseLong(taskData.getCreatedAt()));
-            res.setStartTime(OffsetDateTime.ofInstant(startTime, ZoneId.systemDefault()));
+            task.setStartTime(OffsetDateTime.ofInstant(startTime, ZoneId.systemDefault()));
             Instant endTime = Instant.ofEpochMilli(Long.parseLong(taskData.getCompletedAt()));
-            res.setEndTime(OffsetDateTime.ofInstant(endTime, ZoneId.systemDefault()));
-            res.setStatus(TaskStatusType.done);
+            task.setEndTime(OffsetDateTime.ofInstant(endTime, ZoneId.systemDefault()));
         } else {
-            res.setStatus(task.getStatus());
+            task.setStatus(task.getStatus());
         }
-        InstanceRole instanceRole = instanceRoleManager.findEntityById(task.getInstanceRoleId());
-        res.setInstanceRoleName(instanceRole.getName());
-        res.setId(task.getId());
-        res.setTaskUrl(taskData.getUrl());
-        res.setSummary(taskData.getSummary());
-        res.setCompletedAt(taskData.getCompletedAt());
-        res.setType(task.getType());
-        return res;
+        taskMapper.updateById(task);
     }
 
     @Override

@@ -33,18 +33,11 @@ public interface ApprovalManager {
     Approval mustFoundEntityById(long id);
 
     /**
-     * 根据线索Id查找审批
+     * 获取飞书审批实例的待审批人
      *
-     * @param clueId 线索Id
+     * @param instanceCode 审批实例Code
      */
-    List<Approval> findAllEntitiesByClueId(long clueId);
-
-    /**
-     * 根据线索Id返回审批Res
-     *
-     * @param clueId 线索Id
-     */
-    List<ApprovalRes> findAllByClueId(long clueId);
+    String getLarkApprovalMembers(String instanceCode);
 
     /**
      * 根据关联对象Id删除审批
@@ -65,7 +58,7 @@ public interface ApprovalManager {
      *
      * @param approval 审批
      */
-    void updateApproval(ApprovalRes approval);
+    void updateApprovalFromLark(Approval approval);
 
     /**
      * 获取飞书审批定义控件信息

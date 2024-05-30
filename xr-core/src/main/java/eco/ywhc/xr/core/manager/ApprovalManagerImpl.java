@@ -19,6 +19,7 @@ import eco.ywhc.xr.core.manager.lark.LarkEmployeeManager;
 import eco.ywhc.xr.core.mapper.ApprovalMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import org.sugar.commons.exception.InternalErrorException;
@@ -26,9 +27,8 @@ import org.sugar.commons.exception.ResourceNotFoundException;
 
 import java.time.Instant;
 import java.time.ZoneOffset;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * 审批记录(eco.ywhc.xr.common.model.entity.BApproval)表服务实现类
@@ -68,16 +68,26 @@ public class ApprovalManagerImpl implements ApprovalManager {
     }
 
     @Override
-    public List<Approval> findAllEntitiesByClueId(long clueId) {
-        QueryWrapper<Approval> qw = new QueryWrapper<>();
-        qw.lambda().eq(Approval::getDeleted, 0)
-                .eq(Approval::getRefId, clueId);
-        return approvalMapper.selectList(qw);
-    }
-
-    @Override
-    public List<ApprovalRes> findAllByClueId(long clueId) {
-        return findAllEntitiesByClueId(clueId).stream().map(approvalConverter::toResponse).toList();
+    public String getLarkApprovalMembers(String instanceCode) {
+        GetInstanceReq req = GetInstanceReq.newBuilder()
+                .instanceId(instanceCode)
+                .build();
+        GetInstanceResp resp;
+        try {
+            resp = client.approval().instance().get(req);
+        } catch (Exception e) {
+            log.error("获取审批实例失败:{}", e.getMessage());
+            throw new InternalErrorException(e);
+        }
+        if (!resp.success()) {
+            log.error("获取审批实例失败:{}", resp.getMsg());
+            throw new InternalErrorException("获取审批实例失败");
+        }
+        // 获取审批实例的待审批人
+        return Arrays.stream(resp.getData().getTaskList())
+                .filter(instanceTask -> instanceTask.getStatus().equals("PENDING"))
+                .map(InstanceTask::getOpenId)
+                .collect(Collectors.joining(","));
     }
 
     @Override
@@ -97,19 +107,53 @@ public class ApprovalManagerImpl implements ApprovalManager {
                 .orderByDesc(Approval::getId);
         List<Approval> approvals = approvalMapper.selectList(qw);
         return approvals.stream()
-                .map(approvalConverter::toResponse)
+                .map(i -> {
+                    ApprovalRes res = approvalConverter.toResponse(i);
+                    List<AssigneeRes> assignees = new ArrayList<>();
+                    if (StringUtils.isNotBlank(i.getMembers())) {
+                        Set<String> memberIds = Arrays.stream(i.getMembers().split(","))
+                                .map(String::valueOf)
+                                .collect(Collectors.toSet());
+                        assignees = memberIds.stream()
+                                .map(assigneeId -> {
+                                    LarkEmployee approvalLarkEmployee = larkEmployeeManager.retrieveLarkEmployee(assigneeId);
+                                    return AssigneeRes.builder()
+                                            .assigneeId(assigneeId)
+                                            .assigneeName(approvalLarkEmployee.getName())
+                                            .avatarInfo(approvalLarkEmployee.getAvatarInfo())
+                                            .build();
+                                })
+                                .toList();
+                    }
+                    res.setAssignees(assignees);
+                    if (res.getApprovalStatus() == ApprovalStatusType.PENDING) {
+                        res.setPendingAssignees(assignees);
+                    }
+                    if (StringUtils.isNotBlank(i.getInstanceTasks())) {
+                        List<String> appLinks = Arrays.stream(i.getInstanceTasks().split(","))
+                                .map(instanceTask -> "https://applink.feishu.cn/client/mini_program/open?appId=cli_9cb844403dbb9108&mode=appCenter&path=pc/pages/in-process/index?enableTrusteeship=true&instanceId="
+                                        + instanceTask + "&source=approval_bot&relaunch=true")
+                                .toList();
+                        res.setAppLinks(appLinks);
+                    }
+                    res.setStartTime(i.getStartTime());
+                    res.setEndTime(i.getEndTime());
+                    return res;
+                })
                 .toList();
     }
 
     @Override
-    public void updateApproval(ApprovalRes res) {
+    public void updateApprovalFromLark(Approval approval) {
+        if (StringUtils.isBlank(approval.getApprovalInstanceId())) {
+            return;
+        }
         GetInstanceReq req = GetInstanceReq.newBuilder()
-                .instanceId(res.getApprovalInstanceId())
+                .instanceId(approval.getApprovalInstanceId())
                 .build();
         GetInstanceResp resp;
         try {
             resp = client.approval().instance().get(req);
-
         } catch (Exception e) {
             log.error("获取审批实例失败:{}", e.getMessage());
             throw new InternalErrorException(e);
@@ -120,47 +164,34 @@ public class ApprovalManagerImpl implements ApprovalManager {
         }
         GetInstanceRespBody approvalData = resp.getData();
         ApprovalStatusType approvalStatusType = ApprovalStatusType.valueOf(approvalData.getStatus());
-        if (res.getApprovalStatus() != approvalStatusType) {
-            res.setApprovalStatus(approvalStatusType);
-            Approval entity = approvalMapper.findEntityById(res.getId());
-            entity.setApprovalStatus(approvalStatusType);
-            approvalMapper.updateById(entity);
+        // 如果审批状态不一致则更新
+        if (approval.getApprovalStatus() != approvalStatusType) {
+            approval.setApprovalStatus(approvalStatusType);
+            approvalMapper.updateById(approval);
         }
-
+        if (approvalStatusType != ApprovalStatusType.PENDING) {
+            approval.setApprovalInstanceId(null);
+        }
         InstanceTask[] taskList = approvalData.getTaskList();
-
-        List<String> assigneeIds = Arrays.stream(taskList)
-                .filter(instanceTask -> res.getApprovalStatus().name().equals(instanceTask.getStatus()))
+        // 获取审批实例的待审批人
+        approval.setMembers(Arrays.stream(taskList)
+                .filter(instanceTask -> approval.getApprovalStatus().name().equals(instanceTask.getStatus()))
                 .map(InstanceTask::getOpenId)
-                .toList();
-
-        Instant startTime = Instant.ofEpochMilli(Long.parseLong(approvalData.getStartTime()));
-        res.setStartTime(startTime.atOffset(ZoneOffset.ofHours(8)));
-        Instant endTime = Instant.ofEpochMilli(Long.parseLong(approvalData.getEndTime()));
-        res.setEndTime(endTime.atOffset(ZoneOffset.ofHours(8)));
-
-        List<AssigneeRes> assignees = assigneeIds.stream()
-                .map(assigneeId -> {
-                    LarkEmployee approvalLarkEmployee = larkEmployeeManager.retrieveLarkEmployee(assigneeId);
-                    return AssigneeRes.builder()
-                            .assigneeId(assigneeId)
-                            .assigneeName(approvalLarkEmployee.getName())
-                            .avatarInfo(approvalLarkEmployee.getAvatarInfo())
-                            .build();
-                })
-                .toList();
-        res.setAssignees(assignees);
-        if (approvalStatusType == ApprovalStatusType.PENDING) {
-            res.setPendingAssignees(assignees);
+                .collect(Collectors.joining(",")));
+        // 获取审批实例的开始时间和结束时间
+        if (approvalStatusType == ApprovalStatusType.APPROVED || approvalStatusType == ApprovalStatusType.REJECTED) {
+            Instant startTime = Instant.ofEpochMilli(Long.parseLong(approvalData.getStartTime()));
+            approval.setStartTime(startTime.atOffset(ZoneOffset.ofHours(8)));
+            Instant endTime = Instant.ofEpochMilli(Long.parseLong(approvalData.getEndTime()));
+            approval.setEndTime(endTime.atOffset(ZoneOffset.ofHours(8)));
         }
-
-        List<String> appLinks = Arrays.stream(taskList)
-                .filter(instanceTask -> res.getApprovalStatus().name().equals(instanceTask.getStatus()))
-                .map(instanceTask ->
-                        "https://applink.feishu.cn/client/mini_program/open?appId=cli_9cb844403dbb9108&mode=appCenter&path=pc/pages/in-process/index?enableTrusteeship=true&instanceId="
-                                + instanceTask.getId() + "&source=approval_bot&relaunch=true")
-                .toList();
-        res.setAppLinks(appLinks);
+        // 获取审批实例的审批任务ID
+        final String approvalInstanceId = Arrays.stream(taskList)
+                .filter(instanceTask -> approval.getApprovalStatus().name().equals(instanceTask.getStatus()))
+                .map(InstanceTask::getId)
+                .collect(Collectors.joining(","));
+        approval.setInstanceTasks(approvalInstanceId);
+        approvalMapper.updateById(approval);
     }
 
     @Override

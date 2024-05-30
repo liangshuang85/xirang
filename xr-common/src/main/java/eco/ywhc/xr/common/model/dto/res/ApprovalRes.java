@@ -21,11 +21,6 @@ public class ApprovalRes implements BaseRestResponse {
     private Long id;
 
     /**
-     * 审批名称
-     */
-    private String approvalName;
-
-    /**
      * 审批类型
      */
     private ApprovalType type;
