@@ -75,12 +75,13 @@ public class AttachmentManagerImpl implements AttachmentManager {
         Collection<Long> pendingUpdateIds = CollectionUtils.removeAll(newIds, currentIds);
         if (CollectionUtils.isNotEmpty(pendingUpdateIds)) {
             List<Attachment> newAttachments = new ArrayList<>();
-            pendingUpdateIds.forEach(
-                    attachmentId -> {
-                        if (findEntityById(attachmentId).getOwnerId() != null) {
-                            Attachment newAttachment = copy(findEntityById(attachmentId));
+            findEntitiesByIds(pendingUpdateIds).forEach(
+                    attachment -> {
+                        if (attachment.getOwnerId() != null) {
+                            Attachment newAttachment = copy(attachment);
+                            createOne(newAttachment);
                             newAttachments.add(newAttachment);
-                            pendingUpdateIds.remove(attachmentId);
+                            pendingUpdateIds.remove(attachment.getId());
                         }
                     }
             );
@@ -106,13 +107,18 @@ public class AttachmentManagerImpl implements AttachmentManager {
     }
 
     @Override
-    public List<AttachmentResponse> findMany(Collection<Long> ids) {
+    public List<Attachment> findEntitiesByIds(Collection<Long> ids) {
         if (CollectionUtils.isEmpty(ids)) {
             return Collections.emptyList();
         }
         QueryWrapper<Attachment> qw = new QueryWrapper<>();
         qw.lambda().eq(Attachment::getDeleted, 0).in(Attachment::getId, ids);
-        return attachmentMapper.selectList(qw).stream().map(attachmentConverter::toResponse).toList();
+        return attachmentMapper.selectList(qw);
+    }
+
+    @Override
+    public List<AttachmentResponse> findMany(Collection<Long> ids) {
+        return findEntitiesByIds(ids).stream().map(attachmentConverter::toResponse).toList();
     }
 
     @Override
