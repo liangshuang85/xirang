@@ -109,8 +109,11 @@ public class FrameworkAgreementServiceImpl implements FrameworkAgreementService 
         visitManager.createMany(req.getFrameworkVisits(), frameworkAgreement.getId());
         // 发布框架协议已创建事件
         applicationEventPublisher.publishEvent(FrameworkAgreementCreatedEvent.of(frameworkAgreement));
-
-        String tasklistGuid = taskManager.findAnyTaskByRefId(frameworkAgreement.getId()).getTasklistGuid();
+        Task anyTask = taskManager.findAnyTaskByRefId(frameworkAgreement.getId());
+        String tasklistGuid = "";
+        if (anyTask != null) {
+            tasklistGuid = anyTask.getTasklistGuid();
+        }
         if (CollectionUtils.isNotEmpty(req.getInstanceRoleLarkMembers())) {
             instanceRoleLarkMemberManager.insertInstanceRoleLarkMember(req.getInstanceRoleLarkMembers(), frameworkAgreement.getId(), InstanceRefType.FRAMEWORK_AGREEMENT);
             List<String> memberIds = instanceRoleLarkMemberManager.getMemberIdsByRefId(frameworkAgreement.getId());
@@ -295,9 +298,13 @@ public class FrameworkAgreementServiceImpl implements FrameworkAgreementService 
         FrameworkAgreement frameworkAgreement = frameworkAgreementManager.mustFoundEntityById(id);
         validateRequest(req, id);
         // 获取任务清单Guid
-        String tasklistGuid = taskManager.findAnyTaskByRefId(id).getTasklistGuid();
+        Task anyTask = taskManager.findAnyTaskByRefId(id);
+        String tasklistGuid = "";
+        if(anyTask != null){
+            tasklistGuid = anyTask.getTasklistGuid();
+        }
         // 修改名称同时修改任务清单名
-        if (req.getName() != null && !req.getName().equals(frameworkAgreement.getName())) {
+        if (req.getName() != null && !req.getName().equals(frameworkAgreement.getName())&&StringUtils.isNotBlank(tasklistGuid)) {
             taskManager.updateTaskListName(tasklistGuid, TaskTemplateRefType.FRAMEWORK_AGREEMENT, req.getName());
         }
 

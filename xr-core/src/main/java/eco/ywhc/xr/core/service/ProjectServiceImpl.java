@@ -102,7 +102,11 @@ public class ProjectServiceImpl implements ProjectService {
         visitManager.createMany(req.getProjectVisits(), project.getId());
 
         applicationEventPublisher.publishEvent(ProjectCreatedEvent.of(project));
-        String tasklistGuid = taskManager.findAnyTaskByRefId(project.getId()).getTaskGuid();
+        Task anyTask = taskManager.findAnyTaskByRefId(project.getId());
+        String tasklistGuid = "";
+        if (anyTask != null) {
+            tasklistGuid = anyTask.getTasklistGuid();
+        }
         if (CollectionUtils.isNotEmpty(req.getInstanceRoleLarkMembers())) {
             instanceRoleLarkMemberManager.insertInstanceRoleLarkMember(req.getInstanceRoleLarkMembers(), project.getId(), InstanceRefType.PROJECT);
             List<String> memberIds = instanceRoleLarkMemberManager.getMemberIdsByRefId(project.getId());
@@ -277,9 +281,13 @@ public class ProjectServiceImpl implements ProjectService {
         validateRequest(req, id);
         Project project = projectManager.mustFoundEntityById(id);
         // 获取任务清单Guid
-        String tasklistGuid = taskManager.findAnyTaskByRefId(id).getTasklistGuid();
+        Task anyTask = taskManager.findAnyTaskByRefId(id);
+        String tasklistGuid = "";
+        if(anyTask != null){
+            tasklistGuid = anyTask.getTasklistGuid();
+        }
         // 修改名称同时修改任务清单名
-        if (req.getName() != null && !req.getName().equals(project.getName())) {
+        if (req.getName() != null && !req.getName().equals(project.getName())&&StringUtils.isNotBlank(tasklistGuid)) {
             taskManager.updateTaskListName(tasklistGuid, TaskTemplateRefType.PROJECT, req.getName());
         }
         OffsetDateTime updatedAt = project.getUpdatedAt();

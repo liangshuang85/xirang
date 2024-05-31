@@ -64,8 +64,8 @@ public class VisitManagerImpl implements VisitManager {
             visitMapper.insert(visit);
             Long id = visit.getId();
 
-            attachmentManager.update(invitationLetterAttachmentIds, FileOwnerType.INVITATION_LETTER, id);
-            attachmentManager.update(visitRecordAttachmentIds, FileOwnerType.VISIT_RECORD, id);
+            attachmentManager.compareAndUpdate(id,invitationLetterAttachmentIds, FileOwnerType.INVITATION_LETTER);
+            attachmentManager.compareAndUpdate(id,visitRecordAttachmentIds, FileOwnerType.VISIT_RECORD);
         }
 
         return visitReqs.size();
