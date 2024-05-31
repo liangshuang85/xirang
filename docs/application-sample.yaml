@@ -1,38 +1,71 @@
 server:
+  # 服务端口 非必填 默认为8080
   port: 8080
 
 spring:
   application:
+    # 应用程序名称 非必填 默认为sugar-application
     name: ywhc-xr
   datasource:
+    # 数据库地址 必填
     url: jdbc:mysql://localhost:3306/ywhc-xr?verifyServerCertificate=false&allowPublicKeyRetrieval=true&useSSL=false&requireSSL=false&serverTimezone=Asia/Shanghai&rewriteBatchedStatements=true
+    # 数据库用户名 必填
     username: 'root'
+    # 数据库密码 必填
     password: '12345678'
   data:
     redis:
+      # Redis的索引 非必填 默认为0
       database: 0
+      # Redis的主机地址 非必填 默认为localhost
       host: localhost
+      # Redis的连接密码 非必填 默认为''
       password: ''
+      # Redis的端口号 非必填 默认为6379
       port: 6379
 
 springdoc:
   api-docs:
+    # 启用OpenAPI 非必填 默认为false
     enabled: true
   swagger-ui:
+    # 启用Swagger-UI 非必填 默认为false
     enabled: true
 
 logging:
   file:
+    # 日志文件存储路径 非必填 默认输出日志到控制台
     path: logs/
   level:
+    # 日志级别 非必填 默认为INFO
     eco.ywhc: TRACE
 
 vendor:
   file-storage:
     local:
+      # 启用本地文件存储 非必填
       enabled: true
+      # 本地文件存储的路径 非必填
       base-path: "/data"
+      # 指定访问本地文件的Base URL 非必填
       base-url: 'http://127.0.0.1:8080/'
+    s3:
+      # 启用S3对象存储服务 非必填 默认为false
+      enabled: false
+      # S3的Access Key 非必填 默认为 ''
+      access-key: ''
+      # S3的Secret Key 非必填 默认为 ''
+      secret-key: ''
+      # S3的URL 非必填 默认为 ''
+      endpoint: ''
+      # S3的桶 非必填 默认为 ''
+      bucket: public
+      # 文件夹路径 非必填 默认为 ''
+      folder: '/'
+      # S3服务所在的区域 非必填 默认为 ''
+      region: cn-north-1
   lark:
+    # 飞书应用的App ID 必填
     app-id: ""
+    # 飞书应用的App Secret 必填
     app-secret: ""
