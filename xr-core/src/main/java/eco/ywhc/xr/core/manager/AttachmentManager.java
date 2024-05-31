@@ -64,6 +64,13 @@ public interface AttachmentManager {
     AttachmentResponse findOne(long id);
 
     /**
+     * 查找ID列表中的附件
+     *
+     * @param ids 附件ID列表
+     */
+    List<Attachment> findEntitiesByIds(Collection<Long> ids);
+
+    /**
      * 指定ID查找附件
      *
      * @param ids 附件ID列表

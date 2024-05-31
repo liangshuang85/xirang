@@ -45,7 +45,8 @@ public class AttachmentManagerImpl implements AttachmentManager {
     @Override
     public void update(long id, @Nullable FileOwnerType ownerType, long ownerId) {
         Attachment attachment = findEntityById(id);
-        if (attachment == null || attachment.getId() == null) {
+        if (attachment == null || attachment.getId() == null ||
+                (attachment.getOwnerId() != null && !attachment.getOwnerId().equals(ownerId))) {
             throw new InternalErrorException("更新附件失败");
         }
         attachment.setOwnerType(ownerType);
@@ -73,6 +74,20 @@ public class AttachmentManagerImpl implements AttachmentManager {
         // 待关联附件ID列表
         Collection<Long> pendingUpdateIds = CollectionUtils.removeAll(newIds, currentIds);
         if (CollectionUtils.isNotEmpty(pendingUpdateIds)) {
+            List<Attachment> newAttachments = new ArrayList<>();
+            findEntitiesByIds(pendingUpdateIds).forEach(
+                    attachment -> {
+                        if (attachment.getOwnerId() != null) {
+                            Attachment newAttachment = copy(attachment);
+                            createOne(newAttachment);
+                            newAttachments.add(newAttachment);
+                            pendingUpdateIds.remove(attachment.getId());
+                        }
+                    }
+            );
+            pendingUpdateIds.addAll(newAttachments.stream()
+                    .map(Attachment::getId)
+                    .toList());
             update(pendingUpdateIds, ownerType, ownerId);
         }
     }
@@ -92,13 +107,18 @@ public class AttachmentManagerImpl implements AttachmentManager {
     }
 
     @Override
-    public List<AttachmentResponse> findMany(Collection<Long> ids) {
+    public List<Attachment> findEntitiesByIds(Collection<Long> ids) {
         if (CollectionUtils.isEmpty(ids)) {
             return Collections.emptyList();
         }
         QueryWrapper<Attachment> qw = new QueryWrapper<>();
         qw.lambda().eq(Attachment::getDeleted, 0).in(Attachment::getId, ids);
-        return attachmentMapper.selectList(qw).stream().map(attachmentConverter::toResponse).toList();
+        return attachmentMapper.selectList(qw);
+    }
+
+    @Override
+    public List<AttachmentResponse> findMany(Collection<Long> ids) {
+        return findEntitiesByIds(ids).stream().map(attachmentConverter::toResponse).toList();
     }
 
     @Override
