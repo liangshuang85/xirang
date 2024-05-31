@@ -13,6 +13,7 @@ import eco.ywhc.xr.core.manager.lark.LarkDepartmentManager;
 import eco.ywhc.xr.core.manager.lark.LarkEmployeeManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.stereotype.Component;
@@ -23,6 +24,7 @@ import java.util.List;
 @Component
 @Slf4j
 @RequiredArgsConstructor
+@ConditionalOnProperty(prefix = "vendor.scheduled", name = "enabled", havingValue = "true")
 public class ScheduledTasks {
 
     private static final int BATCH_SIZE = 10;
