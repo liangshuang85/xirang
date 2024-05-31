@@ -45,7 +45,8 @@ public class AttachmentManagerImpl implements AttachmentManager {
     @Override
     public void update(long id, @Nullable FileOwnerType ownerType, long ownerId) {
         Attachment attachment = findEntityById(id);
-        if (attachment == null || attachment.getId() == null) {
+        if (attachment == null || attachment.getId() == null||
+                (attachment.getOwnerId()!=null &&! attachment.getOwnerId().equals(ownerId))) {
             throw new InternalErrorException("更新附件失败");
         }
         attachment.setOwnerType(ownerType);
@@ -73,6 +74,19 @@ public class AttachmentManagerImpl implements AttachmentManager {
         // 待关联附件ID列表
         Collection<Long> pendingUpdateIds = CollectionUtils.removeAll(newIds, currentIds);
         if (CollectionUtils.isNotEmpty(pendingUpdateIds)) {
+            List<Attachment> newAttachments = new ArrayList<>();
+            pendingUpdateIds.forEach(
+                    attachmentId -> {
+                        if (findEntityById(attachmentId).getOwnerId() != null) {
+                            Attachment newAttachment = copy(findEntityById(attachmentId));
+                            newAttachments.add(newAttachment);
+                            pendingUpdateIds.remove(attachmentId);
+                        }
+                    }
+            );
+            pendingUpdateIds.addAll(newAttachments.stream()
+                    .map(Attachment::getId)
+                    .toList());
             update(pendingUpdateIds, ownerType, ownerId);
         }
     }
