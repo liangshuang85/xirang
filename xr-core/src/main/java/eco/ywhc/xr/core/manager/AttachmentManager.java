@@ -70,7 +70,6 @@ public interface AttachmentManager {
      */
     List<Attachment> findEntitiesByIds(Collection<Long> ids);
 
-
     /**
      * 指定ID查找附件
      *

@@ -45,8 +45,8 @@ public class AttachmentManagerImpl implements AttachmentManager {
     @Override
     public void update(long id, @Nullable FileOwnerType ownerType, long ownerId) {
         Attachment attachment = findEntityById(id);
-        if (attachment == null || attachment.getId() == null||
-                (attachment.getOwnerId()!=null &&! attachment.getOwnerId().equals(ownerId))) {
+        if (attachment == null || attachment.getId() == null ||
+                (attachment.getOwnerId() != null && !attachment.getOwnerId().equals(ownerId))) {
             throw new InternalErrorException("更新附件失败");
         }
         attachment.setOwnerType(ownerType);
