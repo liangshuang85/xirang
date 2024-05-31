@@ -2,6 +2,7 @@ package eco.ywhc.xr.core.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import eco.ywhc.xr.common.converter.PermissionConverter;
+import eco.ywhc.xr.common.model.dto.impexp.PermissionDump;
 import eco.ywhc.xr.common.model.dto.req.PermissionReq;
 import eco.ywhc.xr.common.model.dto.res.PermissionRes;
 import eco.ywhc.xr.common.model.entity.Permission;
@@ -20,8 +21,10 @@ import org.sugar.commons.exception.InvalidInputException;
 import org.sugar.commons.exception.UniqueViolationException;
 import org.sugar.crud.model.PageableModelSet;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -96,6 +99,38 @@ public class PermissionServiceImpl implements PermissionService {
         return permissionMapper.deleteEntityById(id, logical);
     }
 
+    @Override
+    public List<PermissionDump> exportAll() {
+        QueryWrapper<Permission> qw = new QueryWrapper<>();
+        qw.lambda().eq(Permission::getDeleted, false)
+                .eq(Permission::getBuiltIn, false)
+                .orderByAsc(Permission::getId);
+        final List<Permission> permissions = permissionMapper.selectList(qw);
+        return permissionConverter.toDump(permissions);
+    }
+
+    @Override
+    public int importAll(Collection<PermissionDump> dumpList) {
+        if (CollectionUtils.isEmpty(dumpList)) {
+            return 0;
+        }
+        final List<Permission> permissions = permissionConverter.fromDump(List.copyOf(dumpList));
+        final Set<String> codes = permissions.stream()
+                .map(Permission::getCode)
+                .collect(Collectors.toSet());
+        if (permissionManager.anyExists(codes)) {
+            throw new UniqueViolationException("权限数据和现有数据冲突，导入失败");
+        }
+
+        final Set<String> resourceCodes = permissions.stream()
+                .map(Permission::getResourceCode)
+                .collect(Collectors.toSet());
+        if (permissionResourceManager.allExists(resourceCodes)) {
+            throw new InvalidInputException("权限资源数据错误，导入失败");
+        }
+
+        return permissionMapper.bulkInsert(permissions);
+    }
 
     private void validateRequest(PermissionReq req, @Nullable Long id) {
         Permission found = permissionManager.findEntityByCode(req.getCode());

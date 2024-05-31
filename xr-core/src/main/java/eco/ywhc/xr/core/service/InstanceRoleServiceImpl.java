@@ -3,6 +3,7 @@ package eco.ywhc.xr.core.service;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import eco.ywhc.xr.common.converter.InstanceRoleConverter;
+import eco.ywhc.xr.common.model.dto.impexp.InstanceRoleDump;
 import eco.ywhc.xr.common.model.dto.req.InstanceRoleReq;
 import eco.ywhc.xr.common.model.dto.res.InstanceRoleRes;
 import eco.ywhc.xr.common.model.dto.res.PermissionRes;
@@ -12,6 +13,7 @@ import eco.ywhc.xr.core.manager.InstanceRoleManager;
 import eco.ywhc.xr.core.manager.PermissionManager;
 import eco.ywhc.xr.core.mapper.InstanceRoleMapper;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
@@ -27,6 +29,7 @@ import java.util.List;
 import java.util.Set;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class InstanceRoleServiceImpl implements InstanceRoleService {
 
@@ -134,7 +137,26 @@ public class InstanceRoleServiceImpl implements InstanceRoleService {
     @Override
     public List<PermissionRes> listPermissions(long id) {
         Set<String> currentPermissionCodes = instanceRoleManager.listPermissionCodesById(id);
-        return permissionManager.findAllByPermissionCodes(currentPermissionCodes);
+        return permissionManager.findAllCodes(currentPermissionCodes);
+    }
+
+    @Override
+    public List<InstanceRoleDump> exportAll() {
+        QueryWrapper<InstanceRole> qw = new QueryWrapper<>();
+        qw.lambda().eq(InstanceRole::getDeleted, false)
+                .eq(InstanceRole::getBuiltIn, false)
+                .orderByAsc(InstanceRole::getId);
+        final List<InstanceRole> roles = instanceRoleMapper.selectList(qw);
+        return instanceRoleConverter.toDump(roles);
+    }
+
+    @Override
+    public int importAll(Collection<InstanceRoleDump> dumpList) {
+        if (CollectionUtils.isEmpty(dumpList)) {
+            return 0;
+        }
+        final List<InstanceRole> roles = instanceRoleConverter.fromDump(List.copyOf(dumpList));
+        return instanceRoleMapper.bulkInsert(roles);
     }
 
     private void validateRequest(InstanceRoleReq req, @Nullable Long id) {

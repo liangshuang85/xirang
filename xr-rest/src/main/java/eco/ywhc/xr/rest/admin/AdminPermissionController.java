@@ -1,5 +1,6 @@
 package eco.ywhc.xr.rest.admin;
 
+import eco.ywhc.xr.common.model.dto.impexp.PermissionDump;
 import eco.ywhc.xr.common.model.dto.req.PermissionReq;
 import eco.ywhc.xr.common.model.dto.res.PermissionRes;
 import eco.ywhc.xr.core.service.PermissionService;
@@ -11,13 +12,15 @@ import org.sugar.crud.model.CreateResult;
 import org.sugar.crud.model.OperationResult;
 import org.sugar.crud.model.PageableModelSet;
 
+import java.util.List;
+
 /**
  * 权限接口
  */
 @Slf4j
 @RestController
 @RequiredArgsConstructor
-public class PermissionController {
+public class AdminPermissionController {
 
     private final PermissionService permissionService;
 
@@ -61,6 +64,23 @@ public class PermissionController {
     @DeleteMapping("/admin/rest/permissions/{id}")
     public OperationResult deleteOne(@PathVariable long id) {
         int affected = permissionService.deleteOne(id, true);
+        return OperationResult.of(affected);
+    }
+
+    /**
+     * 导出全部非内置权限
+     */
+    @GetMapping("/admin/rest/permissions:export")
+    public List<PermissionDump> exportAll() {
+        return permissionService.exportAll();
+    }
+
+    /**
+     * 导入非内置权限
+     */
+    @PostMapping("/admin/rest/permissions:import")
+    public OperationResult importAll(@Valid @RequestBody List<PermissionDump> dumpList) {
+        int affected = permissionService.importAll(dumpList);
         return OperationResult.of(affected);
     }
 

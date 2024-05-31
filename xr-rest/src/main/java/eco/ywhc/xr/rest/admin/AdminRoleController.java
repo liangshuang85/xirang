@@ -1,5 +1,6 @@
 package eco.ywhc.xr.rest.admin;
 
+import eco.ywhc.xr.common.model.dto.impexp.RoleDump;
 import eco.ywhc.xr.common.model.dto.req.PermissionConfigureReq;
 import eco.ywhc.xr.common.model.dto.req.RoleReq;
 import eco.ywhc.xr.common.model.dto.res.PermissionRes;
@@ -23,7 +24,7 @@ import java.util.List;
 @Slf4j
 @RestController
 @RequiredArgsConstructor
-public class RoleController {
+public class AdminRoleController {
 
     private final RoleService roleService;
 
@@ -104,6 +105,23 @@ public class RoleController {
     public OperationResult enable(@PathVariable long id) {
         roleService.enable(id);
         return OperationResult.of(1);
+    }
+
+    /**
+     * 导出全部非内置角色
+     */
+    @GetMapping("/admin/rest/roles:export")
+    public List<RoleDump> exportAll() {
+        return roleService.exportAll();
+    }
+
+    /**
+     * 导入非内置角色
+     */
+    @PostMapping("/admin/rest/roles:import")
+    public OperationResult importAll(@Valid @RequestBody List<RoleDump> dumpList) {
+        int affected = roleService.importAll(dumpList);
+        return OperationResult.of(affected);
     }
 
 }

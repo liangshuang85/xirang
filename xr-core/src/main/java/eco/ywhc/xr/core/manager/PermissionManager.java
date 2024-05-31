@@ -28,12 +28,12 @@ public interface PermissionManager {
     /**
      * 获取权限编码列表中的全部权限
      */
-    List<Permission> findAllEntitiesByPermissionCodes(Collection<String> permissionCodes);
+    List<Permission> findAllEntitiesByCodes(Collection<String> codes);
 
     /**
      * 获取权限编码列表中的全部权限
      */
-    List<PermissionRes> findAllByPermissionCodes(Collection<String> permissionCodes);
+    List<PermissionRes> findAllCodes(Collection<String> codes);
 
     /**
      * 获取全部权限
@@ -65,6 +65,13 @@ public interface PermissionManager {
      *
      * @param codes 权限编码列表
      */
-    boolean allExist(Collection<String> codes);
+    boolean allExists(Collection<String> codes);
+
+    /**
+     * 检查列表中的权限编码是否存在至少一个
+     *
+     * @param codes 权限编码列表
+     */
+    boolean anyExists(Collection<String> codes);
 
 }

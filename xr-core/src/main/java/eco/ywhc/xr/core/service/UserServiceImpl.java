@@ -37,6 +37,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public String usernamePasswordAuthenticate(HttpServletRequest httpServletRequest, String username, String rawPassword) {
         CurrentUser currentUser = userManager.usernamePasswordAuthenticate(username, rawPassword);
+
         // 获取基本角色权限
         Set<String> basicPermissionCodes = roleManager.listBasicPermissionCodes();
         log.trace("用户所分配的基本权限有：{}", basicPermissionCodes);
@@ -44,9 +45,6 @@ public class UserServiceImpl implements UserService {
         // 将当前用户的信息保存到 <code>SecurityContext</code>
         SecurityContext securityContext = new SecurityContext(currentUser);
         SecurityContextHolder.setContext(securityContext);
-
-        final CurrentUser currentUser1 = SessionUtils.currentUser();
-        System.out.println(currentUser1);
 
         HttpSession session = httpServletRequest.getSession(true);
         session.setAttribute(SessionAttribute.SESSION_ATTR_USER, currentUser);

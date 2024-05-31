@@ -1,22 +1,26 @@
-package eco.ywhc.xr.common.model.dto.req;
+package eco.ywhc.xr.common.model.dto.impexp;
 
+import jakarta.validation.constraints.NotBlank;
+import lombok.Builder;
 import lombok.Value;
-import org.sugar.crud.model.BaseRestRequest;
 
 /**
- * 权限
+ * 权限导入导出POJO
  */
 @Value
-public class PermissionReq implements BaseRestRequest {
+@Builder(toBuilder = true)
+public class PermissionDump {
 
     /**
      * 名称
      */
+    @NotBlank
     String name;
 
     /**
      * 编码
      */
+    @NotBlank
     String code;
 
     /**
@@ -27,12 +31,13 @@ public class PermissionReq implements BaseRestRequest {
     /**
      * 资源编码
      */
+    @NotBlank
     String resourceCode;
 
     /**
      * 级别
      */
-    String level = "";
+    String level;
 
 }
 

@@ -1,5 +1,6 @@
 package eco.ywhc.xr.core.service;
 
+import eco.ywhc.xr.common.model.dto.impexp.InstanceRoleDump;
 import eco.ywhc.xr.common.model.dto.req.InstanceRoleReq;
 import eco.ywhc.xr.common.model.dto.res.InstanceRoleRes;
 import eco.ywhc.xr.common.model.dto.res.PermissionRes;
@@ -81,5 +82,15 @@ public interface InstanceRoleService extends BaseService<Long, InstanceRole, Ins
      * @param id 角色ID
      */
     List<PermissionRes> listPermissions(long id);
+
+    /**
+     * 导出全部非内置实例角色
+     */
+    List<InstanceRoleDump> exportAll();
+
+    /**
+     * 导入非内置实例角色
+     */
+    int importAll(Collection<InstanceRoleDump> dumpList);
 
 }

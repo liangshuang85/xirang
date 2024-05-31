@@ -1,5 +1,6 @@
 package eco.ywhc.xr.core.service;
 
+import eco.ywhc.xr.common.model.dto.impexp.RoleDump;
 import eco.ywhc.xr.common.model.dto.req.RoleReq;
 import eco.ywhc.xr.common.model.dto.res.PermissionRes;
 import eco.ywhc.xr.common.model.dto.res.RoleRes;
@@ -81,5 +82,15 @@ public interface RoleService extends BaseService<Long, Role, RoleReq, RoleRes, R
      * @param id 角色ID
      */
     List<PermissionRes> listPermissions(long id);
+
+    /**
+     * 导出全部非内置角色
+     */
+    List<RoleDump> exportAll();
+
+    /**
+     * 导入非内置角色
+     */
+    int importAll(Collection<RoleDump> dumpList);
 
 }

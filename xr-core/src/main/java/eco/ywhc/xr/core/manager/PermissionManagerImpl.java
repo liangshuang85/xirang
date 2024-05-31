@@ -8,8 +8,8 @@ import eco.ywhc.xr.core.mapper.PermissionMapper;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Validate;
 import org.springframework.stereotype.Service;
-import org.sugar.commons.exception.InternalErrorException;
 import org.sugar.commons.exception.ResourceNotFoundException;
 
 import java.util.*;
@@ -36,21 +36,21 @@ public class PermissionManagerImpl implements PermissionManager {
     }
 
     @Override
-    public List<Permission> findAllEntitiesByPermissionCodes(Collection<String> permissionCodes) {
-        if (CollectionUtils.isEmpty(permissionCodes)) {
+    public List<Permission> findAllEntitiesByCodes(Collection<String> codes) {
+        if (CollectionUtils.isEmpty(codes)) {
             return Collections.emptyList();
         }
         QueryWrapper<Permission> qw = new QueryWrapper<>();
-        qw.lambda().eq(Permission::getDeleted, 0).in(Permission::getCode, permissionCodes);
+        qw.lambda().eq(Permission::getDeleted, 0).in(Permission::getCode, codes);
         return permissionMapper.selectList(qw);
     }
 
     @Override
-    public List<PermissionRes> findAllByPermissionCodes(Collection<String> permissionCodes) {
-        if (CollectionUtils.isEmpty(permissionCodes)) {
+    public List<PermissionRes> findAllCodes(Collection<String> codes) {
+        if (CollectionUtils.isEmpty(codes)) {
             return Collections.emptyList();
         }
-        return findAllEntitiesByPermissionCodes(permissionCodes).stream()
+        return findAllEntitiesByCodes(codes).stream()
                 .map(permissionConverter::toResponse)
                 .collect(Collectors.toList());
     }
@@ -85,12 +85,19 @@ public class PermissionManagerImpl implements PermissionManager {
     }
 
     @Override
-    public boolean allExist(Collection<String> codes) {
-        if (CollectionUtils.isEmpty(codes)) {
-            throw new InternalErrorException("权限编码列表错误");
-        }
-        final List<Permission> foundPermissionCodes = findAllEntitiesByPermissionCodes(Set.copyOf(codes));
+    public boolean allExists(Collection<String> codes) {
+        Validate.notEmpty(codes, "权限编码列表不能为空");
+        final List<Permission> foundPermissionCodes = findAllEntitiesByCodes(Set.copyOf(codes));
         return foundPermissionCodes.size() == codes.size();
+    }
+
+    @Override
+    public boolean anyExists(Collection<String> codes) {
+        Validate.notEmpty(codes, "权限编码列表不能为空");
+        QueryWrapper<Permission> qw = new QueryWrapper<>();
+        qw.lambda().eq(Permission::getDeleted, 0)
+                .in(Permission::getCode, codes);
+        return permissionMapper.exists(qw);
     }
 
 }

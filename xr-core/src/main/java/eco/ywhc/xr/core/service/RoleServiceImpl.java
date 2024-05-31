@@ -3,6 +3,7 @@ package eco.ywhc.xr.core.service;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import eco.ywhc.xr.common.converter.RoleConverter;
+import eco.ywhc.xr.common.model.dto.impexp.RoleDump;
 import eco.ywhc.xr.common.model.dto.req.RoleReq;
 import eco.ywhc.xr.common.model.dto.res.PermissionRes;
 import eco.ywhc.xr.common.model.dto.res.RoleRes;
@@ -12,6 +13,7 @@ import eco.ywhc.xr.core.manager.PermissionManager;
 import eco.ywhc.xr.core.manager.RoleManager;
 import eco.ywhc.xr.core.mapper.RoleMapper;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
@@ -25,6 +27,7 @@ import java.util.List;
 import java.util.Set;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class RoleServiceImpl implements RoleService {
 
@@ -126,7 +129,26 @@ public class RoleServiceImpl implements RoleService {
     @Override
     public List<PermissionRes> listPermissions(long id) {
         Set<String> currentPermissionCodes = roleManager.findCurrentPermissionCodes(id);
-        return permissionManager.findAllByPermissionCodes(currentPermissionCodes);
+        return permissionManager.findAllCodes(currentPermissionCodes);
+    }
+
+    @Override
+    public List<RoleDump> exportAll() {
+        QueryWrapper<Role> qw = new QueryWrapper<>();
+        qw.lambda().eq(Role::getDeleted, false)
+                .eq(Role::getBuiltIn, false)
+                .orderByAsc(Role::getId);
+        final List<Role> roles = roleMapper.selectList(qw);
+        return roleConverter.toDump(roles);
+    }
+
+    @Override
+    public int importAll(Collection<RoleDump> dumpList) {
+        if (CollectionUtils.isEmpty(dumpList)) {
+            return 0;
+        }
+        final List<Role> roles = roleConverter.fromDump(List.copyOf(dumpList));
+        return roleMapper.bulkInsert(roles);
     }
 
     private void validatePermissionCodes(Collection<String> permissionCodes) {
@@ -134,7 +156,7 @@ public class RoleServiceImpl implements RoleService {
         if (CollectionUtils.isEmpty(permissionCodes)) {
             return;
         }
-        if (!permissionManager.allExist(permissionCodes)) {
+        if (!permissionManager.allExists(permissionCodes)) {
             throw new InvalidInputException("权限编码列表错误");
         }
     }

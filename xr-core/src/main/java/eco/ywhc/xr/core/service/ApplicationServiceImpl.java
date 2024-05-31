@@ -124,7 +124,7 @@ public class ApplicationServiceImpl implements ApplicationService {
     @Override
     public List<PermissionRes> listPermissions(long id) {
         Set<String> currentPermissionCodes = applicationManager.findCurrentPermissionCodes(id);
-        return permissionManager.findAllByPermissionCodes(currentPermissionCodes);
+        return permissionManager.findAllCodes(currentPermissionCodes);
     }
 
     @Override
@@ -139,7 +139,7 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     private void validateRequest(ApplicationReq req, @Nullable Long id) {
         if (CollectionUtils.isNotEmpty(req.getScopes())) {
-            if (!permissionManager.allExist(req.getScopes())) {
+            if (!permissionManager.allExists(req.getScopes())) {
                 throw new InvalidInputException("应用授权Scope列表错误");
             }
         }
@@ -150,7 +150,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         if (CollectionUtils.isEmpty(permissionCodes)) {
             return;
         }
-        if (!permissionManager.allExist(permissionCodes)) {
+        if (!permissionManager.allExists(permissionCodes)) {
             throw new InvalidInputException("权限编码列表错误");
         }
     }

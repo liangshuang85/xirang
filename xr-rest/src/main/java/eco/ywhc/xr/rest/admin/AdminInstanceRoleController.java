@@ -1,5 +1,6 @@
 package eco.ywhc.xr.rest.admin;
 
+import eco.ywhc.xr.common.model.dto.impexp.InstanceRoleDump;
 import eco.ywhc.xr.common.model.dto.req.InstanceRoleReq;
 import eco.ywhc.xr.common.model.dto.req.PermissionConfigureReq;
 import eco.ywhc.xr.common.model.dto.res.InstanceRoleRes;
@@ -104,6 +105,23 @@ public class AdminInstanceRoleController {
     public OperationResult enable(@PathVariable long id) {
         instanceRoleService.enable(id);
         return OperationResult.of(1);
+    }
+
+    /**
+     * 导出全部非内置实例角色
+     */
+    @GetMapping("/admin/rest/instanceRoles:export")
+    public List<InstanceRoleDump> exportAll() {
+        return instanceRoleService.exportAll();
+    }
+
+    /**
+     * 导入非内置实例角色
+     */
+    @PostMapping("/admin/rest/instanceRoles:import")
+    public OperationResult importAll(@Valid @RequestBody List<InstanceRoleDump> dumpList) {
+        int affected = instanceRoleService.importAll(dumpList);
+        return OperationResult.of(affected);
     }
 
 }

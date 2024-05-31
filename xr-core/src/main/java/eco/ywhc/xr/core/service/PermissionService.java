@@ -1,9 +1,13 @@
 package eco.ywhc.xr.core.service;
 
+import eco.ywhc.xr.common.model.dto.impexp.PermissionDump;
 import eco.ywhc.xr.common.model.dto.req.PermissionReq;
 import eco.ywhc.xr.common.model.dto.res.PermissionRes;
 import org.springframework.transaction.annotation.Transactional;
 import org.sugar.crud.model.PageableModelSet;
+
+import java.util.Collection;
+import java.util.List;
 
 /**
  * 权限
@@ -41,5 +45,15 @@ public interface PermissionService {
      * @param id 权限ID
      */
     int deleteOne(Long id, boolean logical);
+
+    /**
+     * 导出全部非内置权限
+     */
+    List<PermissionDump> exportAll();
+
+    /**
+     * 导入非内置权限
+     */
+    int importAll(Collection<PermissionDump> dumpList);
 
 }

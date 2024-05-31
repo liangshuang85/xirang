@@ -17,7 +17,7 @@ import org.sugar.crud.model.OperationResult;
 @RestController
 @RequiredArgsConstructor
 @Slf4j
-public class MeController {
+public class AdminMyselfController {
 
     private final UserService userService;
 
